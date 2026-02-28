@@ -40,77 +40,80 @@ struct TaskGridView: View {
 
     // MARK: - Stage Header
     private var stageHeader: some View {
-        ZStack(alignment: .leading) {
-            theme.gradient
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(theme.softGradient)
 
+            // Decorative circles for depth
             GeometryReader { geo in
                 Circle()
-                    .fill(.white.opacity(0.08))
-                    .frame(width: 120)
-                    .offset(x: geo.size.width - 60, y: -30)
+                    .fill(.white.opacity(0.1))
+                    .frame(width: 90)
+                    .offset(x: geo.size.width - 55, y: -20)
                 Circle()
-                    .fill(.white.opacity(0.05))
-                    .frame(width: 80)
-                    .offset(x: geo.size.width - 10, y: 50)
+                    .fill(.white.opacity(0.06))
+                    .frame(width: 60)
+                    .offset(x: -20, y: 65)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Stage \(stage.id)")
                         .font(.caption.bold())
                         .foregroundStyle(.white.opacity(0.7))
                         .tracking(1)
-                    Spacer()
-                    Text(theme.emoji)
-                        .font(.system(size: 36))
-                }
 
-                Text(stage.chineseTitle)
-                    .font(.title2.bold())
-                    .foregroundStyle(.white)
-
-                Text(stage.description)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.75))
-
-                // Progress
-                HStack(spacing: 12) {
-                    let completed = progress.completedTaskCount(for: stage)
-                    let prog = progress.stageProgress(for: stage)
-
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(.white.opacity(0.2)).frame(height: 5)
-                            Capsule().fill(.white)
-                                .frame(width: max(0, geo.size.width * prog), height: 5)
-                        }
-                    }
-                    .frame(height: 5)
-
-                    Text("\(completed)/\(stage.taskCount)")
-                        .font(.caption.bold())
+                    Text(stage.chineseTitle)
+                        .font(.title3.bold())
                         .foregroundStyle(.white)
-                        .frame(minWidth: 30)
+
+                    Text(stage.description)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.7))
+                        .lineLimit(2)
+                        .padding(.bottom, 4)
+
+                    // Progress pill
+                    HStack(spacing: 6) {
+                        let completed = progress.completedTaskCount(for: stage)
+                        let prog = progress.stageProgress(for: stage)
+
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(.white.opacity(0.2)).frame(width: 80, height: 4)
+                            Capsule().fill(.white)
+                                .frame(width: max(0, 80 * prog), height: 4)
+                        }
+
+                        Text("\(completed)/\(stage.taskCount)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
                 }
-                .padding(.top, 4)
+
+                Spacer(minLength: 10)
+
+                Text(theme.emoji)
+                    .font(.system(size: 38))
             }
-            .padding(20)
+            .padding(18)
         }
-        .frame(height: 180)
+        .frame(height: 148)
         .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 24)
+        .padding(.top, 4)
+        .padding(.bottom, 20)
     }
 
     // MARK: - Task Grid
     private var taskGrid: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("\(stage.taskCount) TASKS")
-                .font(.caption.bold())
-                .foregroundStyle(AppColors.tertiaryText)
-                .tracking(1.2)
-                .padding(.horizontal, 20)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("\(stage.taskCount) TASKS")
+                    .font(.caption.bold())
+                    .foregroundStyle(AppColors.tertiaryText)
+                    .tracking(1.2)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
 
             LazyVGrid(columns: columns, spacing: 14) {
                 ForEach(Array(stage.tasks.enumerated()), id: \.element.id) { index, task in
@@ -160,30 +163,27 @@ struct TaskGridCard: View {
                 HStack {
                     ZStack {
                         if isCompleted {
-                            Circle()
-                                .fill(AppColors.success)
-                                .frame(width: 34, height: 34)
+                            Circle().fill(AppColors.success)
+                                .frame(width: 32, height: 32)
                         } else if isLocked {
-                            Circle()
-                                .fill(AppColors.border)
-                                .frame(width: 34, height: 34)
+                            Circle().fill(AppColors.border)
+                                .frame(width: 32, height: 32)
                         } else {
-                            Circle()
-                                .fill(theme.gradient)
-                                .frame(width: 34, height: 34)
+                            Circle().fill(theme.gradient)
+                                .frame(width: 32, height: 32)
                         }
 
                         if isCompleted {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 13, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(.white)
                         } else if isLocked {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 11))
+                                .font(.system(size: 10))
                                 .foregroundStyle(AppColors.tertiaryText)
                         } else {
                             Text("\(index)")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
                         }
                     }
@@ -192,59 +192,59 @@ struct TaskGridCard: View {
 
                     if !isLocked && !isCompleted && stepsDone > 0 {
                         Text("\(stepsDone)/\(task.steps.count)")
-                            .font(.caption2.bold())
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
                             .foregroundStyle(theme.startColor)
-                            .padding(.horizontal, 7)
+                            .padding(.horizontal, 6)
                             .padding(.vertical, 3)
-                            .background(theme.startColor.opacity(0.1))
+                            .background(theme.startColor.opacity(0.08))
                             .clipShape(Capsule())
                     }
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 10)
 
                 // Task title
                 Text(task.title)
                     .font(.subheadline.bold())
                     .foregroundStyle(isLocked ? AppColors.tertiaryText : AppColors.primaryText)
                     .lineLimit(2)
-                    .padding(.bottom, 3)
+                    .multilineTextAlignment(.leading)
+                    .padding(.bottom, 2)
 
                 Text(task.englishTitle)
-                    .font(.caption2)
+                    .font(.system(size: 10))
                     .foregroundStyle(AppColors.tertiaryText)
                     .lineLimit(1)
-                    .padding(.bottom, 10)
 
                 Spacer(minLength: 0)
 
-                // Bottom: question type tag
+                // Bottom tag
                 if !isLocked {
                     Text(task.questionType)
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(theme.startColor.opacity(0.8))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(theme.startColor.opacity(0.08))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(theme.startColor.opacity(0.06))
                         .clipShape(Capsule())
                 }
             }
-            .padding(14)
-            .frame(height: 165)
-            .background(isLocked ? AppColors.surface.opacity(0.7) : AppColors.card)
+            .padding(13)
+            .frame(height: 155)
+            .background(isLocked ? AppColors.surface.opacity(0.6) : AppColors.card)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
                         isCompleted
-                            ? AppColors.success.opacity(0.3)
+                            ? AppColors.success.opacity(0.25)
                             : isLocked
-                                ? AppColors.border.opacity(0.5)
-                                : theme.startColor.opacity(0.1),
+                                ? Color.clear
+                                : AppColors.border.opacity(0.6),
                         lineWidth: 1
                     )
             )
             .cardShadow()
-            .opacity(isLocked ? 0.7 : 1)
+            .opacity(isLocked ? 0.65 : 1)
         }
         .buttonStyle(.plain)
         .disabled(isLocked)

@@ -74,7 +74,7 @@ struct LearningStep: Identifiable {
     var subtitle: String { type.subtitle }
     var icon: String { type.icon }
 
-    static let allSteps: [LearningStep] = StepType.allCases.map {
+    static let allSteps: [LearningStep] = StepType.allCases.filter { $0 != .strategy }.map {
         LearningStep(id: $0.rawValue, type: $0)
     }
 }
@@ -85,6 +85,9 @@ struct VocabItem: Identifiable {
     let word: String
     let phonetic: String
     let meaning: String
+    let englishMeaning: String
+    let example: String
+    let exampleTranslation: String
     let band: BandLevel
 
     enum BandLevel: String, CaseIterable {
@@ -106,6 +109,24 @@ struct VocabItem: Identifiable {
             case .upgrade:  Color(hex: "F59E0B")
             case .advanced: Color(hex: "EF4444")
             }
+        }
+    }
+
+    var partOfSpeech: String {
+        switch word {
+        case "practical", "durable", "convenient", "lightweight", "reliable",
+             "affordable", "time-saving", "user-friendly", "portable",
+             "functional", "versatile", "long-lasting", "cost-effective",
+             "irreplaceable", "indispensable":
+            "adj."
+        case "sentimental value", "subtle impact", "mindful habit":
+            "n. phr."
+        case "stay hydrated", "serve a specific purpose", "strike a balance":
+            "v. phr."
+        case "environmentally friendly", "aesthetically pleasing":
+            "adj. phr."
+        default:
+            "expr."
         }
     }
 }
@@ -149,7 +170,7 @@ struct SpeakingTask: Identifiable {
             title: title,
             englishTitle: englishTitle,
             prompt: prompt,
-            questionType: "IELTS Speaking Part 2",
+            questionType: "Task #\(id)",
             suggestedTime: "准备1分钟；作答1-2分钟",
             difficulty: "L\(id) → L\(id + 1)",
             passCriteria: [
@@ -201,18 +222,213 @@ struct Stage: Identifiable {
 // MARK: - Placeholder Data
 extension VocabItem {
     static let placeholders: [VocabItem] = [
-        VocabItem(word: "practical", phonetic: "/ˈpræktɪkəl/", meaning: "实用的", band: .core),
-        VocabItem(word: "durable", phonetic: "/ˈdjʊərəbl/", meaning: "耐用的", band: .core),
-        VocabItem(word: "convenient", phonetic: "/kənˈviːniənt/", meaning: "方便的", band: .core),
-        VocabItem(word: "lightweight", phonetic: "/ˈlaɪtweɪt/", meaning: "轻便的", band: .core),
-        VocabItem(word: "reliable", phonetic: "/rɪˈlaɪəbl/", meaning: "可靠的", band: .core),
-        VocabItem(word: "sentimental value", phonetic: "/ˌsentɪˈmentl ˈvæljuː/", meaning: "情感价值", band: .upgrade),
-        VocabItem(word: "stay hydrated", phonetic: "/steɪ haɪˈdreɪtɪd/", meaning: "保持水分", band: .upgrade),
-        VocabItem(word: "portable", phonetic: "/ˈpɔːrtəbl/", meaning: "便携的", band: .upgrade),
-        VocabItem(word: "functional", phonetic: "/ˈfʌŋkʃənl/", meaning: "功能性的", band: .upgrade),
-        VocabItem(word: "irreplaceable", phonetic: "/ˌɪrɪˈpleɪsəbl/", meaning: "不可替代的", band: .advanced),
-        VocabItem(word: "subtle impact", phonetic: "/ˈsʌtl ˈɪmpækt/", meaning: "微妙影响", band: .advanced),
-        VocabItem(word: "mindful habit", phonetic: "/ˈmaɪndfʊl ˈhæbɪt/", meaning: "有意识的习惯", band: .advanced),
+        VocabItem(
+            word: "practical",
+            phonetic: "/ˈpræktɪkəl/",
+            meaning: "实用的",
+            englishMeaning: "useful in real situations",
+            example: "It's practical for everyday use.",
+            exampleTranslation: "它非常适合日常使用。",
+            band: .core
+        ),
+        VocabItem(
+            word: "durable",
+            phonetic: "/ˈdjʊərəbl/",
+            meaning: "耐用的",
+            englishMeaning: "able to last a long time",
+            example: "The bottle is durable and hard to break.",
+            exampleTranslation: "这个水瓶很耐用，不容易坏。",
+            band: .core
+        ),
+        VocabItem(
+            word: "convenient",
+            phonetic: "/kənˈviːniənt/",
+            meaning: "方便的",
+            englishMeaning: "easy to use or access",
+            example: "It's convenient when I'm in a rush.",
+            exampleTranslation: "赶时间的时候它很方便。",
+            band: .core
+        ),
+        VocabItem(
+            word: "lightweight",
+            phonetic: "/ˈlaɪtweɪt/",
+            meaning: "轻便的",
+            englishMeaning: "not heavy and easy to carry",
+            example: "It's lightweight, so I carry it everywhere.",
+            exampleTranslation: "它很轻，所以我到处都带着。",
+            band: .core
+        ),
+        VocabItem(
+            word: "reliable",
+            phonetic: "/rɪˈlaɪəbl/",
+            meaning: "可靠的",
+            englishMeaning: "can be trusted to work well",
+            example: "It's reliable even after years of use.",
+            exampleTranslation: "用了很多年它依然可靠。",
+            band: .core
+        ),
+        VocabItem(
+            word: "affordable",
+            phonetic: "/əˈfɔːrdəbl/",
+            meaning: "价格实惠的",
+            englishMeaning: "not expensive; reasonably priced",
+            example: "It's affordable for most students.",
+            exampleTranslation: "对大多数学生来说价格都能接受。",
+            band: .core
+        ),
+        VocabItem(
+            word: "time-saving",
+            phonetic: "/ˈtaɪm ˌseɪvɪŋ/",
+            meaning: "省时的",
+            englishMeaning: "helping you save time",
+            example: "This app is time-saving for my study plan.",
+            exampleTranslation: "这个应用让我的学习计划更省时间。",
+            band: .core
+        ),
+        VocabItem(
+            word: "user-friendly",
+            phonetic: "/ˌjuːzər ˈfrendli/",
+            meaning: "易用的",
+            englishMeaning: "easy for people to use",
+            example: "The interface is simple and user-friendly.",
+            exampleTranslation: "这个界面简洁且很容易上手。",
+            band: .core
+        ),
+        VocabItem(
+            word: "sentimental value",
+            phonetic: "/ˌsentɪˈmentl ˈvæljuː/",
+            meaning: "情感价值",
+            englishMeaning: "emotional importance",
+            example: "It has sentimental value because it was a gift.",
+            exampleTranslation: "因为是礼物，所以它有情感价值。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "stay hydrated",
+            phonetic: "/steɪ haɪˈdreɪtɪd/",
+            meaning: "保持水分",
+            englishMeaning: "drink enough water to stay healthy",
+            example: "I use it to stay hydrated during work.",
+            exampleTranslation: "我在工作时用它来保持补水。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "portable",
+            phonetic: "/ˈpɔːrtəbl/",
+            meaning: "便携的",
+            englishMeaning: "easy to carry around",
+            example: "It's portable enough for daily commuting.",
+            exampleTranslation: "它足够便携，适合每天通勤携带。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "functional",
+            phonetic: "/ˈfʌŋkʃənl/",
+            meaning: "功能性的",
+            englishMeaning: "designed to work well for a purpose",
+            example: "It's not fancy, but very functional.",
+            exampleTranslation: "它不花哨，但很实用。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "versatile",
+            phonetic: "/ˈvɜːrsətl/",
+            meaning: "多功能的",
+            englishMeaning: "able to be used in many ways",
+            example: "It's versatile for office, gym, and travel.",
+            exampleTranslation: "它在办公室、健身和旅行中都很好用。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "long-lasting",
+            phonetic: "/ˌlɔːŋ ˈlæstɪŋ/",
+            meaning: "持久耐用的",
+            englishMeaning: "continuing for a long period of time",
+            example: "It's long-lasting and worth the money.",
+            exampleTranslation: "它很耐用，物有所值。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "cost-effective",
+            phonetic: "/ˌkɔːst ɪˈfektɪv/",
+            meaning: "性价比高的",
+            englishMeaning: "good value compared with cost",
+            example: "It's a cost-effective choice for students.",
+            exampleTranslation: "对学生来说这是性价比很高的选择。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "environmentally friendly",
+            phonetic: "/ɪnˌvaɪrənˈmentəli ˈfrendli/",
+            meaning: "环保的",
+            englishMeaning: "causing less harm to the environment",
+            example: "Using it is more environmentally friendly.",
+            exampleTranslation: "使用它会更加环保。",
+            band: .upgrade
+        ),
+        VocabItem(
+            word: "irreplaceable",
+            phonetic: "/ˌɪrɪˈpleɪsəbl/",
+            meaning: "不可替代的",
+            englishMeaning: "too important to be replaced",
+            example: "It feels irreplaceable in my routine.",
+            exampleTranslation: "在我的日常中它几乎不可替代。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "subtle impact",
+            phonetic: "/ˈsʌtl ˈɪmpækt/",
+            meaning: "微妙影响",
+            englishMeaning: "a small but meaningful effect",
+            example: "It has a subtle impact on my lifestyle.",
+            exampleTranslation: "它对我的生活方式有微妙但真实的影响。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "mindful habit",
+            phonetic: "/ˈmaɪndfʊl ˈhæbɪt/",
+            meaning: "有意识的习惯",
+            englishMeaning: "a habit done with awareness",
+            example: "Drinking water became a mindful habit.",
+            exampleTranslation: "喝水逐渐成了一个有意识的习惯。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "indispensable",
+            phonetic: "/ˌɪndɪˈspensəbl/",
+            meaning: "必不可少的",
+            englishMeaning: "absolutely necessary",
+            example: "It has become indispensable in my bag.",
+            exampleTranslation: "它已成为我包里不可或缺的东西。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "aesthetically pleasing",
+            phonetic: "/iːsˈθetɪkli ˈpliːzɪŋ/",
+            meaning: "审美上令人愉悦的",
+            englishMeaning: "beautiful or attractive in appearance",
+            example: "Its design is aesthetically pleasing.",
+            exampleTranslation: "它的设计在视觉上很舒服。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "serve a specific purpose",
+            phonetic: "/sɜːrv ə spəˈsɪfɪk ˈpɜːrpəs/",
+            meaning: "服务于明确用途",
+            englishMeaning: "to be used for a clear function",
+            example: "Every feature serves a specific purpose.",
+            exampleTranslation: "每个功能都有明确用途。",
+            band: .advanced
+        ),
+        VocabItem(
+            word: "strike a balance",
+            phonetic: "/straɪk ə ˈbæləns/",
+            meaning: "取得平衡",
+            englishMeaning: "to manage two sides well",
+            example: "It helps me strike a balance between work and health.",
+            exampleTranslation: "它帮助我在工作和健康之间取得平衡。",
+            band: .advanced
+        ),
     ]
 }
 
@@ -258,7 +474,7 @@ enum CourseData {
             id: 1,
             title: "Basic Description",
             chineseTitle: "基础描述",
-            description: "学会描述日常事物、人物和地点",
+            description: "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。",
             tasks: [
                 .placeholder(id: 1, title: "描述一个物品", englishTitle: "Describe an Object", prompt: "Describe an object you use every day."),
                 .placeholder(id: 2, title: "描述一个人", englishTitle: "Describe a Person", prompt: "Describe a person who has influenced you."),
@@ -275,7 +491,7 @@ enum CourseData {
             id: 2,
             title: "Daily Life",
             chineseTitle: "日常生活",
-            description: "谈论你的日常习惯和生活方式",
+            description: "作用：训练日常话题输出\n目标：稳定描述习惯与生活方式。",
             tasks: [
                 .placeholder(id: 1, title: "日常作息", englishTitle: "Daily Routine", prompt: "Describe your typical daily routine."),
                 .placeholder(id: 2, title: "饮食习惯", englishTitle: "Eating Habits", prompt: "Talk about your eating habits."),
@@ -289,7 +505,7 @@ enum CourseData {
             id: 3,
             title: "People & Relations",
             chineseTitle: "人物关系",
-            description: "描述你生活中重要的人物",
+            description: "作用：强化人物关系表达\n目标：讲清人物特征、关系与影响。",
             tasks: [
                 .placeholder(id: 1, title: "家庭成员", englishTitle: "Family Member", prompt: "Describe a family member you admire."),
                 .placeholder(id: 2, title: "好朋友", englishTitle: "Close Friend", prompt: "Talk about your best friend."),
@@ -305,7 +521,7 @@ enum CourseData {
             id: 4,
             title: "Places & Travel",
             chineseTitle: "地点旅行",
-            description: "描述你去过或想去的地方",
+            description: "作用：提升地点与旅行叙述\n目标：按时间线讲完整经历。",
             tasks: [
                 .placeholder(id: 1, title: "家乡", englishTitle: "Hometown", prompt: "Describe your hometown."),
                 .placeholder(id: 2, title: "旅行经历", englishTitle: "A Trip", prompt: "Describe a memorable trip."),
@@ -318,7 +534,7 @@ enum CourseData {
             id: 5,
             title: "Events & Experiences",
             chineseTitle: "事件经历",
-            description: "分享你的重要经历和难忘时刻",
+            description: "作用：训练事件复盘能力\n目标：说清背景、过程、结果与感受。",
             tasks: [
                 .placeholder(id: 1, title: "难忘的一天", englishTitle: "Memorable Day", prompt: "Describe a day you'll never forget."),
                 .placeholder(id: 2, title: "一次成功", englishTitle: "An Achievement", prompt: "Describe something you achieved."),
@@ -333,7 +549,7 @@ enum CourseData {
             id: 6,
             title: "Media & Entertainment",
             chineseTitle: "媒体娱乐",
-            description: "讨论你喜欢的书籍、电影和音乐",
+            description: "作用：扩展媒体娱乐话题\n目标：能评价内容并给出理由。",
             tasks: [
                 .placeholder(id: 1, title: "一本书", englishTitle: "A Book", prompt: "Describe a book that impressed you."),
                 .placeholder(id: 2, title: "一部电影", englishTitle: "A Movie", prompt: "Describe a movie you enjoyed."),
@@ -347,7 +563,7 @@ enum CourseData {
             id: 7,
             title: "Education & Work",
             chineseTitle: "教育工作",
-            description: "谈论你的学习和工作经历",
+            description: "作用：覆盖学习与职场场景\n目标：清楚表达经历、能力和规划。",
             tasks: [
                 .placeholder(id: 1, title: "学校经历", englishTitle: "School Experience", prompt: "Describe your school experience."),
                 .placeholder(id: 2, title: "工作经验", englishTitle: "Work Experience", prompt: "Describe a job you have or had."),
@@ -364,7 +580,7 @@ enum CourseData {
             id: 8,
             title: "Society & Issues",
             chineseTitle: "社会议题",
-            description: "讨论社会热点话题和观点",
+            description: "作用：进入观点型讨论\n目标：能表态、论证并举例支撑。",
             tasks: [
                 .placeholder(id: 1, title: "环境保护", englishTitle: "Environment", prompt: "Talk about an environmental issue."),
                 .placeholder(id: 2, title: "科技影响", englishTitle: "Technology", prompt: "How has technology changed your life?"),
@@ -378,7 +594,7 @@ enum CourseData {
             id: 9,
             title: "Abstract & Advanced",
             chineseTitle: "抽象进阶",
-            description: "挑战高难度的抽象话题表达",
+            description: "作用：攻克抽象题\n目标：在高难话题中保持逻辑与深度。",
             tasks: [
                 .placeholder(id: 1, title: "成功的定义", englishTitle: "Success", prompt: "What does success mean to you?"),
                 .placeholder(id: 2, title: "幸福感", englishTitle: "Happiness", prompt: "What makes people happy?"),

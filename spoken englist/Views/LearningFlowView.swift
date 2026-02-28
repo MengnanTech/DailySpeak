@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 struct LearningFlowView: View {
     @Environment(ProgressManager.self) private var progress
@@ -247,43 +248,63 @@ struct StrategyStepView: View {
 }
 
 // MARK: - Vocabulary Step
+private enum VocabCategory: String, CaseIterable {
+    case core
+    case extended
+
+    var title: String {
+        switch self {
+        case .core: "核心词汇"
+        case .extended: "扩展词汇"
+        }
+    }
+}
+
 struct VocabularyStepView: View {
     let task: SpeakingTask
     let accentColor: Color
 
+    @State private var selectedCategory: VocabCategory = .core
+    @State private var selectedItem: VocabItem?
+    @State private var showUpgrade = true
+    @State private var showAdvanced = false
+
+    private var coreItems: [VocabItem] {
+        task.vocabulary.filter { $0.band == .core }
+    }
+
+    private var upgradeItems: [VocabItem] {
+        task.vocabulary.filter { $0.band == .upgrade }
+    }
+
+    private var advancedItems: [VocabItem] {
+        task.vocabulary.filter { $0.band == .advanced }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "textbook", title: "核心词汇", english: "Key Vocabulary")
+            sectionHeader(icon: "textbook", title: "词汇学习", english: "Core & Extended Vocabulary")
 
-            ForEach(VocabItem.BandLevel.allCases, id: \.self) { level in
-                let items = task.vocabulary.filter { $0.band == level }
-                if !items.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        // Band tag
-                        HStack(spacing: 6) {
-                            Text(level.rawValue)
-                                .font(.caption.bold())
-                                .foregroundStyle(level.color)
-                            Text("(\(level.bandLabel))")
-                                .font(.caption2)
-                                .foregroundStyle(AppColors.tertiaryText)
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(level.color.opacity(0.08))
-                        .clipShape(Capsule())
+            Text("点击单词查看发音、解释和例句")
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
 
-                        // Word cards
-                        ForEach(items) { item in
-                            VocabCardView(item: item)
-                        }
-                    }
-                    .padding(16)
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .cardShadow()
+            categorySwitcher
+
+            if selectedCategory == .core {
+                vocabGroupCard(
+                    title: "核心词汇",
+                    subtitle: "先掌握这些高频词再进入扩展",
+                    color: Color(hex: "4A90D9")
+                ) {
+                    vocabList(items: coreItems)
                 }
+            } else {
+                extendedSectionCard
             }
+        }
+        .sheet(item: $selectedItem) { item in
+            VocabDetailSheet(item: item, accentColor: accentColor)
         }
     }
 
@@ -302,48 +323,371 @@ struct VocabularyStepView: View {
             }
         }
     }
+
+    private var categorySwitcher: some View {
+        HStack(spacing: 10) {
+            ForEach(VocabCategory.allCases, id: \.self) { category in
+                let isSelected = selectedCategory == category
+                let count = category == .core ? coreItems.count : (upgradeItems.count + advancedItems.count)
+
+                Button {
+                    withAnimation(.spring(duration: 0.28)) {
+                        selectedCategory = category
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(category.title)
+                            .font(.subheadline.bold())
+                        Text("\(count)")
+                            .font(.caption.bold())
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.white.opacity(isSelected ? 0.22 : 0.08))
+                            .clipShape(Capsule())
+                    }
+                    .foregroundStyle(isSelected ? .white : AppColors.secondText)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 40)
+                    .background {
+                        if isSelected {
+                            LinearGradient(
+                                colors: [accentColor, accentColor.opacity(0.78)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        } else {
+                            AppColors.card
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.border.opacity(isSelected ? 0.0 : 0.6), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var extendedSectionCard: some View {
+        VStack(spacing: 10) {
+            DisclosureGroup(isExpanded: $showUpgrade) {
+                VStack(spacing: 10) {
+                    vocabList(items: upgradeItems)
+                }
+                .padding(.top, 10)
+            } label: {
+                sectionTag(title: "进阶词汇", count: upgradeItems.count, color: Color(hex: "F59E0B"), caption: "日常表达升级")
+            }
+
+            Divider().background(AppColors.border.opacity(0.35))
+
+            DisclosureGroup(isExpanded: $showAdvanced) {
+                VStack(spacing: 10) {
+                    vocabList(items: advancedItems)
+                }
+                .padding(.top, 10)
+            } label: {
+                sectionTag(title: "高分词汇", count: advancedItems.count, color: Color(hex: "EF4444"), caption: "高阶表达与观点深度")
+            }
+        }
+        .padding(16)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .cardShadow()
+    }
+
+    private func sectionTag(title: String, count: Int, color: Color, caption: String) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(title)
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+            Text("\(count)")
+                .font(.caption.bold())
+                .foregroundStyle(color)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(color.opacity(0.12))
+                .clipShape(Capsule())
+            Spacer()
+            Text(caption)
+                .font(.caption2)
+                .foregroundStyle(AppColors.tertiaryText)
+        }
+    }
+
+    private func vocabGroupCard<Content: View>(
+        title: String,
+        subtitle: String,
+        color: Color,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 8, height: 8)
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Text("\(coreItems.count)")
+                    .font(.caption.bold())
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 2)
+                    .background(color.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
+
+            content()
+        }
+        .padding(16)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .cardShadow()
+    }
+
+    private func vocabList(items: [VocabItem]) -> some View {
+        VStack(spacing: 12) {
+            ForEach(items) { item in
+                VocabCardView(
+                    item: item,
+                    onShowMeaning: { selectedItem = item },
+                    onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48) }
+                )
+            }
+        }
+    }
 }
 
 struct VocabCardView: View {
     let item: VocabItem
-    @State private var showPhonetic = false
+    let onShowMeaning: () -> Void
+    let onPronounce: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.word)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(item.word)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
 
-                if showPhonetic {
-                    Text(item.phonetic)
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    HStack(spacing: 8) {
+                        Text(item.phonetic)
+                            .font(.system(size: 12, weight: .medium, design: .monospaced))
+                            .foregroundStyle(AppColors.secondText)
+
+                        Text(item.partOfSpeech)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(item.band.color)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(item.band.color.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
                 }
 
-                Text(item.meaning)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondText)
+                Spacer()
+
+                Button {
+                    onPronounce()
+                } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(item.band.color)
+                        .frame(width: 34, height: 34)
+                        .background(item.band.color.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
 
-            Spacer()
-
-            Button {
-                withAnimation(.spring(duration: 0.3)) { showPhonetic.toggle() }
-            } label: {
-                Image(systemName: "speaker.wave.2.fill")
-                    .font(.caption)
+            HStack(spacing: 10) {
+                Button {
+                    onShowMeaning()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "book.closed.fill")
+                            .font(.system(size: 11, weight: .bold))
+                        Text("释义")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                    }
                     .foregroundStyle(item.band.color)
-                    .frame(width: 32, height: 32)
-                    .background(item.band.color.opacity(0.1))
-                    .clipShape(Circle())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(item.band.color.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Text(item.band.bandLabel)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppColors.tertiaryText)
             }
-            .buttonStyle(.plain)
         }
-        .padding(12)
-        .background(AppColors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(14)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(item.band.color.opacity(0.16), lineWidth: 1)
+        )
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 3)
+                .fill(item.band.color.opacity(0.65))
+                .frame(width: 4, height: 28)
+                .padding(.leading, 8)
+        }
+        .cardShadow()
+    }
+}
+
+struct VocabDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let item: VocabItem
+    let accentColor: Color
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
+                            Text(item.word)
+                                .font(.title2.bold())
+                                .foregroundStyle(AppColors.primaryText)
+                            Text(item.phonetic)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.tertiaryText)
+                            Text(item.partOfSpeech)
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(accentColor)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(accentColor.opacity(0.12))
+                                .clipShape(Capsule())
+                        }
+
+                        Text(item.meaning)
+                            .font(.headline)
+                            .foregroundStyle(accentColor)
+
+                        Text(item.englishMeaning)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .cardShadow()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("发音")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(AppColors.primaryText)
+
+                        HStack(spacing: 10) {
+                            pronunciationButton(title: "US", icon: "waveform") {
+                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48)
+                            }
+                            pronunciationButton(title: "UK", icon: "waveform.path.ecg") {
+                                WordPronouncer.shared.speak(item.word, locale: "en-GB", rate: 0.48)
+                            }
+                            pronunciationButton(title: "Slow", icon: "tortoise.fill") {
+                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.34)
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .cardShadow()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("例句")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(AppColors.primaryText)
+                        Text(item.example)
+                            .font(.body)
+                            .foregroundStyle(AppColors.primaryText)
+                        Text(item.exampleTranslation)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .cardShadow()
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+            }
+            .background(AppColors.background.ignoresSafeArea())
+            .navigationTitle("单词详情")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.fraction(0.55), .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func pronunciationButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(title)
+                    .font(.caption.bold())
+            }
+            .foregroundStyle(accentColor)
+            .frame(maxWidth: .infinity)
+            .frame(height: 36)
+            .background(accentColor.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+final class WordPronouncer {
+    static let shared = WordPronouncer()
+
+    private let synthesizer = AVSpeechSynthesizer()
+
+    private init() {}
+
+    func speak(_ text: String, locale: String, rate: Float) {
+        guard !text.isEmpty else { return }
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: locale)
+        utterance.rate = rate
+        utterance.pitchMultiplier = 1.0
+        utterance.preUtteranceDelay = 0.02
+        synthesizer.speak(utterance)
     }
 }
 

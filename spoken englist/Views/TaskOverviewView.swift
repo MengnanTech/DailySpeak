@@ -6,214 +6,290 @@ struct TaskOverviewView: View {
     let task: SpeakingTask
 
     @State private var showLearning = false
-    @State private var appearAnimations = false
+    @State private var showCriteria = false
+    @State private var appear = false
 
     private var theme: StageTheme { stage.theme }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                taskInfoCard
-                passCriteriaCard
-                timelineSection
+        ZStack {
+            ZStack(alignment: .bottom) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        topBanner
+                        strategyCard
+                        stepsTimeline
+                        Color.clear.frame(height: 70)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
+                }
+
                 startButton
             }
-            .padding(.bottom, 50)
+
+            if showCriteria {
+                criteriaOverlay
+                    .transition(.opacity)
+            }
         }
         .background(AppColors.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("Task \(task.id)")
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primaryText)
+                HStack(spacing: 6) {
+                    Text("Task \(task.id)")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+                    Text("·")
+                        .foregroundStyle(AppColors.tertiaryText)
+                    Text(task.title)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+                }
             }
         }
         .navigationDestination(isPresented: $showLearning) {
             LearningFlowView(stage: stage, task: task)
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.5)) { appearAnimations = true }
+            withAnimation(.easeOut(duration: 0.5)) { appear = true }
         }
     }
 
-    // MARK: - Task Info Card
-    private var taskInfoCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Gradient header
-            ZStack(alignment: .leading) {
-                theme.gradient
-                    .frame(height: 100)
+    // MARK: - Top Banner
+    private var topBanner: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(theme.softGradient)
 
-                GeometryReader { geo in
-                    Circle()
-                        .fill(.white.opacity(0.08))
-                        .frame(width: 90)
-                        .offset(x: geo.size.width - 50, y: -20)
-                }
-
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Stage \(stage.id) · Task \(task.id)")
-                            .font(.caption.bold())
-                            .foregroundStyle(.white.opacity(0.7))
-                            .tracking(0.8)
-
-                        Text(task.title)
-                            .font(.title3.bold())
-                            .foregroundStyle(.white)
-                    }
-                    Spacer()
-                    Text(theme.emoji)
-                        .font(.system(size: 32))
-                }
-                .padding(.horizontal, 20)
+            GeometryReader { geo in
+                Circle()
+                    .fill(.white.opacity(0.1))
+                    .frame(width: 80)
+                    .offset(x: geo.size.width - 50, y: -15)
+                Circle()
+                    .fill(.white.opacity(0.06))
+                    .frame(width: 50)
+                    .offset(x: -15, y: 55)
             }
-            .clipShape(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 20,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 20
-                )
-            )
 
-            // Content
-            VStack(alignment: .leading, spacing: 14) {
-                // Question type
-                Label(task.questionType, systemImage: "doc.text.fill")
-                    .font(.caption.bold())
-                    .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(theme.startColor.opacity(0.08))
-                    .clipShape(Capsule())
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text("Stage \(stage.id)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.75))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Capsule())
 
-                // Prompt
-                Text(task.prompt)
-                    .font(.body)
-                    .foregroundStyle(AppColors.primaryText)
-                    .italic()
-                    .padding(14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                        Text(task.questionType)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.75))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Capsule())
+                    }
 
-                // Meta info
-                HStack(spacing: 16) {
-                    metaTag(icon: "clock.fill", text: task.suggestedTime)
-                    Spacer()
-                    metaTag(icon: "chart.bar.fill", text: task.difficulty)
+                    Text(task.title)
+                        .font(.title3.bold())
+                        .foregroundStyle(.white)
+
+                    Text(task.englishTitle)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.7))
                 }
+
+                Spacer(minLength: 10)
+                Text(theme.emoji)
+                    .font(.system(size: 34))
             }
             .padding(18)
         }
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .cardShadow()
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 20)
-        .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 15)
+        .frame(height: 125)
+        .heroShadow()
+        .opacity(appear ? 1 : 0)
+        .offset(y: appear ? 0 : 10)
     }
 
-    private func metaTag(icon: String, text: String) -> some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.caption2)
-                .foregroundStyle(AppColors.tertiaryText)
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(AppColors.secondText)
-        }
-    }
-
-    // MARK: - Pass Criteria Card
-    private var passCriteriaCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+    // MARK: - Strategy Card
+    private var strategyCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header
             HStack(spacing: 8) {
-                Image(systemName: "target")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(theme.startColor)
-                Text("过关标准")
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(hex: "FEF3C7"))
+                        .frame(width: 30, height: 30)
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color(hex: "F59E0B"))
+                }
+
+                Text("答题策略")
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
+
+                Spacer()
+
+                Text("Tips")
+                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(hex: "F59E0B"))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color(hex: "FEF3C7"))
+                    .clipShape(Capsule())
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(task.passCriteria, id: \.self) { criteria in
+            // Tips
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
                     HStack(alignment: .top, spacing: 10) {
-                        Circle()
-                            .fill(theme.startColor.opacity(0.2))
-                            .frame(width: 22, height: 22)
-                            .overlay(
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(theme.startColor)
-                            )
-                        Text(criteria)
+                        Text("\(index + 1)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(hex: "F59E0B"))
+                            .frame(width: 20, height: 20)
+                            .background(Color(hex: "FEF3C7"))
+                            .clipShape(Circle())
+
+                        Text(tip)
                             .font(.subheadline)
                             .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.vertical, 8)
+
+                    if index < task.tips.count - 1 {
+                        Divider()
+                            .background(AppColors.border.opacity(0.4))
+                            .padding(.leading, 30)
                     }
                 }
             }
         }
-        .padding(18)
-        .cardStyle()
-        .padding(.horizontal, 20)
-        .padding(.bottom, 24)
-        .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 15)
-        .animation(.easeOut(duration: 0.5).delay(0.1), value: appearAnimations)
+        .padding(16)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppColors.border.opacity(0.5), lineWidth: 0.5)
+        )
+        .cardShadow()
+        .opacity(appear ? 1 : 0)
+        .offset(y: appear ? 0 : 10)
+        .animation(.easeOut(duration: 0.45).delay(0.08), value: appear)
     }
 
-    // MARK: - Timeline Section
-    private var timelineSection: some View {
+    // MARK: - Steps Timeline
+    private var stepsTimeline: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("LEARNING STEPS")
-                .font(.caption.bold())
-                .foregroundStyle(AppColors.tertiaryText)
-                .tracking(1.2)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
-
-            VStack(spacing: 0) {
-                ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
-                    TimelineStepRow(
-                        step: step,
-                        index: index,
-                        isLast: index == task.steps.count - 1,
-                        isCompleted: progress.isStepCompleted(
-                            stageId: stage.id,
-                            taskId: task.id,
-                            stepIndex: index
-                        ),
-                        isCurrent: index == progress.currentStepIndex(
-                            stageId: stage.id,
-                            taskId: task.id,
-                            totalSteps: task.steps.count
-                        ),
-                        accentColor: theme.startColor
-                    )
-                    .opacity(appearAnimations ? 1 : 0)
-                    .offset(y: appearAnimations ? 0 : 15)
-                    .animation(
-                        .easeOut(duration: 0.45).delay(0.2 + Double(index) * 0.08),
-                        value: appearAnimations
-                    )
-                }
+            HStack(spacing: 6) {
+                Image(systemName: "list.bullet.clipboard")
+                    .font(.caption)
+                    .foregroundStyle(theme.startColor)
+                Text("学习步骤")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                let done = progress.completedStepCount(
+                    stageId: stage.id, taskId: task.id, totalSteps: task.steps.count
+                )
+                Text("\(done)/\(task.steps.count)")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.startColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(theme.startColor.opacity(0.08))
+                    .clipShape(Capsule())
             }
-            .padding(18)
-            .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .cardShadow()
-            .padding(.horizontal, 20)
+            .padding(.bottom, 16)
+
+            ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
+                let isStepDone = progress.isStepCompleted(
+                    stageId: stage.id, taskId: task.id, stepIndex: index
+                )
+                let isCurrent = index == progress.currentStepIndex(
+                    stageId: stage.id, taskId: task.id, totalSteps: task.steps.count
+                )
+                let isLast = index == task.steps.count - 1
+
+                HStack(alignment: .top, spacing: 14) {
+                    VStack(spacing: 0) {
+                        ZStack {
+                            if isStepDone {
+                                Circle().fill(AppColors.success)
+                                    .frame(width: 28, height: 28)
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(.white)
+                            } else if isCurrent {
+                                Circle().fill(theme.startColor)
+                                    .frame(width: 28, height: 28)
+                                Circle().fill(.white)
+                                    .frame(width: 10, height: 10)
+                            } else {
+                                Circle()
+                                    .strokeBorder(AppColors.border, lineWidth: 2)
+                                    .frame(width: 28, height: 28)
+                            }
+                        }
+
+                        if !isLast {
+                            Rectangle()
+                                .fill(isStepDone ? AppColors.success.opacity(0.3) : AppColors.border.opacity(0.5))
+                                .frame(width: 2)
+                                .frame(maxHeight: .infinity)
+                        }
+                    }
+                    .frame(width: 28)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: 6) {
+                            Text(step.title)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(
+                                    isStepDone ? AppColors.primaryText :
+                                    isCurrent ? theme.startColor :
+                                    AppColors.tertiaryText
+                                )
+
+                            if isCurrent {
+                                Circle()
+                                    .fill(theme.startColor)
+                                    .frame(width: 5, height: 5)
+                            }
+                        }
+
+                        Text(step.subtitle)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                    .padding(.bottom, isLast ? 0 : 20)
+                    .padding(.top, 4)
+                }
+                .opacity(appear ? 1 : 0)
+                .offset(y: appear ? 0 : 8)
+                .animation(
+                    .easeOut(duration: 0.4).delay(0.18 + Double(index) * 0.05),
+                    value: appear
+                )
+            }
         }
-        .padding(.bottom, 28)
+        .padding(16)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppColors.border.opacity(0.5), lineWidth: 0.5)
+        )
+        .cardShadow()
     }
 
-    // MARK: - Start Button
+    // MARK: - Start Button (Sticky)
     private var startButton: some View {
         let currentStep = progress.currentStepIndex(
             stageId: stage.id,
@@ -221,116 +297,164 @@ struct TaskOverviewView: View {
             totalSteps: task.steps.count
         )
         let allDone = currentStep >= task.steps.count
-        let buttonText = allDone ? "Review Again" : (currentStep > 0 ? "Continue Learning" : "Start Learning")
+        let label = allDone ? "Review Again" : (currentStep > 0 ? "Continue Learning" : "Start Learning")
+        let icon = allDone ? "arrow.counterclockwise" : "arrow.right"
 
-        return Button {
-            showLearning = true
-        } label: {
-            HStack(spacing: 10) {
-                Text(buttonText)
-                    .font(.headline.bold())
-                Image(systemName: allDone ? "arrow.counterclockwise" : "arrow.right")
-                    .font(.subheadline.bold())
-            }
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(theme.gradient)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .heroShadow(color: theme.start)
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 20)
-        .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 15)
-        .animation(.easeOut(duration: 0.5).delay(0.6), value: appearAnimations)
-    }
-}
+        return VStack(spacing: 0) {
+            LinearGradient(
+                colors: [AppColors.background.opacity(0), AppColors.background],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 20)
 
-// MARK: - Timeline Step Row
-struct TimelineStepRow: View {
-    let step: LearningStep
-    let index: Int
-    let isLast: Bool
-    let isCompleted: Bool
-    let isCurrent: Bool
-    let accentColor: Color
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Timeline indicator
-            VStack(spacing: 0) {
-                ZStack {
-                    if isCompleted {
-                        Circle()
-                            .fill(AppColors.success)
-                            .frame(width: 32, height: 32)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(.white)
-                    } else if isCurrent {
-                        Circle()
-                            .fill(accentColor)
-                            .frame(width: 32, height: 32)
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 12, height: 12)
-                    } else {
-                        Circle()
-                            .fill(AppColors.surface)
-                            .frame(width: 32, height: 32)
-                        Circle()
-                            .fill(AppColors.border)
-                            .frame(width: 10, height: 10)
-                    }
+            Button {
+                withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                    showCriteria = true
                 }
-
-                if !isLast {
-                    Rectangle()
-                        .fill(isCompleted ? AppColors.success.opacity(0.3) : AppColors.border)
-                        .frame(width: 2, height: 46)
-                }
-            }
-
-            // Content
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(step.title)
+            } label: {
+                HStack(spacing: 8) {
+                    Text(label)
                         .font(.subheadline.bold())
-                        .foregroundStyle(
-                            isCurrent ? accentColor :
-                            isCompleted ? AppColors.secondText :
-                            AppColors.tertiaryText
-                        )
+                    Image(systemName: icon)
+                        .font(.caption.bold())
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(theme.gradient)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .heroShadow()
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 8)
+            .background(AppColors.background)
+        }
+    }
 
-                    if isCurrent {
-                        Text("Current")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(accentColor)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(accentColor.opacity(0.1))
-                            .clipShape(Capsule())
+    // MARK: - Criteria Overlay
+    private var criteriaOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    withAnimation(.spring(duration: 0.3)) { showCriteria = false }
+                }
+
+            VStack(spacing: 0) {
+                // Gradient header
+                ZStack {
+                    theme.softGradient
+
+                    GeometryReader { geo in
+                        Circle()
+                            .fill(.white.opacity(0.1))
+                            .frame(width: 70)
+                            .offset(x: geo.size.width - 40, y: -10)
+                    }
+
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(.white.opacity(0.2))
+                                .frame(width: 48, height: 48)
+                            Image(systemName: "target")
+                                .font(.title3.bold())
+                                .foregroundStyle(.white)
+                        }
+
+                        Text("过关标准")
+                            .font(.headline.bold())
+                            .foregroundStyle(.white)
+
+                        Text("完成以下目标即可通过")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                    .padding(.vertical, 18)
+                }
+                .frame(height: 135)
+                .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: 24,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: 24
+                    )
+                )
+
+                // List
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(task.passCriteria.enumerated()), id: \.offset) { index, criteria in
+                        HStack(spacing: 12) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(theme.startColor.opacity(0.08))
+                                    .frame(width: 30, height: 30)
+                                Text("\(index + 1)")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .foregroundStyle(theme.startColor)
+                            }
+
+                            Text(criteria)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.primaryText)
+
+                            Spacer()
+                        }
+                        .padding(.vertical, 9)
+
+                        if index < task.passCriteria.count - 1 {
+                            Divider()
+                                .background(AppColors.border.opacity(0.4))
+                                .padding(.leading, 42)
+                        }
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
 
-                Text(step.subtitle)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.tertiaryText)
-                    .padding(.bottom, isLast ? 0 : 18)
+                // Buttons
+                VStack(spacing: 10) {
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) { showCriteria = false }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                            showLearning = true
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Text("Got it, Let's Go")
+                                .font(.subheadline.bold())
+                            Image(systemName: "arrow.right")
+                                .font(.caption.bold())
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(theme.gradient)
+                        .clipShape(RoundedRectangle(cornerRadius: 13))
+                    }
+                    .buttonStyle(.plain)
 
-                HStack(spacing: 4) {
-                    Image(systemName: step.icon)
-                        .font(.caption2)
-                    Text(step.type.englishTitle)
-                        .font(.caption2)
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) { showCriteria = false }
+                    } label: {
+                        Text("Not yet")
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .foregroundStyle(
-                    isCurrent ? accentColor.opacity(0.6) : AppColors.tertiaryText.opacity(0.6)
-                )
-                .padding(.bottom, isLast ? 0 : 10)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 18)
             }
-            .padding(.top, 4)
+            .background(AppColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .shadow(color: AppColors.shadowColor.opacity(0.15), radius: 5, x: 0, y: 2)
+            .shadow(color: AppColors.shadowColor.opacity(0.12), radius: 30, x: 0, y: 12)
+            .padding(.horizontal, 28)
+            .transition(.scale(scale: 0.88).combined(with: .opacity))
         }
     }
 }

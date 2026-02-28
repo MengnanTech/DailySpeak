@@ -33,21 +33,22 @@ struct StageListView: View {
 
     // MARK: - Header
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("IELTS Speaking")
-                .font(.largeTitle.bold())
-                .foregroundStyle(AppColors.primaryText)
-
-            Text("Master your spoken English, one stage at a time")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondText)
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Tasks")
+                    .font(.title.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Text("Master your English, one stage at a time")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+            Spacer()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.top, 10)
-        .padding(.bottom, 24)
+        .padding(.bottom, 20)
         .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 15)
+        .offset(y: appearAnimations ? 0 : 10)
     }
 
     // MARK: - Hero Card (Current Stage)
@@ -56,103 +57,91 @@ struct StageListView: View {
         let theme = current.theme
 
         return Button { selectedStage = current } label: {
-            ZStack(alignment: .leading) {
-                theme.gradient
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+            ZStack {
+                // Background gradient
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(theme.softGradient)
 
-                // Decorative circles
+                // Decorative elements
                 GeometryReader { geo in
                     Circle()
-                        .fill(.white.opacity(0.09))
-                        .frame(width: 140)
-                        .offset(x: geo.size.width - 70, y: -45)
+                        .fill(.white.opacity(0.1))
+                        .frame(width: 100)
+                        .offset(x: geo.size.width - 55, y: -25)
                     Circle()
                         .fill(.white.opacity(0.06))
-                        .frame(width: 100)
-                        .offset(x: geo.size.width - 20, y: 75)
-                    Circle()
-                        .fill(.white.opacity(0.04))
-                        .frame(width: 60)
-                        .offset(x: -15, y: 100)
+                        .frame(width: 70)
+                        .offset(x: geo.size.width - 10, y: 55)
                 }
 
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("CURRENT STAGE")
+                // Content
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Stage \(current.id)")
+                            .font(.caption.bold())
+                            .foregroundStyle(.white.opacity(0.75))
+                            .tracking(1)
+
+                        Text(current.chineseTitle)
+                            .font(.title3.bold())
+                            .foregroundStyle(.white)
+
+                        Text(current.description)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.7))
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 8)
+
+                        // Progress
+                        HStack(spacing: 8) {
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(.white.opacity(0.2)).frame(height: 5)
+                                    Capsule().fill(.white)
+                                        .frame(
+                                            width: max(0, geo.size.width * progress.stageProgress(for: current)),
+                                            height: 5
+                                        )
+                                }
+                            }
+                            .frame(height: 5)
+                            .frame(maxWidth: 140)
+
+                            Text("\(progress.completedTaskCount(for: current))/\(current.taskCount)")
                                 .font(.caption2.bold())
                                 .foregroundStyle(.white.opacity(0.8))
-                                .tracking(1.5)
-                            Text("Stage \(current.id)")
-                                .font(.caption)
-                                .foregroundStyle(.white.opacity(0.6))
                         }
-                        Spacer()
-                        Text(theme.emoji)
-                            .font(.system(size: 42))
                     }
-                    .padding(.bottom, 14)
 
-                    Text(current.chineseTitle)
-                        .font(.title2.bold())
-                        .foregroundStyle(.white)
-                        .padding(.bottom, 2)
+                    Spacer(minLength: 12)
 
-                    Text(current.title)
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.75))
-                        .padding(.bottom, 16)
-
-                    // Progress bar
-                    VStack(alignment: .leading, spacing: 6) {
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(.white.opacity(0.2))
-                                    .frame(height: 6)
-                                Capsule()
-                                    .fill(.white)
-                                    .frame(width: max(0, geo.size.width * progress.stageProgress(for: current)), height: 6)
-                            }
-                        }
-                        .frame(height: 6)
-
-                        HStack {
-                            Text("\(progress.completedTaskCount(for: current))/\(current.taskCount) tasks")
-                                .font(.caption)
-                                .foregroundStyle(.white.opacity(0.65))
-                            Spacer()
-                            HStack(spacing: 6) {
-                                Text("Continue")
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(theme.startColor)
-                                Image(systemName: "arrow.right")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(theme.startColor)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 9)
-                            .background(.white)
-                            .clipShape(Capsule())
-                        }
+                    // Right side: emoji + arrow
+                    VStack(spacing: 10) {
+                        Text(theme.emoji)
+                            .font(.system(size: 34))
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.9))
                     }
                 }
-                .padding(22)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 18)
             }
-            .frame(height: 210)
+            .frame(height: 150)
             .heroShadow(color: theme.start)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 20)
-        .padding(.bottom, 28)
+        .padding(.bottom, 24)
         .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 20)
+        .offset(y: appearAnimations ? 0 : 15)
         .animation(.easeOut(duration: 0.6).delay(0.1), value: appearAnimations)
     }
 
     // MARK: - Stage Grid
     private var stageGrid: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("ALL STAGES")
                 .font(.caption.bold())
                 .foregroundStyle(AppColors.tertiaryText)
@@ -196,73 +185,71 @@ struct StageGridCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 0) {
-                // Top: Emoji + Stage Number
-                HStack {
+                // Top: Emoji badge + Stage number
+                HStack(alignment: .top) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(theme.gradient)
-                            .frame(width: 42, height: 42)
+                            .frame(width: 40, height: 40)
                         Text(theme.emoji)
-                            .font(.title3)
+                            .font(.system(size: 18))
                     }
                     Spacer()
                     Text("S\(stage.id)")
-                        .font(.caption2.bold())
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.startColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
                         .background(theme.startColor.opacity(0.1))
                         .clipShape(Capsule())
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 10)
 
-                // Title
                 Text(stage.chineseTitle)
-                    .font(.headline)
+                    .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
                     .padding(.bottom, 2)
 
                 Text(stage.title)
-                    .font(.caption)
+                    .font(.system(size: 10))
                     .foregroundStyle(AppColors.tertiaryText)
-                    .padding(.bottom, 12)
 
                 Spacer(minLength: 0)
 
-                // Progress
-                VStack(alignment: .leading, spacing: 5) {
+                // Progress bar
+                VStack(alignment: .leading, spacing: 4) {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(AppColors.surface)
-                                .frame(height: 5)
-                            Capsule()
-                                .fill(theme.gradient)
-                                .frame(width: max(0, geo.size.width * prog), height: 5)
+                            Capsule().fill(AppColors.surface).frame(height: 4)
+                            Capsule().fill(theme.gradient)
+                                .frame(width: max(0, geo.size.width * prog), height: 4)
                         }
                     }
-                    .frame(height: 5)
+                    .frame(height: 4)
 
                     HStack {
                         Text("\(completedCount)/\(stage.taskCount)")
-                            .font(.caption2.bold())
+                            .font(.system(size: 10, weight: .semibold, design: .rounded))
                             .foregroundStyle(theme.startColor)
                         Spacer()
                         if isCompleted {
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.caption)
+                                .font(.system(size: 11))
                                 .foregroundStyle(AppColors.success)
                         }
                     }
                 }
             }
-            .padding(16)
-            .frame(height: 175)
+            .padding(14)
+            .frame(height: 158)
             .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(isCompleted ? AppColors.success.opacity(0.3) : theme.startColor.opacity(0.08), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        isCompleted ? AppColors.success.opacity(0.25) : AppColors.border.opacity(0.6),
+                        lineWidth: 1
+                    )
             )
             .cardShadow()
         }
