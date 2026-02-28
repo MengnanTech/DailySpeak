@@ -28,7 +28,7 @@ enum StepType: Int, CaseIterable, Codable {
         case .phrases:     "Useful Phrases"
         case .framework:   "Expression Framework"
         case .samples:     "Sample Answers"
-        case .practice:    "Guided Practice"
+        case .practice:    "Speaking Practice"
         }
     }
 
@@ -37,7 +37,7 @@ enum StepType: Int, CaseIterable, Codable {
         case .strategy:   "了解如何组织你的回答"
         case .vocabulary:  "掌握关键词汇和发音"
         case .phrases:     "学习地道表达和例句"
-        case .framework:   "掌握答题模板结构"
+        case .framework:   "掌握答题模板与升级表达"
         case .samples:     "三个等级的优秀范文"
         case .practice:    "实战演练，开口说英语"
         }
@@ -74,9 +74,13 @@ struct LearningStep: Identifiable {
     var subtitle: String { type.subtitle }
     var icon: String { type.icon }
 
-    static let allSteps: [LearningStep] = StepType.allCases.filter { $0 != .strategy }.map {
-        LearningStep(id: $0.rawValue, type: $0)
-    }
+    static let allSteps: [LearningStep] = [
+        LearningStep(id: StepType.vocabulary.rawValue, type: .vocabulary),
+        LearningStep(id: StepType.phrases.rawValue, type: .phrases),
+        LearningStep(id: StepType.samples.rawValue, type: .samples),
+        LearningStep(id: StepType.framework.rawValue, type: .framework),
+        LearningStep(id: StepType.practice.rawValue, type: .practice),
+    ]
 }
 
 // MARK: - Vocabulary Item

@@ -3,11 +3,11 @@ import AVFoundation
 
 struct LearningFlowView: View {
     @Environment(ProgressManager.self) private var progress
+    @Environment(\.dismiss) private var dismiss
     let stage: Stage
     let task: SpeakingTask
 
     @State private var currentStep: Int
-    @State private var showPractice = false
 
     private var theme: StageTheme { stage.theme }
     private var steps: [LearningStep] { task.steps }
@@ -32,9 +32,6 @@ struct LearningFlowView: View {
                     .font(.headline)
                     .foregroundStyle(AppColors.primaryText)
             }
-        }
-        .navigationDestination(isPresented: $showPractice) {
-            PracticeView(stage: stage, task: task)
         }
         .onAppear { syncCurrentStep() }
     }
@@ -94,7 +91,7 @@ struct LearningFlowView: View {
         case .phrases:     PhrasesStepView(task: task, accentColor: theme.startColor)
         case .framework:   FrameworkStepView(task: task, accentColor: theme.startColor)
         case .samples:     SamplesStepView(task: task, accentColor: theme.startColor)
-        case .practice:    PracticePromptView(task: task, accentColor: theme.startColor)
+        case .practice:    PracticePromptView(stageId: stage.id, task: task, accentColor: theme.startColor)
         }
     }
 
@@ -157,7 +154,7 @@ struct LearningFlowView: View {
 
     private func finishTask() {
         progress.completeTask(stageId: stage.id, taskId: task.id)
-        showPractice = true
+        dismiss()
     }
 }
 
@@ -292,19 +289,14 @@ struct VocabularyStepView: View {
             categorySwitcher
 
             if selectedCategory == .core {
-                vocabGroupCard(
-                    title: "核心词汇",
-                    subtitle: "先掌握这些高频词再进入扩展",
-                    color: Color(hex: "4A90D9")
-                ) {
-                    vocabList(items: coreItems)
-                }
+                vocabList(items: coreItems)
             } else {
                 extendedSectionCard
             }
         }
         .sheet(item: $selectedItem) { item in
             VocabDetailSheet(item: item, accentColor: accentColor)
+                .presentationBackground(AppColors.background)
         }
     }
 
@@ -392,10 +384,6 @@ struct VocabularyStepView: View {
                 sectionTag(title: "高分词汇", count: advancedItems.count, color: Color(hex: "EF4444"), caption: "高阶表达与观点深度")
             }
         }
-        .padding(16)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .cardShadow()
     }
 
     private func sectionTag(title: String, count: Int, color: Color, caption: String) -> some View {
@@ -418,42 +406,6 @@ struct VocabularyStepView: View {
                 .font(.caption2)
                 .foregroundStyle(AppColors.tertiaryText)
         }
-    }
-
-    private func vocabGroupCard<Content: View>(
-        title: String,
-        subtitle: String,
-        color: Color,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(color)
-                    .frame(width: 8, height: 8)
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
-                Spacer()
-                Text("\(coreItems.count)")
-                    .font(.caption.bold())
-                    .foregroundStyle(color)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 2)
-                    .background(color.opacity(0.12))
-                    .clipShape(Capsule())
-            }
-
-            Text(subtitle)
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-
-            content()
-        }
-        .padding(16)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .cardShadow()
     }
 
     private func vocabList(items: [VocabItem]) -> some View {
@@ -484,7 +436,7 @@ struct VocabCardView: View {
 
                     HStack(spacing: 8) {
                         Text(item.phonetic)
-                            .font(.system(size: 12, weight: .medium, design: .monospaced))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(AppColors.secondText)
 
                         Text(item.partOfSpeech)
@@ -544,12 +496,6 @@ struct VocabCardView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(item.band.color.opacity(0.16), lineWidth: 1)
         )
-        .overlay(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(item.band.color.opacity(0.65))
-                .frame(width: 4, height: 28)
-                .padding(.leading, 8)
-        }
         .cardShadow()
     }
 }
@@ -959,84 +905,400 @@ struct SamplesStepView: View {
 }
 
 // MARK: - Practice Prompt
+private enum PracticeInputMode: String, CaseIterable, Identifiable {
+    case text = "文字输入"
+    case voice = "语音输入"
+
+    var id: String { rawValue }
+}
+
+private enum PracticeLanguageMode: String, CaseIterable, Identifiable {
+    case native = "母语输入"
+    case english = "英文草稿"
+
+    var id: String { rawValue }
+}
+
 struct PracticePromptView: View {
+    let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
+    private let labels = ["开场", "来源", "使用", "例子", "收尾"]
+
+    @StateObject private var speechInput = SpeechInputManager()
+    @State private var inputMode: PracticeInputMode = .text
+    @State private var languageMode: PracticeLanguageMode = .native
+    @State private var draftInput: String
+    @State private var translatedEnglish: String
+    @State private var polishedEnglish: String
+    @State private var isProcessing = false
+    @State private var errorMessage: String?
+    @FocusState private var isInputFocused: Bool
+
+    init(stageId: Int, task: SpeakingTask, accentColor: Color) {
+        self.stageId = stageId
+        self.task = task
+        self.accentColor = accentColor
+
+        let defaults = UserDefaults.standard
+        let base = "practice_s\(stageId)_t\(task.id)"
+        _draftInput = State(initialValue: defaults.string(forKey: "\(base)_draft") ?? "")
+        _translatedEnglish = State(initialValue: defaults.string(forKey: "\(base)_translated") ?? "")
+        _polishedEnglish = State(initialValue: defaults.string(forKey: "\(base)_polished") ?? "")
+    }
+
+    private var baseKey: String {
+        "practice_s\(stageId)_t\(task.id)"
+    }
 
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer().frame(height: 20)
+        VStack(alignment: .leading, spacing: 18) {
+            topicCard
+            frameworkHints
+            inputCard
+            actionArea
 
-            // Practice icon
-            ZStack {
-                Circle()
-                    .fill(accentColor.opacity(0.1))
-                    .frame(width: 90, height: 90)
-                Circle()
-                    .fill(accentColor.opacity(0.15))
-                    .frame(width: 68, height: 68)
-                Image(systemName: "mic.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(accentColor)
+            if !translatedEnglish.isEmpty {
+                resultCard(
+                    title: "英文直译（API）",
+                    subtitle: "先保留原意，再进入地道化阶段",
+                    text: translatedEnglish,
+                    tint: Color(hex: "4A90D9")
+                )
             }
 
-            Text("口语练习")
-                .font(.title3.bold())
-                .foregroundStyle(AppColors.primaryText)
-
-            Text("是时候开口说了！")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondText)
-
-            // Topic card
-            VStack(alignment: .leading, spacing: 8) {
-                Text("TOPIC")
-                    .font(.caption2.bold())
-                    .foregroundStyle(accentColor)
-                    .tracking(1)
-                Text(task.prompt)
-                    .font(.body)
-                    .foregroundStyle(AppColors.primaryText)
-                    .italic()
+            if !polishedEnglish.isEmpty {
+                resultCard(
+                    title: "地道口语版本（API）",
+                    subtitle: "可直接用于口语训练",
+                    text: polishedEnglish,
+                    tint: Color(hex: "10B981")
+                )
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(accentColor.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(accentColor.opacity(0.15), lineWidth: 1)
-            )
 
-            // Instructions
-            VStack(alignment: .leading, spacing: 12) {
-                practiceInstruction(num: 1, text: "用中文组织你的想法")
-                practiceInstruction(num: 2, text: "点击按钮，将中文翻译成英文")
-                practiceInstruction(num: 3, text: "大声朗读你的英文回答")
-                practiceInstruction(num: 4, text: "对比范文，找到差距")
+            if let errorMessage {
+                Text(errorMessage)
+                    .font(.caption)
+                    .foregroundStyle(Color(hex: "DC2626"))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(hex: "FEE2E2"))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
             }
-            .padding(16)
-            .cardStyle()
-
-            // Practice hint
-            Text("完成这一步后，将解锁下一个任务")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-                .multilineTextAlignment(.center)
+        }
+        .onChange(of: draftInput) { save($0, key: "\(baseKey)_draft") }
+        .onChange(of: translatedEnglish) { save($0, key: "\(baseKey)_translated") }
+        .onChange(of: polishedEnglish) { save($0, key: "\(baseKey)_polished") }
+        .onChange(of: speechInput.transcript) { transcript in
+            guard !transcript.isEmpty else { return }
+            draftInput = transcript
+            save(transcript, key: "\(baseKey)_voice")
+        }
+        .onDisappear {
+            speechInput.stopRecording()
         }
     }
 
-    private func practiceInstruction(num: Int, text: String) -> some View {
-        HStack(spacing: 12) {
-            Text("\(num)")
-                .font(.caption.bold())
+    private var topicCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("TOPIC")
+                .font(.caption2.bold())
+                .foregroundStyle(accentColor)
+                .tracking(1)
+            Text(task.prompt)
+                .font(.body)
+                .foregroundStyle(AppColors.primaryText)
+                .italic()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(accentColor.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(accentColor.opacity(0.15), lineWidth: 1)
+        )
+    }
+
+    private var frameworkHints: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet.rectangle.portrait")
+                    .font(.caption)
+                    .foregroundStyle(accentColor)
+                Text("表达框架提示")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+            }
+
+            ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
+                HStack(alignment: .top, spacing: 8) {
+                    Text(index < labels.count ? labels[index] : "要点")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(accentColor)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(accentColor.opacity(0.12))
+                        .clipShape(Capsule())
+
+                    Text(sentence)
+                        .font(.caption)
+                        .foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(AppColors.border.opacity(0.6), lineWidth: 0.8)
+        )
+        .cardShadow()
+    }
+
+    private var inputCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("输入你的回答草稿")
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+
+            modeSelector(
+                title: "输入方式",
+                items: PracticeInputMode.allCases,
+                selected: inputMode
+            ) { inputMode = $0 }
+
+            if inputMode == .text {
+                modeSelector(
+                    title: "内容类型",
+                    items: PracticeLanguageMode.allCases,
+                    selected: languageMode
+                ) { languageMode = $0 }
+            }
+
+            if inputMode == .voice {
+                voiceTools
+            }
+
+            draftEditor
+
+            if let speechError = speechInput.lastError {
+                Text(speechError)
+                    .font(.caption)
+                    .foregroundStyle(Color(hex: "DC2626"))
+            }
+
+            Text("草稿会自动保存。你可以先用母语输入，再通过 API 转成英文并润色。")
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
+        }
+        .padding(16)
+        .cardStyle()
+    }
+
+    private var voiceTools: some View {
+        HStack(spacing: 10) {
+            Button {
+                Task { await speechInput.toggleRecording() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: speechInput.isRecording ? "stop.circle.fill" : "mic.circle.fill")
+                        .font(.system(size: 16, weight: .bold))
+                    Text(speechInput.isRecording ? "停止录音" : "开始录音")
+                        .font(.subheadline.bold())
+                }
                 .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(accentColor)
-                .clipShape(Circle())
+                .frame(height: 40)
+                .frame(maxWidth: .infinity)
+                .background(speechInput.isRecording ? Color(hex: "DC2626") : accentColor)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+
+            if speechInput.isRecording {
+                Text("识别中...")
+                    .font(.caption.bold())
+                    .foregroundStyle(accentColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(accentColor.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+        }
+    }
+
+    private var draftEditor: some View {
+        TextEditor(text: $draftInput)
+            .focused($isInputFocused)
+            .frame(minHeight: 120)
+            .padding(10)
+            .background(AppColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isInputFocused ? accentColor : AppColors.border, lineWidth: 1)
+            )
+            .overlay(alignment: .topLeading) {
+                if draftInput.isEmpty {
+                    Text(languageMode == .native ? "先输入母语内容，建议 4-6 句..." : "先写英文草稿，稍后可一键润色...")
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.tertiaryText)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 18)
+                        .allowsHitTesting(false)
+                }
+            }
+    }
+
+    private var actionArea: some View {
+        Button {
+            runPipeline()
+        } label: {
+            HStack(spacing: 8) {
+                if isProcessing {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Image(systemName: "wand.and.stars")
+                        .font(.subheadline.bold())
+                }
+                Text(languageMode == .native ? "母语 -> 英文 -> 地道口语" : "英文草稿 -> 地道口语")
+                    .font(.subheadline.bold())
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .background(
+                draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing
+                    ? AnyShapeStyle(AppColors.border)
+                    : AnyShapeStyle(accentColor)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .disabled(draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing)
+    }
+
+    private func resultCard(title: String, subtitle: String, text: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Button {
+                    WordPronouncer.shared.speak(text, locale: "en-US", rate: 0.46)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.caption.bold())
+                        Text("播放")
+                            .font(.caption.bold())
+                    }
+                    .foregroundStyle(tint)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(tint.opacity(0.12))
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
+
             Text(text)
                 .font(.subheadline)
                 .foregroundStyle(AppColors.primaryText)
+                .lineSpacing(5)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(tint.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(tint.opacity(0.22), lineWidth: 1)
+                )
         }
+        .padding(16)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .cardShadow()
+    }
+
+    private func modeSelector<Item: Identifiable>(
+        title: String,
+        items: [Item],
+        selected: Item,
+        onSelect: @escaping (Item) -> Void
+    ) -> some View where Item: RawRepresentable, Item.RawValue == String {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption.bold())
+                .foregroundStyle(AppColors.tertiaryText)
+
+            HStack(spacing: 8) {
+                ForEach(items) { item in
+                    let isSelected = item.id == selected.id
+                    Button {
+                        withAnimation(.spring(duration: 0.24)) {
+                            onSelect(item)
+                        }
+                    } label: {
+                        Text(item.rawValue)
+                            .font(.caption.bold())
+                            .foregroundStyle(isSelected ? .white : AppColors.secondText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 34)
+                            .background(isSelected ? accentColor : AppColors.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func runPipeline() {
+        let source = draftInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !source.isEmpty else { return }
+        isProcessing = true
+        errorMessage = nil
+        isInputFocused = false
+
+        Task {
+            do {
+                let translated: String
+                if languageMode == .native {
+                    translated = try await PracticeAIService.shared.translateToEnglish(
+                        nativeText: source,
+                        topic: task.prompt
+                    )
+                } else {
+                    translated = source
+                }
+
+                let polished = try await PracticeAIService.shared.polishToSpokenEnglish(
+                    englishText: translated,
+                    topic: task.prompt
+                )
+
+                translatedEnglish = translated
+                polishedEnglish = polished
+                isProcessing = false
+            } catch {
+                isProcessing = false
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func save(_ value: String, key: String) {
+        UserDefaults.standard.set(value, forKey: key)
     }
 }
