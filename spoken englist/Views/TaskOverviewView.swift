@@ -173,69 +173,70 @@ struct TaskOverviewView: View {
                 }
             }
 
-            // Tips with sequential animation
+            // Tips with timeline animation
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
                     if index < visibleTipCount {
-                        HStack(alignment: .top, spacing: 10) {
-                            // Animated indicator: spinner → checkmark
-                            ZStack {
-                                // Checkmark state
-                                if completedTips.contains(index) {
-                                    Circle()
-                                        .fill(AppColors.success)
-                                        .frame(width: 20, height: 20)
-                                        .transition(.scale)
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 9, weight: .bold))
-                                        .foregroundStyle(.white)
-                                        .transition(.scale)
-                                }
-                                // Spinning loader state
-                                else if currentLoadingTip == index {
-                                    TipSpinnerView()
-                                        .frame(width: 20, height: 20)
-                                        .transition(.scale)
-                                }
-                                // Number badge (fallback)
-                                else {
-                                    Text("\(index + 1)")
-                                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color(hex: "F59E0B"))
-                                        .frame(width: 20, height: 20)
-                                        .background(Color(hex: "FEF3C7"))
-                                        .clipShape(Circle())
-                                }
-                            }
-                            .animation(.spring(duration: 0.4, bounce: 0.2), value: completedTips)
-                            .animation(.spring(duration: 0.3), value: currentLoadingTip)
+                        let isLast = index == task.tips.count - 1
+                        let isDone = completedTips.contains(index)
 
-                            // Tip text - typewriter effect
-                            if let charCount = tipDisplayedChars[index], charCount > 0 {
-                                let displayText = String(tip.prefix(charCount))
-                                Text(displayText)
-                                    .font(.subheadline)
-                                    .foregroundStyle(
-                                        completedTips.contains(index) ?
-                                        AppColors.primaryText : AppColors.secondText
-                                    )
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .animation(.none, value: charCount)
+                        HStack(alignment: .top, spacing: 12) {
+                            // Left: indicator + connector line
+                            VStack(spacing: 0) {
+                                ZStack {
+                                    if isDone {
+                                        Circle()
+                                            .fill(AppColors.success)
+                                            .frame(width: 22, height: 22)
+                                            .transition(.scale)
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 9, weight: .bold))
+                                            .foregroundStyle(.white)
+                                            .transition(.scale)
+                                    } else if currentLoadingTip == index {
+                                        TipSpinnerView()
+                                            .frame(width: 22, height: 22)
+                                            .transition(.scale)
+                                    } else {
+                                        Circle()
+                                            .strokeBorder(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1.5)
+                                            .frame(width: 22, height: 22)
+                                    }
+                                }
+                                .animation(.spring(duration: 0.4, bounce: 0.2), value: completedTips)
+                                .animation(.spring(duration: 0.3), value: currentLoadingTip)
+
+                                if !isLast {
+                                    // Connector line
+                                    Rectangle()
+                                        .fill(
+                                            isDone
+                                                ? AppColors.success.opacity(0.25)
+                                                : Color(hex: "F59E0B").opacity(0.12)
+                                        )
+                                        .frame(width: 1.5)
+                                        .frame(maxHeight: .infinity)
+                                        .animation(.easeOut(duration: 0.35), value: isDone)
+                                }
                             }
+                            .frame(width: 22)
+
+                            // Right: tip text
+                            VStack(alignment: .leading, spacing: 0) {
+                                if let charCount = tipDisplayedChars[index], charCount > 0 {
+                                    Text(String(tip.prefix(charCount)))
+                                        .font(.subheadline)
+                                        .foregroundStyle(
+                                            isDone ? AppColors.primaryText : AppColors.secondText
+                                        )
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .animation(.none, value: charCount)
+                                }
+                            }
+                            .padding(.bottom, isLast ? 0 : 16)
+                            .padding(.top, 2)
                         }
-                        .padding(.vertical, 8)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
-
-                        if index < task.tips.count - 1 && completedTips.contains(index) {
-                            Rectangle()
-                                .fill(AppColors.border.opacity(0.4))
-                                .frame(height: 0.5)
-                                .padding(.leading, 30)
-                                .transition(.asymmetric(
-                                    insertion: .scale(scale: 0, anchor: .leading).combined(with: .opacity),
-                                    removal: .opacity
-                                ))
-                        }
                     }
                 }
             }

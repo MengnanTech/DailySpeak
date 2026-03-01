@@ -706,11 +706,21 @@ struct FrameworkStepView: View {
                 }
             }
 
-            VStack(spacing: 0) {
-                ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                    HStack(alignment: .top, spacing: 14) {
-                        // Step indicator
-                        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 14) {
+                // Left column: continuous vertical line + circles
+                ZStack(alignment: .top) {
+                    // Background continuous line (from center of first circle to center of last)
+                    if task.frameworkSentences.count > 1 {
+                        Rectangle()
+                            .fill(accentColor.opacity(0.15))
+                            .frame(width: 2)
+                            .padding(.top, 14) // half of circle (28/2)
+                            .frame(maxHeight: .infinity, alignment: .top)
+                    }
+
+                    // Circles
+                    VStack(spacing: 0) {
+                        ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, _ in
                             ZStack {
                                 Circle()
                                     .fill(accentColor)
@@ -719,26 +729,32 @@ struct FrameworkStepView: View {
                                     .font(.caption.bold())
                                     .foregroundStyle(.white)
                             }
-
+                            .frame(height: index == task.frameworkSentences.count - 1 ? 28 : nil)
+                            // Spacer to match right column row height
                             if index < task.frameworkSentences.count - 1 {
-                                Rectangle()
-                                    .fill(accentColor.opacity(0.2))
-                                    .frame(width: 2, height: 40)
+                                Spacer(minLength: 0)
                             }
                         }
+                    }
+                }
+                .frame(width: 28)
 
+                // Right column: labels + sentences
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
                         VStack(alignment: .leading, spacing: 4) {
                             if index < labels.count {
                                 Text(labels[index])
-                                    .font(.caption.bold())
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
                                     .foregroundStyle(accentColor)
                             }
                             Text(sentence)
                                 .font(.subheadline)
                                 .foregroundStyle(AppColors.primaryText)
-                                .padding(.bottom, index < task.frameworkSentences.count - 1 ? 16 : 0)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.top, 3)
+                        .padding(.top, 4)
+                        .padding(.bottom, index == task.frameworkSentences.count - 1 ? 0 : 20)
                     }
                 }
             }
