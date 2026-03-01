@@ -9,6 +9,12 @@ struct TaskOverviewView: View {
     @State private var showCriteria = false
     @State private var appear = false
 
+    // Strategy tip sequential animation states
+    @State private var visibleTipCount = 0      // How many tips are visible
+    @State private var completedTips = Set<Int>() // Which tips have the checkmark
+    @State private var currentLoadingTip: Int? = nil // Which tip is showing spinner
+    @State private var tipDisplayedChars: [Int: Int] = [:] // How many characters shown per tip
+
     private var theme: StageTheme { stage.theme }
 
     var body: some View {
@@ -136,37 +142,93 @@ struct TaskOverviewView: View {
 
                 Spacer()
 
-                Text("Tips")
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(hex: "F59E0B"))
+                if completedTips.count == task.tips.count {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 10))
+                        Text("Done")
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                    }
+                    .foregroundStyle(AppColors.success)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color(hex: "FEF3C7"))
+                    .background(AppColors.success.opacity(0.1))
                     .clipShape(Capsule())
+                    .transition(.scale.combined(with: .opacity))
+                } else {
+                    Text("Tips")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundStyle(Color(hex: "F59E0B"))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color(hex: "FEF3C7"))
+                        .clipShape(Capsule())
+                }
             }
 
-            // Tips
+            // Tips with sequential animation
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
-                    HStack(alignment: .top, spacing: 10) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(hex: "F59E0B"))
-                            .frame(width: 20, height: 20)
-                            .background(Color(hex: "FEF3C7"))
-                            .clipShape(Circle())
+                    if index < visibleTipCount {
+                        HStack(alignment: .top, spacing: 10) {
+                            // Animated indicator: spinner → checkmark
+                            ZStack {
+                                // Checkmark state
+                                if completedTips.contains(index) {
+                                    Circle()
+                                        .fill(AppColors.success)
+                                        .frame(width: 20, height: 20)
+                                        .transition(.scale)
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .transition(.scale)
+                                }
+                                // Spinning loader state
+                                else if currentLoadingTip == index {
+                                    TipSpinnerView()
+                                        .frame(width: 20, height: 20)
+                                        .transition(.scale)
+                                }
+                                // Number badge (fallback)
+                                else {
+                                    Text("\(index + 1)")
+                                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Color(hex: "F59E0B"))
+                                        .frame(width: 20, height: 20)
+                                        .background(Color(hex: "FEF3C7"))
+                                        .clipShape(Circle())
+                                }
+                            }
+                            .animation(.spring(duration: 0.4, bounce: 0.2), value: completedTips)
+                            .animation(.spring(duration: 0.3), value: currentLoadingTip)
 
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(.vertical, 8)
+                            // Tip text - typewriter effect
+                            if let charCount = tipDisplayedChars[index], charCount > 0 {
+                                let displayText = String(tip.prefix(charCount))
+                                Text(displayText)
+                                    .font(.subheadline)
+                                    .foregroundStyle(
+                                        completedTips.contains(index) ?
+                                        AppColors.primaryText : AppColors.secondText
+                                    )
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .animation(.none, value: charCount)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
 
-                    if index < task.tips.count - 1 {
-                        Divider()
-                            .background(AppColors.border.opacity(0.4))
-                            .padding(.leading, 30)
+                        if index < task.tips.count - 1 && completedTips.contains(index) {
+                            Rectangle()
+                                .fill(AppColors.border.opacity(0.4))
+                                .frame(height: 0.5)
+                                .padding(.leading, 30)
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0, anchor: .leading).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                        }
                     }
                 }
             }
@@ -182,6 +244,47 @@ struct TaskOverviewView: View {
         .opacity(appear ? 1 : 0)
         .offset(y: appear ? 0 : 10)
         .animation(.easeOut(duration: 0.45).delay(0.08), value: appear)
+        .onAppear { startTipSequence() }
+    }
+
+    // MARK: - Tip Sequence Animation
+    private func startTipSequence() {
+        animateTip(at: 0, afterDelay: 0.6)
+    }
+
+    private func animateTip(at index: Int, afterDelay delay: Double) {
+        guard index < task.tips.count else { return }
+        let tip = task.tips[index]
+        let charInterval: Double = 0.04 // seconds per character
+
+        // Step 1: Show the row with spinner
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
+                visibleTipCount = index + 1
+                currentLoadingTip = index
+            }
+
+            // Step 2: Typewriter — one character at a time
+            for charIndex in 1...tip.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3 + Double(charIndex) * charInterval) {
+                    tipDisplayedChars[index] = charIndex
+                }
+            }
+
+            // Step 3: Complete with checkmark after all characters are typed
+            let typingDuration = 0.3 + Double(tip.count) * charInterval + 0.3
+            DispatchQueue.main.asyncAfter(deadline: .now() + typingDuration) {
+                withAnimation(.spring(duration: 0.4, bounce: 0.25)) {
+                    completedTips.insert(index)
+                    if index == task.tips.count - 1 {
+                        currentLoadingTip = nil
+                    }
+                }
+
+                // Start next tip after a brief pause
+                animateTip(at: index + 1, afterDelay: 0.3)
+            }
+        }
     }
 
     // MARK: - Steps Timeline
@@ -455,6 +558,39 @@ struct TaskOverviewView: View {
             .shadow(color: AppColors.shadowColor.opacity(0.12), radius: 30, x: 0, y: 12)
             .padding(.horizontal, 28)
             .transition(.scale(scale: 0.88).combined(with: .opacity))
+        }
+    }
+}
+
+// MARK: - Tip Spinner View
+struct TipSpinnerView: View {
+    @State private var rotation: Double = 0
+
+    private let amber = Color(hex: "F59E0B")
+
+    var body: some View {
+        ZStack {
+            // Faint track ring
+            Circle()
+                .stroke(amber.opacity(0.12), lineWidth: 2)
+
+            // Fixed-length gradient arc, smooth forward rotation
+            Circle()
+                .trim(from: 0, to: 0.3)
+                .stroke(
+                    LinearGradient(
+                        colors: [amber.opacity(0.05), amber],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                )
+                .rotationEffect(.degrees(rotation))
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 0.9).repeatForever(autoreverses: false)) {
+                rotation = 360
+            }
         }
     }
 }
