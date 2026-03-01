@@ -15,6 +15,13 @@ struct TaskOverviewView: View {
     @State private var currentLoadingTip: Int? = nil // Which tip is showing spinner
     @State private var tipDisplayedChars: [Int: Int] = [:] // How many characters shown per tip
 
+    // Steps timeline sequential animation states
+    @State private var visibleStepCount = 0
+    @State private var completedSteps = Set<Int>()
+    @State private var currentLoadingStep: Int? = nil
+    @State private var stepTitleChars: [Int: Int] = [:]
+    @State private var stepSubtitleChars: [Int: Int] = [:]
+
     private var theme: StageTheme { stage.theme }
 
     var body: some View {
@@ -298,88 +305,98 @@ struct TaskOverviewView: View {
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
                 Spacer()
-                let done = progress.completedStepCount(
-                    stageId: stage.id, taskId: task.id, totalSteps: task.steps.count
-                )
-                Text("\(done)/\(task.steps.count)")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.startColor)
+
+                if completedSteps.count == task.steps.count {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 10))
+                        Text("Done")
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                    }
+                    .foregroundStyle(AppColors.success)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(theme.startColor.opacity(0.08))
+                    .background(AppColors.success.opacity(0.1))
                     .clipShape(Capsule())
+                    .transition(.scale.combined(with: .opacity))
+                } else {
+                    let done = progress.completedStepCount(
+                        stageId: stage.id, taskId: task.id, totalSteps: task.steps.count
+                    )
+                    Text("\(done)/\(task.steps.count)")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(theme.startColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(theme.startColor.opacity(0.08))
+                        .clipShape(Capsule())
+                }
             }
             .padding(.bottom, 16)
 
             ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
-                let isStepDone = progress.isStepCompleted(
-                    stageId: stage.id, taskId: task.id, stepIndex: index
-                )
-                let isCurrent = index == progress.currentStepIndex(
-                    stageId: stage.id, taskId: task.id, totalSteps: task.steps.count
-                )
-                let isLast = index == task.steps.count - 1
+                if index < visibleStepCount {
+                    let isLast = index == task.steps.count - 1
+                    let isAnimDone = completedSteps.contains(index)
 
-                HStack(alignment: .top, spacing: 14) {
-                    VStack(spacing: 0) {
-                        ZStack {
-                            if isStepDone {
-                                Circle().fill(AppColors.success)
-                                    .frame(width: 28, height: 28)
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(.white)
-                            } else if isCurrent {
-                                Circle().fill(theme.startColor)
-                                    .frame(width: 28, height: 28)
-                                Circle().fill(.white)
-                                    .frame(width: 10, height: 10)
-                            } else {
-                                Circle()
-                                    .strokeBorder(AppColors.border, lineWidth: 2)
-                                    .frame(width: 28, height: 28)
+                    HStack(alignment: .top, spacing: 14) {
+                        // Left: indicator + connector line
+                        VStack(spacing: 0) {
+                            ZStack {
+                                if isAnimDone {
+                                    Circle().fill(AppColors.success)
+                                        .frame(width: 28, height: 28)
+                                        .transition(.scale)
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .transition(.scale)
+                                } else if currentLoadingStep == index {
+                                    TipSpinnerView()
+                                        .frame(width: 28, height: 28)
+                                        .transition(.scale)
+                                } else {
+                                    Circle()
+                                        .strokeBorder(AppColors.border, lineWidth: 2)
+                                        .frame(width: 28, height: 28)
+                                }
+                            }
+                            .animation(.spring(duration: 0.4, bounce: 0.2), value: completedSteps)
+                            .animation(.spring(duration: 0.3), value: currentLoadingStep)
+
+                            if !isLast {
+                                Rectangle()
+                                    .fill(isAnimDone ? AppColors.success.opacity(0.3) : AppColors.border.opacity(0.5))
+                                    .frame(width: 2)
+                                    .frame(maxHeight: .infinity)
+                                    .animation(.easeOut(duration: 0.3), value: isAnimDone)
                             }
                         }
+                        .frame(width: 28)
 
-                        if !isLast {
-                            Rectangle()
-                                .fill(isStepDone ? AppColors.success.opacity(0.3) : AppColors.border.opacity(0.5))
-                                .frame(width: 2)
-                                .frame(maxHeight: .infinity)
-                        }
-                    }
-                    .frame(width: 28)
+                        // Right: title + subtitle typewriter
+                        VStack(alignment: .leading, spacing: 3) {
+                            if let titleChars = stepTitleChars[index], titleChars > 0 {
+                                Text(String(step.title.prefix(titleChars)))
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(
+                                        isAnimDone ? AppColors.primaryText : AppColors.secondText
+                                    )
+                                    .animation(.none, value: titleChars)
+                            }
 
-                    VStack(alignment: .leading, spacing: 3) {
-                        HStack(spacing: 6) {
-                            Text(step.title)
-                                .font(.subheadline.bold())
-                                .foregroundStyle(
-                                    isStepDone ? AppColors.primaryText :
-                                    isCurrent ? theme.startColor :
-                                    AppColors.tertiaryText
-                                )
-
-                            if isCurrent {
-                                Circle()
-                                    .fill(theme.startColor)
-                                    .frame(width: 5, height: 5)
+                            if let subChars = stepSubtitleChars[index], subChars > 0 {
+                                Text(String(step.subtitle.prefix(subChars)))
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                                    .animation(.none, value: subChars)
                             }
                         }
-
-                        Text(step.subtitle)
-                            .font(.caption)
-                            .foregroundStyle(AppColors.tertiaryText)
+                        .padding(.bottom, isLast ? 0 : 20)
+                        .padding(.top, 4)
                     }
-                    .padding(.bottom, isLast ? 0 : 20)
-                    .padding(.top, 4)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .opacity(appear ? 1 : 0)
-                .offset(y: appear ? 0 : 8)
-                .animation(
-                    .easeOut(duration: 0.4).delay(0.18 + Double(index) * 0.05),
-                    value: appear
-                )
             }
         }
         .padding(16)
@@ -390,6 +407,63 @@ struct TaskOverviewView: View {
                 .stroke(AppColors.border.opacity(0.5), lineWidth: 0.5)
         )
         .cardShadow()
+        .onAppear { startStepSequence() }
+    }
+
+    // MARK: - Step Sequence Animation
+    private func startStepSequence() {
+        // Wait for tips to finish first
+        let tipsCount = task.tips.count
+        let tipCharInterval: Double = 0.04
+        var totalTipsDuration: Double = 0.6
+        for i in 0..<tipsCount {
+            let tipLen = Double(task.tips[i].count)
+            totalTipsDuration += 0.3 + tipLen * tipCharInterval + 0.3 + 0.3
+        }
+        animateStep(at: 0, afterDelay: totalTipsDuration + 0.3)
+    }
+
+    private func animateStep(at index: Int, afterDelay delay: Double) {
+        guard index < task.steps.count else { return }
+        let step = task.steps[index]
+        let charInterval: Double = 0.05
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            // Show row with spinner
+            withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
+                visibleStepCount = index + 1
+                currentLoadingStep = index
+            }
+
+            // Typewriter: title first
+            let title = step.title
+            for ci in 1...title.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25 + Double(ci) * charInterval) {
+                    stepTitleChars[index] = ci
+                }
+            }
+
+            // Then subtitle
+            let subtitle = step.subtitle
+            let subtitleStart = 0.25 + Double(title.count) * charInterval + 0.1
+            for ci in 1...subtitle.count {
+                DispatchQueue.main.asyncAfter(deadline: .now() + subtitleStart + Double(ci) * charInterval) {
+                    stepSubtitleChars[index] = ci
+                }
+            }
+
+            // Checkmark after all text typed
+            let totalTyping = subtitleStart + Double(subtitle.count) * charInterval + 0.25
+            DispatchQueue.main.asyncAfter(deadline: .now() + totalTyping) {
+                withAnimation(.spring(duration: 0.4, bounce: 0.25)) {
+                    completedSteps.insert(index)
+                    if index == task.steps.count - 1 {
+                        currentLoadingStep = nil
+                    }
+                }
+                animateStep(at: index + 1, afterDelay: 0.25)
+            }
+        }
     }
 
     // MARK: - Start Button (Sticky)

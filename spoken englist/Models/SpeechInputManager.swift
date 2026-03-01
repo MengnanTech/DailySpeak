@@ -19,7 +19,7 @@ final class SpeechInputManager: NSObject, ObservableObject {
     override init() {
         let locale = Locale.current.identifier
         speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: locale))
-            ?? SFSpeechRecognizer(locale: Locale(identifier: "zh-CN"))
+            ?? SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
         super.init()
     }
 
