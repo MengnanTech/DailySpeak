@@ -1003,10 +1003,16 @@ struct PracticePromptView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
-        .onChange(of: draftInput) { save($0, key: "\(baseKey)_draft") }
-        .onChange(of: translatedEnglish) { save($0, key: "\(baseKey)_translated") }
-        .onChange(of: polishedEnglish) { save($0, key: "\(baseKey)_polished") }
-        .onChange(of: speechInput.transcript) { transcript in
+        .onChange(of: draftInput) { _, newValue in
+            save(newValue, key: "\(baseKey)_draft")
+        }
+        .onChange(of: translatedEnglish) { _, newValue in
+            save(newValue, key: "\(baseKey)_translated")
+        }
+        .onChange(of: polishedEnglish) { _, newValue in
+            save(newValue, key: "\(baseKey)_polished")
+        }
+        .onChange(of: speechInput.transcript) { _, transcript in
             guard !transcript.isEmpty else { return }
             draftInput = transcript
             save(transcript, key: "\(baseKey)_voice")
