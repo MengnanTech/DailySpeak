@@ -155,45 +155,64 @@ struct StageListView: View {
     // MARK: - Stage Carousel
     private var stageCarousel: some View {
         GeometryReader { geo in
+            let sidePeek = min(24, max(14, geo.size.width * 0.06))
+            let itemSpacing = min(10, max(6, geo.size.width * 0.02))
+            let cardWidth = max(0, geo.size.width - sidePeek * 2)
+
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 14) {
+                LazyHStack(spacing: itemSpacing) {
                     ForEach(stages) { stage in
                         CarouselStageCard(
                             stage: stage,
                             onStageTap: { selectedStage = stage },
                             onTaskTap: { selectedTask = $0 }
                         )
-                        .frame(width: max(0, geo.size.width - 40))
+                        .frame(width: cardWidth)
                         .scrollTransition(.animated(.spring(response: 0.6, dampingFraction: 0.72))) { content, phase in
                             content
-                                .opacity(1 - min(0.6, abs(phase.value) * 0.6))
-                                .scaleEffect(max(0.96, 1 - abs(phase.value) * 0.04))
-                                .offset(y: abs(phase.value) * 6)
+                                .opacity(1 - min(0.22, abs(phase.value) * 0.22))
+                                .scaleEffect(max(0.985, 1 - abs(phase.value) * 0.015))
+                                .saturation(1 - min(0.12, abs(phase.value) * 0.12))
+                                .brightness(-min(0.04, abs(phase.value) * 0.04))
                         }
                         .id(stage.id)
                     }
                 }
                 .scrollTargetLayout()
-                .padding(.horizontal, 20)
                 .padding(.vertical, 24)
             }
+            .contentMargins(.horizontal, sidePeek, for: .scrollContent)
+            .scrollClipDisabled()
             .scrollTargetBehavior(.viewAligned)
-            .scrollPosition(id: $carouselStageId)
+            .scrollPosition(id: $carouselStageId, anchor: .center)
         }
         .frame(height: 278)
     }
 
     // MARK: - Page Indicator
     private var pageIndicator: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 7) {
             ForEach(stages) { stage in
                 let isActive = stage.id == (carouselStageId ?? currentStage.id)
-                Capsule()
-                    .fill(isActive ? stage.theme.startColor : AppColors.border)
-                    .frame(width: isActive ? 20 : 6, height: 6)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: carouselStageId)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(isActive ? stage.theme.startColor : AppColors.border.opacity(0.9))
+                    .frame(width: isActive ? 18 : 5, height: 5)
+                    .shadow(
+                        color: isActive ? stage.theme.startColor.opacity(0.25) : .clear,
+                        radius: isActive ? 6 : 0,
+                        x: 0,
+                        y: 1
+                    )
+                    .animation(.spring(response: 0.3, dampingFraction: 0.76), value: carouselStageId)
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(AppColors.card.opacity(0.88), in: Capsule())
+        .overlay(
+            Capsule()
+                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+        )
         .frame(maxWidth: .infinity)
     }
 
