@@ -79,34 +79,64 @@ struct StageTheme {
     }
 
     static let all: [StageTheme] = [
-        StageTheme(start: "5B9BF0", end: "3B6FD4", emoji: "📝"),
-        StageTheme(start: "34D399", end: "10B981", emoji: "🌅"),
-        StageTheme(start: "A78BFA", end: "8B5CF6", emoji: "👤"),
-        StageTheme(start: "FBBF24", end: "F59E0B", emoji: "🏙️"),
-        StageTheme(start: "F472B6", end: "EC4899", emoji: "⭐"),
-        StageTheme(start: "2DD4BF", end: "14B8A6", emoji: "🎬"),
-        StageTheme(start: "818CF8", end: "6366F1", emoji: "🎓"),
-        StageTheme(start: "FB7185", end: "F43F5E", emoji: "🌍"),
-        StageTheme(start: "FB923C", end: "F97316", emoji: "🎯"),
+        // 1 — Royal Blue (不改)
+        StageTheme(start: "4F6BED", end: "7B8FF5", emoji: "📝"),
+        // 2 — Soft Sky
+        StageTheme(start: "4A90D9", end: "7AB4E8", emoji: "🌅"),
+        // 3 — Lilac
+        StageTheme(start: "9B72CF", end: "B896E0", emoji: "👤"),
+        // 4 — Blush Rose
+        StageTheme(start: "D66B8F", end: "E899B2", emoji: "🏙️"),
+        // 5 — Honey Gold
+        StageTheme(start: "C89B3C", end: "DCBC6A", emoji: "⭐"),
+        // 6 — Mint
+        StageTheme(start: "3DA88A", end: "6AC4AA", emoji: "🎬"),
+        // 7 — Dusk Indigo
+        StageTheme(start: "6670A8", end: "8C94C8", emoji: "🎓"),
+        // 8 — Warm Coral
+        StageTheme(start: "CC7E6A", end: "E0A898", emoji: "🌍"),
+        // 9 — Mocha
+        StageTheme(start: "A0826C", end: "BC9E8C", emoji: "🎯"),
     ]
 }
 
 // MARK: - View Modifiers
 extension View {
-    /// Card shadow — matches DailySpeak style
     func cardShadow() -> some View {
-        self.shadow(color: Color(hex: "1A1714").opacity(0.06), radius: 10, x: 0, y: 3)
+        self.shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
     }
 
-    /// Hero shadow — colored tint for depth
     func heroShadow(color hex: String = "1A1714") -> some View {
-        self.shadow(color: Color(hex: hex).opacity(0.38), radius: 20, x: 0, y: 10)
+        self.shadow(color: Color(hex: hex).opacity(0.3), radius: 20, x: 0, y: 10)
     }
 
     func cardStyle() -> some View {
         self
             .background(AppColors.card)
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.white.opacity(0.7), lineWidth: 1)
+            )
+            .cardShadow()
+    }
+
+    /// Apple-style bordered card with subtle inner glow
+    func borderedCardStyle(accent: Color = AppColors.border) -> some View {
+        self
+            .background(AppColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.8), accent.opacity(0.15)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+            )
             .cardShadow()
     }
 }

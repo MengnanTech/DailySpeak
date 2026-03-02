@@ -134,7 +134,7 @@ struct StageListView: View {
             }
             .scrollTargetLayout()
             .padding(.horizontal, 20)
-            .padding(.vertical, 16) // room for heroShadow without clipping
+            .padding(.vertical, 24)
         }
         .scrollTargetBehavior(.viewAligned)
         .scrollPosition(id: $carouselStageId)
@@ -246,7 +246,17 @@ struct StageListView: View {
         }
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(theme.startColor.opacity(0.18), lineWidth: 1.5))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.8), theme.startColor.opacity(0.15)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ),
+                    lineWidth: 1
+                )
+        )
         .cardShadow()
     }
 
@@ -292,6 +302,10 @@ struct StatChip: View {
         .padding(.vertical, 12)
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.white.opacity(0.7), lineWidth: 1)
+        )
         .cardShadow()
     }
 }
@@ -318,7 +332,6 @@ struct CarouselStageCard: View {
                     colors: [theme.startColor, theme.endColor],
                     startPoint: .topLeading, endPoint: .bottomTrailing
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 24))
 
                 // Decorative circles
                 GeometryReader { geo in
@@ -382,7 +395,7 @@ struct CarouselStageCard: View {
             }
             .frame(height: 230)
             .clipShape(RoundedRectangle(cornerRadius: 24))
-            .cardShadow()
+            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
         }
         .buttonStyle(.plain)
     }
