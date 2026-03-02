@@ -70,14 +70,6 @@ struct StageTheme {
         )
     }
 
-    var lightGradient: LinearGradient {
-        LinearGradient(
-            colors: [startColor.opacity(0.12), endColor.opacity(0.06)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
     static let all: [StageTheme] = [
         // 1 — Royal Blue (不改)
         StageTheme(start: "4F6BED", end: "7B8FF5", emoji: "📝"),
@@ -114,29 +106,7 @@ extension View {
         self
             .background(AppColors.card)
             .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.white.opacity(0.7), lineWidth: 1)
-            )
             .cardShadow()
     }
 
-    /// Apple-style bordered card with subtle inner glow
-    func borderedCardStyle(accent: Color = AppColors.border) -> some View {
-        self
-            .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.8), accent.opacity(0.15)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-            )
-            .cardShadow()
-    }
 }

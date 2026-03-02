@@ -5,6 +5,7 @@ struct StageListView: View {
     @State private var selectedStage: Stage?
     @State private var selectedTask: SpeakingTask?
     @State private var carouselStageId: Int?
+    @State private var taskListVisible = false
 
     private let stages = CourseData.stages
 
@@ -47,7 +48,8 @@ struct StageListView: View {
                         // Task list for selected stage
                         if let stageId = carouselStageId,
                            let stage = stages.first(where: { $0.id == stageId }) {
-                            taskListSection(stage: stage)
+                            taskListSection(stage: stage, visible: taskListVisible)
+                                .id(stageId)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 40)
                         }
@@ -68,6 +70,19 @@ struct StageListView: View {
             .onAppear {
                 if carouselStageId == nil {
                     carouselStageId = currentStage.id
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        taskListVisible = true
+                    }
+                }
+            }
+            .onChange(of: carouselStageId) {
+                taskListVisible = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        taskListVisible = true
+                    }
                 }
             }
         }
@@ -110,11 +125,6 @@ struct StageListView: View {
                     .font(.caption).foregroundStyle(AppColors.tertiaryText)
             }
             Spacer()
-            HStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
-                Text("\(totalCompleted) done")
-                    .font(.caption.bold()).foregroundStyle(AppColors.secondText)
-            }
         }
     }
 
@@ -129,6 +139,12 @@ struct StageListView: View {
                         onTaskTap: { selectedTask = $0 }
                     )
                     .frame(width: UIScreen.main.bounds.width - 40)
+                    .scrollTransition(.animated(.spring(response: 0.4, dampingFraction: 0.8))) { content, phase in
+                        content
+                            .scaleEffect(phase.isIdentity ? 1 : 0.92)
+                            .opacity(phase.isIdentity ? 1 : 0.6)
+                            .offset(y: phase.isIdentity ? 0 : 10)
+                    }
                     .id(stage.id)
                 }
             }
@@ -155,12 +171,12 @@ struct StageListView: View {
     }
 
     // MARK: - Task List Section
-    private func taskListSection(stage: Stage) -> some View {
+    private func taskListSection(stage: Stage, visible: Bool) -> some View {
         let theme = stage.theme
         let nextTask = stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
 
         return VStack(alignment: .leading, spacing: 0) {
-            // Header
+            // Header — slides from left
             HStack {
                 Text("\(stage.chineseTitle) · Tasks")
                     .font(.subheadline.bold())
@@ -175,89 +191,106 @@ struct StageListView: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
             .padding(.bottom, 10)
+            .opacity(visible ? 1 : 0)
+            .offset(x: visible ? 0 : -40)
+            .animation(.spring(response: 0.6, dampingFraction: 0.75).delay(0.05), value: visible)
 
             Divider().background(AppColors.border)
+                .scaleEffect(x: visible ? 1 : 0, anchor: .leading)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: visible)
 
-            // Task rows
+            // Task rows — deal from right with rotation
             ForEach(Array(stage.tasks.prefix(4).enumerated()), id: \.element.id) { idx, task in
                 let isCompleted = progress.isTaskCompleted(stageId: stage.id, taskId: task.id)
                 let isCurrent = task.id == nextTask?.id
+                let delay = 0.12 * Double(idx) + 0.15
 
-                Button { selectedTask = task } label: {
-                    HStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .fill(isCompleted ? theme.startColor : isCurrent ? theme.startColor.opacity(0.1) : AppColors.surface)
-                                .frame(width: 28, height: 28)
-                            if isCompleted {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-                            } else {
-                                Text("\(idx + 1)")
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .foregroundStyle(isCurrent ? theme.startColor : AppColors.tertiaryText)
+                VStack(spacing: 0) {
+                    Button { selectedTask = task } label: {
+                        HStack(spacing: 12) {
+                            // Number badge with bounce
+                            ZStack {
+                                Circle()
+                                    .fill(isCompleted ? theme.startColor : isCurrent ? theme.startColor.opacity(0.1) : AppColors.surface)
+                                    .frame(width: 28, height: 28)
+                                if isCompleted {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                                } else {
+                                    Text("\(idx + 1)")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(isCurrent ? theme.startColor : AppColors.tertiaryText)
+                                }
                             }
+                            .scaleEffect(visible ? 1 : 0.01)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.5).delay(delay + 0.15), value: visible)
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(task.title)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(isCompleted ? AppColors.tertiaryText : AppColors.primaryText)
+                                Text(task.englishTitle)
+                                    .font(.caption2).foregroundStyle(AppColors.tertiaryText)
+                            }
+
+                            Spacer()
+
+                            if isCurrent {
+                                Text("Current")
+                                    .font(.caption2.bold()).foregroundStyle(theme.startColor)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(theme.startColor.opacity(0.1)).clipShape(Capsule())
+                                    .scaleEffect(visible ? 1 : 0.01)
+                                    .animation(.spring(response: 0.4, dampingFraction: 0.5).delay(delay + 0.2), value: visible)
+                            }
+
+                            Image(systemName: "chevron.right")
+                                .font(.caption2).foregroundStyle(AppColors.border)
                         }
-
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(task.title)
-                                .font(.subheadline.bold())
-                                .foregroundStyle(isCompleted ? AppColors.tertiaryText : AppColors.primaryText)
-                            Text(task.englishTitle)
-                                .font(.caption2).foregroundStyle(AppColors.tertiaryText)
-                        }
-
-                        Spacer()
-
-                        if isCurrent {
-                            Text("Current")
-                                .font(.caption2.bold()).foregroundStyle(theme.startColor)
-                                .padding(.horizontal, 8).padding(.vertical, 3)
-                                .background(theme.startColor.opacity(0.1)).clipShape(Capsule())
-                        }
-
-                        Image(systemName: "chevron.right")
-                            .font(.caption2).foregroundStyle(AppColors.border)
+                        .padding(.horizontal, 16).padding(.vertical, 12)
+                        .background(isCurrent ? theme.startColor.opacity(0.03) : Color.clear)
                     }
-                    .padding(.horizontal, 16).padding(.vertical, 12)
-                    .background(isCurrent ? theme.startColor.opacity(0.03) : Color.clear)
-                }
-                .buttonStyle(.plain)
+                    .buttonStyle(.plain)
 
-                if idx < min(stage.tasks.count, 4) - 1 {
-                    Divider().background(AppColors.border).padding(.leading, 52)
+                    if idx < min(stage.tasks.count, 4) - 1 {
+                        Divider().background(AppColors.border).padding(.leading, 52)
+                    }
                 }
+                .opacity(visible ? 1 : 0)
+                .offset(x: visible ? 0 : 80)
+                .rotation3DEffect(.degrees(visible ? 0 : 12), axis: (x: 0, y: 1, z: 0), anchor: .leading)
+                .animation(.spring(response: 0.6, dampingFraction: 0.72).delay(delay), value: visible)
             }
 
             if stage.tasks.count > 4 {
-                Divider().background(AppColors.border).padding(.leading, 52)
-                Button { selectedStage = stage } label: {
-                    HStack {
-                        Text("View all \(stage.tasks.count) tasks")
-                            .font(.caption.bold()).foregroundStyle(theme.startColor)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.caption2).foregroundStyle(theme.startColor)
+                let footerDelay = 0.12 * Double(min(stage.tasks.count, 4)) + 0.15
+                VStack(spacing: 0) {
+                    Divider().background(AppColors.border).padding(.leading, 52)
+                    Button { selectedStage = stage } label: {
+                        HStack {
+                            Text("View all \(stage.tasks.count) tasks")
+                                .font(.caption.bold()).foregroundStyle(theme.startColor)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption2).foregroundStyle(theme.startColor)
+                        }
+                        .padding(.horizontal, 16).padding(.vertical, 13)
                     }
-                    .padding(.horizontal, 16).padding(.vertical, 13)
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                .opacity(visible ? 1 : 0)
+                .offset(x: visible ? 0 : 80)
+                .rotation3DEffect(.degrees(visible ? 0 : 12), axis: (x: 0, y: 1, z: 0), anchor: .leading)
+                .animation(.spring(response: 0.6, dampingFraction: 0.72).delay(footerDelay), value: visible)
             }
         }
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.8), theme.startColor.opacity(0.15)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
-                )
-        )
         .cardShadow()
+        // Card container entrance
+        .opacity(visible ? 1 : 0)
+        .scaleEffect(visible ? 1 : 0.88, anchor: .top)
+        .animation(.spring(response: 0.5, dampingFraction: 0.78).delay(0.0), value: visible)
     }
 
     // MARK: - Helpers
@@ -302,10 +335,6 @@ struct StatChip: View {
         .padding(.vertical, 12)
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.7), lineWidth: 1)
-        )
         .cardShadow()
     }
 }
