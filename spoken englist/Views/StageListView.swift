@@ -5,7 +5,9 @@ struct StageListView: View {
     @State private var selectedStage: Stage?
     @State private var selectedTask: SpeakingTask?
     @State private var carouselStageId: Int?
-    @State private var taskListVisible = false
+    @State private var displayedTaskStageId: Int?
+    @State private var taskListInsertionEdge: Edge = .trailing
+    @State private var taskListStageVisibility: [Int: Bool] = [:]
 
     private let stages = CourseData.stages
 
@@ -46,10 +48,11 @@ struct StageListView: View {
                             .padding(.bottom, 32)
 
                         // Task list for selected stage
-                        if let stageId = carouselStageId,
+                        if let stageId = displayedTaskStageId,
                            let stage = stages.first(where: { $0.id == stageId }) {
-                            taskListSection(stage: stage, visible: taskListVisible)
+                            taskListSection(stage: stage, visible: taskListStageVisibility[stageId] ?? false)
                                 .id(stageId)
+                                .transition(taskListTransition)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 40)
                         }
@@ -71,21 +74,42 @@ struct StageListView: View {
                 if carouselStageId == nil {
                     carouselStageId = currentStage.id
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        taskListVisible = true
-                    }
+                let targetStageId = carouselStageId ?? currentStage.id
+                if displayedTaskStageId == nil {
+                    displayedTaskStageId = targetStageId
                 }
+                animateTaskListEntrance(for: targetStageId, delay: 0.1)
             }
-            .onChange(of: carouselStageId) {
-                taskListVisible = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                        taskListVisible = true
-                    }
+            .onChange(of: carouselStageId) { _, newStageId in
+                guard let newStageId else { return }
+                guard displayedTaskStageId != newStageId else { return }
+                if let oldStageId = displayedTaskStageId {
+                    taskListInsertionEdge = newStageId > oldStageId ? .trailing : .leading
                 }
+                taskListStageVisibility[newStageId] = false
+                withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) {
+                    displayedTaskStageId = newStageId
+                }
+                animateTaskListEntrance(for: newStageId, delay: 0.06)
             }
         }
+    }
+
+    private func animateTaskListEntrance(for stageId: Int, delay: TimeInterval) {
+        taskListStageVisibility[stageId] = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.72)) {
+                taskListStageVisibility[stageId] = true
+            }
+        }
+    }
+
+    private var taskListTransition: AnyTransition {
+        let removalEdge: Edge = taskListInsertionEdge == .trailing ? .leading : .trailing
+        return .asymmetric(
+            insertion: .move(edge: taskListInsertionEdge).combined(with: .opacity),
+            removal: .move(edge: removalEdge).combined(with: .opacity)
+        )
     }
 
     // MARK: - Top Header
@@ -130,30 +154,33 @@ struct StageListView: View {
 
     // MARK: - Stage Carousel
     private var stageCarousel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 14) {
-                ForEach(stages) { stage in
-                    CarouselStageCard(
-                        stage: stage,
-                        onStageTap: { selectedStage = stage },
-                        onTaskTap: { selectedTask = $0 }
-                    )
-                    .frame(width: UIScreen.main.bounds.width - 40)
-                    .scrollTransition(.animated(.spring(response: 0.4, dampingFraction: 0.8))) { content, phase in
-                        content
-                            .scaleEffect(phase.isIdentity ? 1 : 0.92)
-                            .opacity(phase.isIdentity ? 1 : 0.6)
-                            .offset(y: phase.isIdentity ? 0 : 10)
+        GeometryReader { geo in
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 14) {
+                    ForEach(stages) { stage in
+                        CarouselStageCard(
+                            stage: stage,
+                            onStageTap: { selectedStage = stage },
+                            onTaskTap: { selectedTask = $0 }
+                        )
+                        .frame(width: max(0, geo.size.width - 40))
+                        .scrollTransition(.animated(.spring(response: 0.6, dampingFraction: 0.72))) { content, phase in
+                            content
+                                .opacity(1 - min(0.6, abs(phase.value) * 0.6))
+                                .scaleEffect(max(0.96, 1 - abs(phase.value) * 0.04))
+                                .offset(y: abs(phase.value) * 6)
+                        }
+                        .id(stage.id)
                     }
-                    .id(stage.id)
                 }
+                .scrollTargetLayout()
+                .padding(.horizontal, 20)
+                .padding(.vertical, 24)
             }
-            .scrollTargetLayout()
-            .padding(.horizontal, 20)
-            .padding(.vertical, 24)
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $carouselStageId)
         }
-        .scrollTargetBehavior(.viewAligned)
-        .scrollPosition(id: $carouselStageId)
+        .frame(height: 278)
     }
 
     // MARK: - Page Indicator
