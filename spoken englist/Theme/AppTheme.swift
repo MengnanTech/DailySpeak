@@ -93,18 +93,14 @@ struct StageTheme {
 
 // MARK: - View Modifiers
 extension View {
-    /// Layered warm shadow: tight inner + soft outer
+    /// Card shadow — matches DailySpeak style
     func cardShadow() -> some View {
-        self
-            .shadow(color: AppColors.shadowColor.opacity(0.08), radius: 3, x: 0, y: 1)
-            .shadow(color: AppColors.shadowColor.opacity(0.06), radius: 12, x: 0, y: 5)
+        self.shadow(color: Color(hex: "1A1714").opacity(0.06), radius: 10, x: 0, y: 3)
     }
 
-    /// Warm hero shadow — no colored tint
-    func heroShadow(color _: String = "") -> some View {
-        self
-            .shadow(color: AppColors.shadowColor.opacity(0.12), radius: 4, x: 0, y: 2)
-            .shadow(color: AppColors.shadowColor.opacity(0.10), radius: 20, x: 0, y: 10)
+    /// Hero shadow — colored tint for depth
+    func heroShadow(color hex: String = "1A1714") -> some View {
+        self.shadow(color: Color(hex: hex).opacity(0.38), radius: 20, x: 0, y: 10)
     }
 
     func cardStyle() -> some View {

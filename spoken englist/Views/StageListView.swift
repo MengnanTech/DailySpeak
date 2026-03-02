@@ -3,254 +3,385 @@ import SwiftUI
 struct StageListView: View {
     @Environment(ProgressManager.self) private var progress
     @State private var selectedStage: Stage?
-    @State private var appearAnimations = false
+    @State private var selectedTask: SpeakingTask?
+    @State private var carouselStageId: Int?
 
     private let stages = CourseData.stages
-    private let gridColumns = [
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14),
-    ]
+
+    private var currentStage: Stage {
+        stages.first { progress.stageProgress(for: $0) < 1.0 } ?? stages.last!
+    }
+    private var totalCompleted: Int {
+        stages.reduce(0) { $0 + progress.completedTaskCount(for: $1) }
+    }
+    private var totalTasks: Int {
+        stages.reduce(0) { $0 + $1.taskCount }
+    }
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    headerSection
-                    heroCard
-                    stageGrid
+            ZStack {
+                AppColors.background.ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        topHeader
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
+                            .padding(.bottom, 24)
+
+                        statsRow
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 28)
+
+                        sectionHeader
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 16)
+
+                        // Horizontal carousel
+                        stageCarousel
+                            .padding(.bottom, 14)
+
+                        pageIndicator
+                            .padding(.bottom, 32)
+
+                        // Task list for selected stage
+                        if let stageId = carouselStageId,
+                           let stage = stages.first(where: { $0.id == stageId }) {
+                            taskListSection(stage: stage)
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 40)
+                        }
+
+                        Spacer(minLength: 40)
+                    }
                 }
-                .padding(.bottom, 40)
             }
-            .background(AppColors.background.ignoresSafeArea())
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedStage) { stage in
                 TaskGridView(stage: stage)
             }
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) { appearAnimations = true }
+            .navigationDestination(item: $selectedTask) { task in
+                let stage = stages.first { s in s.tasks.contains { $0.id == task.id } } ?? currentStage
+                TaskOverviewView(stage: stage, task: task)
+            }
+            .onAppear {
+                if carouselStageId == nil {
+                    carouselStageId = currentStage.id
+                }
+            }
         }
     }
 
-    // MARK: - Header
-    private var headerSection: some View {
-        HStack(alignment: .bottom) {
+    // MARK: - Top Header
+    private var topHeader: some View {
+        HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Tasks")
-                    .font(.title.bold())
-                    .foregroundStyle(AppColors.primaryText)
-                Text("Master your English, one stage at a time")
+                Text(dateString())
                     .font(.caption)
                     .foregroundStyle(AppColors.tertiaryText)
+                Text(greetingText())
+                    .font(.title2.bold())
+                    .foregroundStyle(AppColors.primaryText)
             }
             Spacer()
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 20)
-        .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 10)
     }
 
-    // MARK: - Hero Card (Current Stage)
-    private var heroCard: some View {
-        let current = currentStage
-        let theme = current.theme
+    // MARK: - Stats Row
+    private var statsRow: some View {
+        HStack(spacing: 12) {
+            StatChip(icon: "flame.fill", iconColor: Color(hex: "F97316"),
+                     value: "\(totalCompleted)", label: "completed")
+            StatChip(icon: "book.fill", iconColor: Color(hex: "5B9BF0"),
+                     value: "\(totalTasks - totalCompleted)", label: "remaining")
+            StatChip(icon: "chart.line.uptrend.xyaxis", iconColor: Color(hex: "10B981"),
+                     value: "S\(currentStage.id)", label: "current")
+        }
+    }
 
-        return Button { selectedStage = current } label: {
-            ZStack {
-                // Background gradient
-                RoundedRectangle(cornerRadius: 22)
-                    .fill(theme.softGradient)
+    // MARK: - Section Header
+    private var sectionHeader: some View {
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Your Journey")
+                    .font(.title3.bold()).foregroundStyle(AppColors.primaryText)
+                Text("9 stages · \(totalTasks) tasks to fluency")
+                    .font(.caption).foregroundStyle(AppColors.tertiaryText)
+            }
+            Spacer()
+            HStack(spacing: 4) {
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).font(.caption)
+                Text("\(totalCompleted) done")
+                    .font(.caption.bold()).foregroundStyle(AppColors.secondText)
+            }
+        }
+    }
 
-                // Decorative elements
+    // MARK: - Stage Carousel
+    private var stageCarousel: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 14) {
+                ForEach(stages) { stage in
+                    CarouselStageCard(
+                        stage: stage,
+                        onStageTap: { selectedStage = stage },
+                        onTaskTap: { selectedTask = $0 }
+                    )
+                    .frame(width: UIScreen.main.bounds.width - 40)
+                    .id(stage.id)
+                }
+            }
+            .scrollTargetLayout()
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16) // room for heroShadow without clipping
+        }
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $carouselStageId)
+    }
+
+    // MARK: - Page Indicator
+    private var pageIndicator: some View {
+        HStack(spacing: 6) {
+            ForEach(stages) { stage in
+                let isActive = stage.id == (carouselStageId ?? currentStage.id)
+                Capsule()
+                    .fill(isActive ? stage.theme.startColor : AppColors.border)
+                    .frame(width: isActive ? 20 : 6, height: 6)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: carouselStageId)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Task List Section
+    private func taskListSection(stage: Stage) -> some View {
+        let theme = stage.theme
+        let nextTask = stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                Text("\(stage.chineseTitle) · Tasks")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Button { selectedStage = stage } label: {
+                    Text("View all")
+                        .font(.caption.bold())
+                        .foregroundStyle(theme.startColor)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 10)
+
+            Divider().background(AppColors.border)
+
+            // Task rows
+            ForEach(Array(stage.tasks.prefix(4).enumerated()), id: \.element.id) { idx, task in
+                let isCompleted = progress.isTaskCompleted(stageId: stage.id, taskId: task.id)
+                let isCurrent = task.id == nextTask?.id
+
+                Button { selectedTask = task } label: {
+                    HStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .fill(isCompleted ? theme.startColor : isCurrent ? theme.startColor.opacity(0.1) : AppColors.surface)
+                                .frame(width: 28, height: 28)
+                            if isCompleted {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                            } else {
+                                Text("\(idx + 1)")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(isCurrent ? theme.startColor : AppColors.tertiaryText)
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(task.title)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(isCompleted ? AppColors.tertiaryText : AppColors.primaryText)
+                            Text(task.englishTitle)
+                                .font(.caption2).foregroundStyle(AppColors.tertiaryText)
+                        }
+
+                        Spacer()
+
+                        if isCurrent {
+                            Text("Current")
+                                .font(.caption2.bold()).foregroundStyle(theme.startColor)
+                                .padding(.horizontal, 8).padding(.vertical, 3)
+                                .background(theme.startColor.opacity(0.1)).clipShape(Capsule())
+                        }
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption2).foregroundStyle(AppColors.border)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 12)
+                    .background(isCurrent ? theme.startColor.opacity(0.03) : Color.clear)
+                }
+                .buttonStyle(.plain)
+
+                if idx < min(stage.tasks.count, 4) - 1 {
+                    Divider().background(AppColors.border).padding(.leading, 52)
+                }
+            }
+
+            if stage.tasks.count > 4 {
+                Divider().background(AppColors.border).padding(.leading, 52)
+                Button { selectedStage = stage } label: {
+                    HStack {
+                        Text("View all \(stage.tasks.count) tasks")
+                            .font(.caption.bold()).foregroundStyle(theme.startColor)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption2).foregroundStyle(theme.startColor)
+                    }
+                    .padding(.horizontal, 16).padding(.vertical, 13)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(theme.startColor.opacity(0.18), lineWidth: 1.5))
+        .cardShadow()
+    }
+
+    // MARK: - Helpers
+    private func greetingText() -> String {
+        let h = Calendar.current.component(.hour, from: Date())
+        switch h {
+        case 5..<12: return "Good morning 👋"
+        case 12..<17: return "Good afternoon 👋"
+        default:      return "Good evening 👋"
+        }
+    }
+
+    private func dateString() -> String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f.string(from: Date())
+    }
+}
+
+// MARK: - Stat Chip
+struct StatChip: View {
+    let icon: String
+    let iconColor: Color
+    let value: String
+    let label: String
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+                .foregroundStyle(iconColor)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Text(label)
+                    .font(.system(size: 9))
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .cardShadow()
+    }
+}
+
+// MARK: - Carousel Hero Card (DailySpeak todayTaskCard style)
+struct CarouselStageCard: View {
+    @Environment(ProgressManager.self) private var progress
+    let stage: Stage
+    var onStageTap: () -> Void
+    var onTaskTap: (SpeakingTask) -> Void
+
+    private var completedCount: Int { progress.completedTaskCount(for: stage) }
+    private var prog: Double { progress.stageProgress(for: stage) }
+    private var theme: StageTheme { stage.theme }
+    private var nextTask: SpeakingTask? {
+        stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
+    }
+
+    var body: some View {
+        Button(action: onStageTap) {
+            ZStack(alignment: .leading) {
+                // Gradient background
+                LinearGradient(
+                    colors: [theme.startColor, theme.endColor],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+
+                // Decorative circles
                 GeometryReader { geo in
-                    Circle()
-                        .fill(.white.opacity(0.1))
-                        .frame(width: 100)
-                        .offset(x: geo.size.width - 55, y: -25)
-                    Circle()
-                        .fill(.white.opacity(0.06))
-                        .frame(width: 70)
-                        .offset(x: geo.size.width - 10, y: 55)
+                    Circle().fill(.white.opacity(0.09)).frame(width: 130)
+                        .offset(x: geo.size.width - 65, y: -40)
+                    Circle().fill(.white.opacity(0.06)).frame(width: 90)
+                        .offset(x: geo.size.width - 10, y: 70)
                 }
 
                 // Content
-                HStack(spacing: 0) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Stage \(current.id)")
-                            .font(.caption.bold())
-                            .foregroundStyle(.white.opacity(0.75))
-                            .tracking(1)
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack(alignment: .top) {
+                        Text("STAGE \(stage.id)")
+                            .font(.caption2.bold())
+                            .foregroundStyle(.white.opacity(0.8))
+                            .tracking(1.5)
+                        Spacer()
+                        Text(theme.emoji).font(.system(size: 36))
+                    }
+                    .padding(.bottom, 14)
 
-                        Text(current.chineseTitle)
-                            .font(.title3.bold())
-                            .foregroundStyle(.white)
+                    Text(stage.chineseTitle)
+                        .font(.title2.bold()).foregroundStyle(.white)
+                        .padding(.bottom, 4)
+                    Text(stage.title)
+                        .font(.subheadline).foregroundStyle(.white.opacity(0.75))
+                        .padding(.bottom, 20)
 
-                        Text(current.description)
-                            .font(.caption)
-                            .foregroundStyle(.white.opacity(0.7))
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.bottom, 8)
-
+                    HStack {
                         // Progress
                         HStack(spacing: 8) {
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
                                     Capsule().fill(.white.opacity(0.2)).frame(height: 5)
                                     Capsule().fill(.white)
-                                        .frame(
-                                            width: max(0, geo.size.width * progress.stageProgress(for: current)),
-                                            height: 5
-                                        )
+                                        .frame(width: max(0, geo.size.width * prog), height: 5)
                                 }
                             }
                             .frame(height: 5)
-                            .frame(maxWidth: 140)
+                            .frame(maxWidth: 120)
 
-                            Text("\(progress.completedTaskCount(for: current))/\(current.taskCount)")
+                            Text("\(completedCount)/\(stage.taskCount)")
                                 .font(.caption2.bold())
                                 .foregroundStyle(.white.opacity(0.8))
                         }
-                    }
 
-                    Spacer(minLength: 12)
-
-                    // Right side: emoji + arrow
-                    VStack(spacing: 10) {
-                        Text(theme.emoji)
-                            .font(.system(size: 34))
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.title3)
-                            .foregroundStyle(.white.opacity(0.9))
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 18)
-            }
-            .frame(height: 150)
-            .heroShadow(color: theme.start)
-        }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 24)
-        .opacity(appearAnimations ? 1 : 0)
-        .offset(y: appearAnimations ? 0 : 15)
-        .animation(.easeOut(duration: 0.6).delay(0.1), value: appearAnimations)
-    }
-
-    // MARK: - Stage Grid
-    private var stageGrid: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("ALL STAGES")
-                .font(.caption.bold())
-                .foregroundStyle(AppColors.tertiaryText)
-                .tracking(1.2)
-                .padding(.horizontal, 20)
-
-            LazyVGrid(columns: gridColumns, spacing: 14) {
-                ForEach(Array(stages.enumerated()), id: \.element.id) { index, stage in
-                    StageGridCard(stage: stage) {
-                        selectedStage = stage
-                    }
-                    .opacity(appearAnimations ? 1 : 0)
-                    .offset(y: appearAnimations ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.5).delay(0.15 + Double(index) * 0.05),
-                        value: appearAnimations
-                    )
-                }
-            }
-            .padding(.horizontal, 20)
-        }
-    }
-
-    // MARK: - Current Stage Helper
-    private var currentStage: Stage {
-        stages.first { progress.stageProgress(for: $0) < 1.0 } ?? stages.last!
-    }
-}
-
-// MARK: - Stage Grid Card
-struct StageGridCard: View {
-    @Environment(ProgressManager.self) private var progress
-    let stage: Stage
-    let onTap: () -> Void
-
-    private var theme: StageTheme { stage.theme }
-    private var completedCount: Int { progress.completedTaskCount(for: stage) }
-    private var prog: Double { progress.stageProgress(for: stage) }
-    private var isCompleted: Bool { prog >= 1.0 }
-
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 0) {
-                // Top: Emoji badge + Stage number
-                HStack(alignment: .top) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(theme.gradient)
-                            .frame(width: 40, height: 40)
-                        Text(theme.emoji)
-                            .font(.system(size: 18))
-                    }
-                    Spacer()
-                    Text("S\(stage.id)")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(theme.startColor)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(theme.startColor.opacity(0.1))
-                        .clipShape(Capsule())
-                }
-                .padding(.bottom, 10)
-
-                Text(stage.chineseTitle)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
-                    .padding(.bottom, 2)
-
-                Text(stage.title)
-                    .font(.system(size: 10))
-                    .foregroundStyle(AppColors.tertiaryText)
-
-                Spacer(minLength: 0)
-
-                // Progress bar
-                VStack(alignment: .leading, spacing: 4) {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(AppColors.surface).frame(height: 4)
-                            Capsule().fill(theme.gradient)
-                                .frame(width: max(0, geo.size.width * prog), height: 4)
-                        }
-                    }
-                    .frame(height: 4)
-
-                    HStack {
-                        Text("\(completedCount)/\(stage.taskCount)")
-                            .font(.system(size: 10, weight: .semibold, design: .rounded))
-                            .foregroundStyle(theme.startColor)
                         Spacer()
-                        if isCompleted {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 11))
-                                .foregroundStyle(AppColors.success)
+
+                        // Continue button
+                        HStack(spacing: 6) {
+                            Text("Continue").font(.subheadline.bold())
+                                .foregroundStyle(theme.startColor)
+                            Image(systemName: "arrow.right").font(.caption.bold())
+                                .foregroundStyle(theme.startColor)
                         }
+                        .padding(.horizontal, 16).padding(.vertical, 9)
+                        .background(.white).clipShape(Capsule())
                     }
                 }
+                .padding(22)
             }
-            .padding(14)
-            .frame(height: 158)
-            .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        isCompleted ? AppColors.success.opacity(0.25) : AppColors.border.opacity(0.6),
-                        lineWidth: 1
-                    )
-            )
+            .frame(height: 230)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
             .cardShadow()
         }
         .buttonStyle(.plain)
@@ -260,5 +391,13 @@ struct StageGridCard: View {
 // MARK: - Stage Identifiable + Hashable
 extension Stage: Hashable {
     static func == (lhs: Stage, rhs: Stage) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+// MARK: - SpeakingTask Hashable (for NavigationDestination)
+extension SpeakingTask: Hashable {
+    static func == (lhs: SpeakingTask, rhs: SpeakingTask) -> Bool {
+        lhs.id == rhs.id
+    }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }

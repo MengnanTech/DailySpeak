@@ -98,6 +98,8 @@ struct TaskGridView: View {
             .padding(18)
         }
         .frame(height: 148)
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .heroShadow(color: theme.start)
         .padding(.horizontal, 20)
         .padding(.top, 4)
         .padding(.bottom, 20)
@@ -231,16 +233,16 @@ struct TaskGridCard: View {
             .padding(13)
             .frame(height: 155)
             .background(isLocked ? AppColors.surface.opacity(0.6) : AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 20)
                     .stroke(
                         isCompleted
                             ? AppColors.success.opacity(0.25)
                             : isLocked
                                 ? Color.clear
-                                : AppColors.border.opacity(0.6),
-                        lineWidth: 1
+                                : theme.startColor.opacity(0.18),
+                        lineWidth: 1.5
                     )
             )
             .cardShadow()
@@ -251,8 +253,3 @@ struct TaskGridCard: View {
     }
 }
 
-// MARK: - SpeakingTask Hashable
-extension SpeakingTask: Hashable {
-    static func == (lhs: SpeakingTask, rhs: SpeakingTask) -> Bool { lhs.id == rhs.id }
-    func hash(into hasher: inout Hasher) { hasher.combine(id) }
-}
