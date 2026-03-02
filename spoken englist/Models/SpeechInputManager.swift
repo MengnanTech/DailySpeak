@@ -78,7 +78,7 @@ final class SpeechInputManager: ObservableObject {
         guard speechGranted else { return false }
 
         let micGranted: Bool = await withCheckedContinuation { continuation in
-            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            AVAudioApplication.requestRecordPermission { granted in
                 continuation.resume(returning: granted)
             }
         }
