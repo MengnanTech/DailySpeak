@@ -155,8 +155,8 @@ struct StageListView: View {
     // MARK: - Stage Carousel
     private var stageCarousel: some View {
         GeometryReader { geo in
-            let sidePeek = min(24, max(14, geo.size.width * 0.06))
-            let itemSpacing = min(10, max(6, geo.size.width * 0.02))
+            let sidePeek = min(18, max(10, geo.size.width * 0.045))
+            let itemSpacing = min(8, max(5, geo.size.width * 0.016))
             let cardWidth = max(0, geo.size.width - sidePeek * 2)
 
             ScrollView(.horizontal, showsIndicators: false) {
