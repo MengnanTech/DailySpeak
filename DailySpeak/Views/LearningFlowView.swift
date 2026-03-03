@@ -73,7 +73,7 @@ struct LearningFlowView: View {
                 ScrollView(showsIndicators: false) {
                     stepView(for: steps[index].type)
                         .padding(.horizontal, 20)
-                        .padding(.top, 16)
+                        .padding(.top, 0)
                         .padding(.bottom, 100)
                 }
                 .tag(index)
@@ -158,14 +158,110 @@ struct LearningFlowView: View {
     }
 }
 
+// MARK: - Step Hero Header
+struct StepHeroHeader: View {
+    let icon: String
+    let title: String
+    let english: String
+    let subtitle: String
+    let accentColor: Color
+    var secondaryColor: Color? = nil
+
+    private var endColor: Color { secondaryColor ?? accentColor.opacity(0.7) }
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(
+                    LinearGradient(
+                        colors: [accentColor, endColor],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            // Decorative
+            GeometryReader { geo in
+                Circle()
+                    .fill(.white.opacity(0.08))
+                    .frame(width: 80)
+                    .offset(x: geo.size.width - 50, y: -25)
+                Circle()
+                    .fill(.white.opacity(0.05))
+                    .frame(width: 55)
+                    .offset(x: geo.size.width - 20, y: 40)
+            }
+
+            HStack {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(english.uppercased())
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .tracking(1.2)
+
+                    Text(title)
+                        .font(.title3.bold())
+                        .foregroundStyle(.white)
+
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.7))
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: icon)
+                    .font(.system(size: 30, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.25))
+            }
+            .padding(18)
+        }
+        .frame(height: 110)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+// MARK: - Staggered Animation Modifier
+struct StaggeredAppear: ViewModifier {
+    let index: Int
+    let appeared: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 18)
+            .animation(
+                .spring(response: 0.5, dampingFraction: 0.78).delay(0.06 * Double(index) + 0.1),
+                value: appeared
+            )
+    }
+}
+
+extension View {
+    func staggerIn(index: Int, appeared: Bool) -> some View {
+        modifier(StaggeredAppear(index: index, appeared: appeared))
+    }
+}
+
 // MARK: - Strategy Step
 struct StrategyStepView: View {
     let task: SpeakingTask
     let accentColor: Color
 
+    @State private var appeared = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "lightbulb.fill", title: "答题策略", english: "How to Approach This Topic")
+            StepHeroHeader(
+                icon: "lightbulb.max.fill",
+                title: "答题策略",
+                english: "Strategy & Tips",
+                subtitle: "了解如何组织你的回答，掌握答题思路",
+                accentColor: Color(hex: "F59E0B"),
+                secondaryColor: Color(hex: "F97316")
+            )
+            .staggerIn(index: 0, appeared: appeared)
 
             // Tips
             VStack(alignment: .leading, spacing: 10) {
@@ -186,6 +282,7 @@ struct StrategyStepView: View {
             }
             .padding(16)
             .cardStyle()
+            .staggerIn(index: 1, appeared: appeared)
 
             // Prompt reminder
             VStack(alignment: .leading, spacing: 8) {
@@ -206,11 +303,22 @@ struct StrategyStepView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(accentColor.opacity(0.15), lineWidth: 1)
             )
+            .staggerIn(index: 2, appeared: appeared)
 
-            // Pass criteria reminder
-            sectionHeader(icon: "target", title: "过关标准", english: "Pass Criteria")
+            // Pass criteria
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "target")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                        .frame(width: 24, height: 24)
+                        .background(Color(hex: "EF4444"))
+                        .clipShape(Circle())
+                    Text("过关标准")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+                }
 
-            VStack(alignment: .leading, spacing: 8) {
                 ForEach(task.passCriteria, id: \.self) { criteria in
                     HStack(spacing: 8) {
                         Image(systemName: "circle")
@@ -224,23 +332,9 @@ struct StrategyStepView: View {
             }
             .padding(16)
             .cardStyle()
+            .staggerIn(index: 3, appeared: appeared)
         }
-    }
-
-    private func sectionHeader(icon: String, title: String, english: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(accentColor)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primaryText)
-                Text(english)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.tertiaryText)
-            }
-        }
+        .onAppear { appeared = true }
     }
 }
 
@@ -257,6 +351,25 @@ private enum VocabCategory: String, CaseIterable {
     }
 }
 
+private enum VocabViewMode: String, CaseIterable {
+    case list
+    case flashcard
+
+    var icon: String {
+        switch self {
+        case .list: "list.bullet"
+        case .flashcard: "rectangle.on.rectangle.angled"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .list: "列表"
+        case .flashcard: "闪卡"
+        }
+    }
+}
+
 struct VocabularyStepView: View {
     let task: SpeakingTask
     let accentColor: Color
@@ -265,6 +378,10 @@ struct VocabularyStepView: View {
     @State private var selectedItem: VocabItem?
     @State private var showUpgrade = true
     @State private var showAdvanced = false
+    @State private var viewMode: VocabViewMode = .list
+    @State private var flashcardIndex = 0
+    @State private var flashcardFlipped = false
+    @State private var appeared = false
 
     private var coreItems: [VocabItem] {
         task.vocabulary.filter { $0.band == .core }
@@ -278,42 +395,224 @@ struct VocabularyStepView: View {
         task.vocabulary.filter { $0.band == .advanced }
     }
 
+    private var currentFlashcardItems: [VocabItem] {
+        selectedCategory == .core ? coreItems : (upgradeItems + advancedItems)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(icon: "textbook", title: "词汇学习", english: "Core & Extended Vocabulary")
+            StepHeroHeader(
+                icon: "character.book.closed.fill",
+                title: "核心词汇",
+                english: "Key Vocabulary",
+                subtitle: "掌握 \(coreItems.count) 个核心词 · \(upgradeItems.count + advancedItems.count) 个进阶词",
+                accentColor: Color(hex: "4A90D9"),
+                secondaryColor: Color(hex: "7AB4E8")
+            )
+            .staggerIn(index: 0, appeared: appeared)
 
-            Text("点击单词查看发音、解释和例句")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
+            // Mode switcher: List / Flashcard
+            HStack(spacing: 0) {
+                ForEach(VocabViewMode.allCases, id: \.self) { mode in
+                    let isSelected = viewMode == mode
+                    Button {
+                        withAnimation(.spring(duration: 0.28)) { viewMode = mode; flashcardIndex = 0; flashcardFlipped = false }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: mode.icon)
+                                .font(.system(size: 11, weight: .bold))
+                            Text(mode.label)
+                                .font(.caption.bold())
+                        }
+                        .foregroundStyle(isSelected ? .white : AppColors.secondText)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 34)
+                        .background(isSelected ? accentColor : AppColors.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(3)
+            .background(AppColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .staggerIn(index: 1, appeared: appeared)
 
+            // Category switcher
             categorySwitcher
+                .staggerIn(index: 2, appeared: appeared)
 
-            if selectedCategory == .core {
-                vocabList(items: coreItems)
+            if viewMode == .flashcard {
+                flashcardView
+                    .staggerIn(index: 3, appeared: appeared)
             } else {
-                extendedSectionCard
+                if selectedCategory == .core {
+                    vocabList(items: coreItems)
+                        .staggerIn(index: 3, appeared: appeared)
+                } else {
+                    extendedSectionCard
+                        .staggerIn(index: 3, appeared: appeared)
+                }
             }
         }
         .sheet(item: $selectedItem) { item in
             VocabDetailSheet(item: item, accentColor: accentColor)
                 .presentationBackground(AppColors.background)
         }
+        .onAppear { appeared = true }
     }
 
-    private func sectionHeader(icon: String, title: String, english: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.subheadline)
-                .foregroundStyle(accentColor)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primaryText)
-                Text(english)
-                    .font(.caption)
+    // MARK: - Flashcard View
+    private var flashcardView: some View {
+        let items = currentFlashcardItems
+        guard !items.isEmpty else {
+            return AnyView(
+                Text("No vocabulary items")
+                    .font(.subheadline)
                     .foregroundStyle(AppColors.tertiaryText)
-            }
+                    .frame(maxWidth: .infinity, minHeight: 200)
+            )
         }
+        let item = items[flashcardIndex % items.count]
+
+        return AnyView(
+            VStack(spacing: 16) {
+                // Card
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                        flashcardFlipped.toggle()
+                    }
+                } label: {
+                    ZStack {
+                        if !flashcardFlipped {
+                            // Front: word + phonetic
+                            VStack(spacing: 12) {
+                                Text(item.word)
+                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppColors.primaryText)
+
+                                Text(item.phonetic)
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundStyle(AppColors.tertiaryText)
+
+                                Text(item.partOfSpeech)
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .foregroundStyle(item.band.color)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(item.band.color.opacity(0.12))
+                                    .clipShape(Capsule())
+
+                                Spacer().frame(height: 8)
+
+                                Text("tap to flip")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
+                            .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
+                        } else {
+                            // Back: meaning + example
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Text(item.word)
+                                        .font(.headline)
+                                        .foregroundStyle(AppColors.primaryText)
+                                    Spacer()
+                                    Button {
+                                        WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48)
+                                    } label: {
+                                        Image(systemName: "speaker.wave.2.fill")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(item.band.color)
+                                            .frame(width: 32, height: 32)
+                                            .background(item.band.color.opacity(0.12))
+                                            .clipShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                Text(item.meaning)
+                                    .font(.title3.bold())
+                                    .foregroundStyle(accentColor)
+
+                                Text(item.englishMeaning)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+
+                                Divider().background(AppColors.border)
+
+                                Text(item.example)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.primaryText)
+                                    .italic()
+
+                                Text(item.exampleTranslation)
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 220)
+                    .padding(24)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                flashcardFlipped ? item.band.color.opacity(0.2) : AppColors.border.opacity(0.5),
+                                lineWidth: 1.5
+                            )
+                    )
+                    .shadow(color: accentColor.opacity(0.1), radius: 16, x: 0, y: 8)
+                    .rotation3DEffect(
+                        .degrees(flashcardFlipped ? 0 : 0),
+                        axis: (x: 0, y: 1, z: 0)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                // Navigation
+                HStack(spacing: 16) {
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            flashcardFlipped = false
+                            flashcardIndex = (flashcardIndex - 1 + items.count) % items.count
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(AppColors.secondText)
+                            .frame(width: 44, height: 44)
+                            .background(AppColors.surface)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Text("\(flashcardIndex % items.count + 1) / \(items.count)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.secondText)
+                        .frame(minWidth: 50)
+
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            flashcardFlipped = false
+                            flashcardIndex = (flashcardIndex + 1) % items.count
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.white)
+                            .frame(width: 44, height: 44)
+                            .background(accentColor)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        )
     }
 
     private var categorySwitcher: some View {
@@ -325,6 +624,8 @@ struct VocabularyStepView: View {
                 Button {
                     withAnimation(.spring(duration: 0.28)) {
                         selectedCategory = category
+                        flashcardIndex = 0
+                        flashcardFlipped = false
                     }
                 } label: {
                     HStack(spacing: 6) {
@@ -642,44 +943,116 @@ struct PhrasesStepView: View {
     let task: SpeakingTask
     let accentColor: Color
 
+    @State private var appeared = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 10) {
-                Image(systemName: "text.quote")
-                    .font(.subheadline)
-                    .foregroundStyle(accentColor)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("实用词组")
-                        .font(.headline)
-                        .foregroundStyle(AppColors.primaryText)
-                    Text("Useful Phrases & Examples")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
-                }
-            }
+            StepHeroHeader(
+                icon: "quote.bubble.fill",
+                title: "实用词组",
+                english: "Useful Phrases",
+                subtitle: "掌握 \(task.phrases.count) 个地道表达，让口语更自然",
+                accentColor: Color(hex: "10B981"),
+                secondaryColor: Color(hex: "34D399")
+            )
+            .staggerIn(index: 0, appeared: appeared)
 
-            ForEach(task.phrases) { phrase in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(phrase.phrase)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(accentColor)
-
-                    Text(phrase.example)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .italic()
-                }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(accentColor.opacity(0.1), lineWidth: 1)
-                )
-                .cardShadow()
+            ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
+                PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor)
+                    .staggerIn(index: index + 1, appeared: appeared)
             }
         }
+        .onAppear { appeared = true }
+    }
+}
+
+struct PhraseCard: View {
+    let phrase: PhraseItem
+    let index: Int
+    let accentColor: Color
+
+    @State private var exampleVisible = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Top: number + phrase + speak button
+            HStack(alignment: .top, spacing: 12) {
+                // Left color bar + number
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(accentColor.opacity(0.12))
+                        .frame(width: 32, height: 32)
+                    Text("\(index)")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(accentColor)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(phrase.phrase)
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                }
+
+                Spacer()
+
+                Button {
+                    WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46)
+                } label: {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(accentColor)
+                        .frame(width: 32, height: 32)
+                        .background(accentColor.opacity(0.1))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.bottom, 10)
+
+            // Example: tap to reveal
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    exampleVisible.toggle()
+                }
+            } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Image(systemName: exampleVisible ? "eye.fill" : "eye.slash")
+                            .font(.system(size: 10, weight: .bold))
+                        Text(exampleVisible ? "Example" : "Tap to see example")
+                            .font(.caption.bold())
+                    }
+                    .foregroundStyle(accentColor.opacity(0.7))
+
+                    if exampleVisible {
+                        Text(phrase.example)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                            .italic()
+                            .lineSpacing(3)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(accentColor.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(14)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(accentColor.opacity(0.5))
+                    .frame(width: 3)
+                Spacer()
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        )
+        .cardShadow()
     }
 }
 
@@ -688,94 +1061,52 @@ struct FrameworkStepView: View {
     let task: SpeakingTask
     let accentColor: Color
 
+    @State private var appeared = false
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 10) {
-                Image(systemName: "rectangle.3.group.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(accentColor)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("表达框架")
-                        .font(.headline)
-                        .foregroundStyle(AppColors.primaryText)
-                    Text("Expression Framework")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
+            StepHeroHeader(
+                icon: "rectangle.3.group.fill",
+                title: "表达框架",
+                english: "Expression Framework",
+                subtitle: "掌握答题模板，让表达有条理",
+                accentColor: Color(hex: "8B5CF6"),
+                secondaryColor: Color(hex: "A78BFA")
+            )
+            .staggerIn(index: 0, appeared: appeared)
+
+            // Framework cards (replacing timeline)
+            VStack(spacing: 10) {
+                ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
+                    FrameworkSentenceCard(
+                        index: index + 1,
+                        label: index < labels.count ? labels[index] : "要点",
+                        sentence: sentence,
+                        accentColor: accentColor,
+                        isLast: index == task.frameworkSentences.count - 1
+                    )
+                    .staggerIn(index: index + 1, appeared: appeared)
                 }
             }
-
-            HStack(alignment: .top, spacing: 14) {
-                // Left column: continuous vertical line + circles
-                ZStack(alignment: .top) {
-                    // Background continuous line (from center of first circle to center of last)
-                    if task.frameworkSentences.count > 1 {
-                        Rectangle()
-                            .fill(accentColor.opacity(0.15))
-                            .frame(width: 2)
-                            .padding(.top, 14) // half of circle (28/2)
-                            .frame(maxHeight: .infinity, alignment: .top)
-                    }
-
-                    // Circles
-                    VStack(spacing: 0) {
-                        ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, _ in
-                            ZStack {
-                                Circle()
-                                    .fill(accentColor)
-                                    .frame(width: 28, height: 28)
-                                Text("\(index + 1)")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(.white)
-                            }
-                            .frame(height: index == task.frameworkSentences.count - 1 ? 28 : nil)
-                            // Spacer to match right column row height
-                            if index < task.frameworkSentences.count - 1 {
-                                Spacer(minLength: 0)
-                            }
-                        }
-                    }
-                }
-                .frame(width: 28)
-
-                // Right column: labels + sentences
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                        VStack(alignment: .leading, spacing: 4) {
-                            if index < labels.count {
-                                Text(labels[index])
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                                    .foregroundStyle(accentColor)
-                            }
-                            Text(sentence)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.primaryText)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.top, 4)
-                        .padding(.bottom, index == task.frameworkSentences.count - 1 ? 0 : 20)
-                    }
-                }
-            }
-            .padding(16)
-            .cardStyle()
 
             // Upgrade expressions
             if !task.upgradeExpressions.isEmpty {
-                HStack(spacing: 10) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(Color(hex: "F59E0B"))
-                    Text("升级表达")
-                        .font(.headline)
-                        .foregroundStyle(AppColors.primaryText)
-                }
-                .padding(.top, 8)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white)
+                            .frame(width: 26, height: 26)
+                            .background(Color(hex: "F59E0B"))
+                            .clipShape(Circle())
+                        Text("升级表达")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(AppColors.primaryText)
+                    }
 
-                VStack(spacing: 10) {
-                    ForEach(Array(task.upgradeExpressions.enumerated()), id: \.offset) { _, pair in
-                        VStack(alignment: .leading, spacing: 6) {
+                    ForEach(Array(task.upgradeExpressions.enumerated()), id: \.offset) { idx, pair in
+                        VStack(alignment: .leading, spacing: 8) {
                             HStack(spacing: 6) {
                                 Text("Before")
                                     .font(.system(size: 9, weight: .bold))
@@ -809,10 +1140,89 @@ struct FrameworkStepView: View {
                         .background(AppColors.card)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .cardShadow()
+                        .staggerIn(index: task.frameworkSentences.count + idx + 1, appeared: appeared)
                     }
                 }
+                .staggerIn(index: task.frameworkSentences.count + 1, appeared: appeared)
             }
         }
+        .onAppear { appeared = true }
+    }
+}
+
+struct FrameworkSentenceCard: View {
+    let index: Int
+    let label: String
+    let sentence: String
+    let accentColor: Color
+    let isLast: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            // Left: number + connector
+            VStack(spacing: 0) {
+                ZStack {
+                    Circle()
+                        .fill(accentColor)
+                        .frame(width: 28, height: 28)
+                    Text("\(index)")
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                }
+                if !isLast {
+                    Rectangle()
+                        .fill(accentColor.opacity(0.15))
+                        .frame(width: 2)
+                        .frame(maxHeight: .infinity)
+                }
+            }
+            .frame(width: 28)
+
+            // Right: label + sentence with fill-in highlights
+            VStack(alignment: .leading, spacing: 4) {
+                Text(label)
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(accentColor)
+
+                highlightedSentence(sentence)
+                    .font(.subheadline)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.vertical, 2)
+            .padding(.bottom, isLast ? 0 : 10)
+        }
+    }
+
+    // Highlight `...` parts as fill-in blanks
+    @ViewBuilder
+    private func highlightedSentence(_ text: String) -> some View {
+        let parts = text.components(separatedBy: "...")
+        if parts.count > 1 {
+            // Has fill-in blanks
+            Text(buildAttributedSentence(text))
+        } else {
+            Text(text)
+                .foregroundStyle(AppColors.primaryText)
+        }
+    }
+
+    private func buildAttributedSentence(_ text: String) -> AttributedString {
+        var result = AttributedString()
+        let segments = text.components(separatedBy: "...")
+
+        for (i, segment) in segments.enumerated() {
+            var part = AttributedString(segment)
+            part.foregroundColor = AppColors.primaryText
+            result.append(part)
+
+            if i < segments.count - 1 {
+                var blank = AttributedString("  ___  ")
+                blank.foregroundColor = accentColor
+                blank.font = .system(size: 15, weight: .bold, design: .rounded)
+                result.append(blank)
+            }
+        }
+        return result
     }
 }
 
@@ -822,6 +1232,7 @@ struct SamplesStepView: View {
     let accentColor: Color
 
     @State private var selectedBand = 0
+    @State private var appeared = false
 
     private var bandColors: [Color] {
         [Color(hex: "4A90D9"), Color(hex: "F59E0B"), Color(hex: "EF4444")]
@@ -829,19 +1240,15 @@ struct SamplesStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 10) {
-                Image(systemName: "doc.richtext.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(accentColor)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("范文学习")
-                        .font(.headline)
-                        .foregroundStyle(AppColors.primaryText)
-                    Text("Sample Answers")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
-                }
-            }
+            StepHeroHeader(
+                icon: "doc.richtext.fill",
+                title: "范文学习",
+                english: "Sample Answers",
+                subtitle: "三个水平的示范回答，对比学习",
+                accentColor: Color(hex: "EC4899"),
+                secondaryColor: Color(hex: "F472B6")
+            )
+            .staggerIn(index: 0, appeared: appeared)
 
             // Band selector
             HStack(spacing: 8) {
@@ -864,6 +1271,7 @@ struct SamplesStepView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .staggerIn(index: 1, appeared: appeared)
 
             // Sample content
             if selectedBand < task.sampleAnswers.count {
@@ -882,13 +1290,14 @@ struct SamplesStepView: View {
 
                     Divider().background(AppColors.border)
 
-                    Text(sample.content)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.primaryText)
+                    // Highlighted sample content
+                    highlightedSampleText(sample.content)
                         .lineSpacing(6)
 
-                    // Audio button placeholder
-                    Button {} label: {
+                    // Audio button
+                    Button {
+                        WordPronouncer.shared.speak(sample.content, locale: "en-US", rate: 0.46)
+                    } label: {
                         HStack(spacing: 8) {
                             Image(systemName: "play.circle.fill")
                                 .font(.title3)
@@ -915,8 +1324,38 @@ struct SamplesStepView: View {
                     insertion: .opacity.combined(with: .move(edge: .trailing)),
                     removal: .opacity.combined(with: .move(edge: .leading))
                 ))
+                .staggerIn(index: 2, appeared: appeared)
             }
         }
+        .onAppear { appeared = true }
+    }
+
+    // Highlight vocabulary words from this task in the sample text
+    @ViewBuilder
+    private func highlightedSampleText(_ content: String) -> some View {
+        let vocabWords = Set(task.vocabulary.map { $0.word.lowercased() })
+        let words = content.components(separatedBy: " ")
+
+        Text(words.reduce(AttributedString()) { result, word in
+            var r = result
+            if !r.characters.isEmpty {
+                r.append(AttributedString(" "))
+            }
+            let cleaned = word.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            if vocabWords.contains(cleaned) {
+                var attr = AttributedString(word)
+                attr.foregroundColor = accentColor
+                attr.font = .subheadline.bold()
+                attr.underlineStyle = .single
+                r.append(attr)
+            } else {
+                var attr = AttributedString(word)
+                attr.foregroundColor = AppColors.primaryText
+                attr.font = .subheadline
+                r.append(attr)
+            }
+            return r
+        })
     }
 }
 
@@ -949,6 +1388,7 @@ struct PracticePromptView: View {
     @State private var polishedEnglish: String
     @State private var isProcessing = false
     @State private var errorMessage: String?
+    @State private var appeared = false
     @FocusState private var isInputFocused: Bool
 
     init(stageId: Int, task: SpeakingTask, accentColor: Color) {
@@ -969,10 +1409,24 @@ struct PracticePromptView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            StepHeroHeader(
+                icon: "mic.fill",
+                title: "口语练习",
+                english: "Speaking Practice",
+                subtitle: "实战演练，开口说英语",
+                accentColor: Color(hex: "EF4444"),
+                secondaryColor: Color(hex: "F97316")
+            )
+            .staggerIn(index: 0, appeared: appeared)
+
             topicCard
+                .staggerIn(index: 1, appeared: appeared)
             frameworkHints
+                .staggerIn(index: 2, appeared: appeared)
             inputCard
+                .staggerIn(index: 3, appeared: appeared)
             actionArea
+                .staggerIn(index: 4, appeared: appeared)
 
             if !translatedEnglish.isEmpty {
                 resultCard(
@@ -1020,6 +1474,7 @@ struct PracticePromptView: View {
         .onDisappear {
             speechInput.stopRecording()
         }
+        .onAppear { appeared = true }
     }
 
     private var topicCard: some View {
