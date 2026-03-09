@@ -1,0 +1,78 @@
+{
+  "stage_id": 1,
+  "stage_label": "Stage 1",
+  "lessons": [
+    {
+      "id": 1,
+      "stage": 1,
+      "title_cn": "描述一个人",
+      "title_en": "Describe a Person",
+      "prompt": "Describe a person you know well.",
+      "filename": "s01_q01_describe_a_person.json",
+      "structured_content": true
+    },
+    {
+      "id": 2,
+      "stage": 1,
+      "title_cn": "描述一个物品",
+      "title_en": "Describe an Object",
+      "prompt": "Describe an object that is part of your routine.",
+      "filename": "s01_q02_describe_an_object.json",
+      "structured_content": true
+    },
+    {
+      "id": 3,
+      "stage": 1,
+      "title_cn": "描述一个地点",
+      "title_en": "Describe a Place",
+      "prompt": "Describe a place you enjoy spending time in.",
+      "filename": "s01_q03_describe_a_place.json",
+      "structured_content": true
+    },
+    {
+      "id": 4,
+      "stage": 1,
+      "title_cn": "描述一个活动或习惯",
+      "title_en": "Describe an Activity or Habit",
+      "prompt": "Describe an activity or habit that shapes your daily life.",
+      "filename": "s01_q04_describe_an_activity_or_habit.json",
+      "structured_content": true
+    },
+    {
+      "id": 5,
+      "stage": 1,
+      "title_cn": "描述天气或季节",
+      "title_en": "Describe Weather or a Season",
+      "prompt": "Describe weather or a season that affects your mood or routine.",
+      "filename": "s01_q05_describe_weather_or_a_season.json",
+      "structured_content": true
+    },
+    {
+      "id": 6,
+      "stage": 1,
+      "title_cn": "描述情绪与感受",
+      "title_en": "Describe Feelings",
+      "prompt": "Describe a feeling or emotional state you often experience.",
+      "filename": "s01_q06_describe_feelings.json",
+      "structured_content": true
+    },
+    {
+      "id": 7,
+      "stage": 1,
+      "title_cn": "描述喜好与偏好",
+      "title_en": "Describe Preferences",
+      "prompt": "Describe something you genuinely enjoy or strongly prefer.",
+      "filename": "s01_q07_describe_preferences.json",
+      "structured_content": true
+    },
+    {
+      "id": 8,
+      "stage": 1,
+      "title_cn": "描述日常生活状态",
+      "title_en": "Describe Daily Life",
+      "prompt": "Describe your current daily life situation.",
+      "filename": "s01_q08_describe_daily_life_state.json",
+      "structured_content": true
+    }
+  ]
+}

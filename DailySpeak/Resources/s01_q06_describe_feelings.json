@@ -1,0 +1,425 @@
+{
+  "id": "s01_q06",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述情绪与感受",
+    "prompt_en": "Describe a feeling or emotional state you often experience.",
+    "learning_goal": "Learn to talk about feelings in a calm, natural, and specific way without sounding dramatic.",
+    "category": "emotion",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Name the feeling clearly",
+        "content": [
+          "Choose one feeling you can explain well, such as calm, pressure, or relief.",
+          "Avoid switching between too many emotions."
+        ]
+      },
+      {
+        "title": "Give the usual trigger",
+        "content": [
+          "Say when the feeling tends to appear.",
+          "A recurring context makes the answer more believable."
+        ]
+      },
+      {
+        "title": "Describe how it shows up",
+        "content": [
+          "Explain thoughts, body reaction, or behavior in simple terms.",
+          "This is often more natural than abstract emotional language."
+        ]
+      },
+      {
+        "title": "End with what you do about it",
+        "content": [
+          "Show whether the feeling is useful, difficult, or manageable.",
+          "This gives the answer direction and maturity."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Name the feeling",
+        "target": "Say what the feeling is and when it usually appears."
+      },
+      {
+        "phase": "Body",
+        "focus": "Effect and example",
+        "target": "Explain how it affects your thinking or behavior."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Response",
+        "target": "Finish with how you handle it or what it teaches you."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Feeling + trigger",
+        "value": "30%"
+      },
+      {
+        "label": "Effect + example",
+        "value": "45%"
+      },
+      {
+        "label": "Response",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Choose a feeling you can speak about honestly without sounding theatrical.",
+      "Use situations and behavior to explain emotion.",
+      "Balanced answers sound stronger than extreme emotional claims.",
+      "End with self-awareness, not just description."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Describing the emotion in a vague way",
+          "why_it_hurts": "The listener hears the label but not what it means in your life.",
+          "fix": "Explain when it happens and what you tend to do when you feel it."
+        },
+        {
+          "problem": "Making the feeling sound too dramatic",
+          "why_it_hurts": "Overstatement can make a simple speaking answer sound unnatural.",
+          "fix": "Use moderate words like slightly tense, quietly relieved, or mentally settled."
+        },
+        {
+          "problem": "No coping response",
+          "why_it_hurts": "The answer feels incomplete if you do not explain how you deal with the feeling.",
+          "fix": "Add one small habit or mindset that helps."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using pressure as an adjective",
+          "wrong_example": "I feel very pressure before deadlines.",
+          "better_example": "I feel a lot of pressure before deadlines.",
+          "reason": "Pressure is a noun, so you feel pressure, not feel pressured or feel very pressure."
+        },
+        {
+          "problem": "Using nervous for long-term stress",
+          "wrong_example": "I am nervous all week before a project ends.",
+          "better_example": "I tend to feel tense all week before a project ends.",
+          "reason": "Tense often works better than nervous for low-level ongoing stress."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "calm",
+        "pos": "adj.",
+        "meaning_zh": "平静的",
+        "band": 6,
+        "example": "I feel calm when I have a clear plan for the day."
+      },
+      {
+        "item": "tense",
+        "pos": "adj.",
+        "meaning_zh": "紧绷的",
+        "band": 6,
+        "example": "I get tense before important deadlines."
+      },
+      {
+        "item": "relieved",
+        "pos": "adj.",
+        "meaning_zh": "如释重负的",
+        "band": 6,
+        "example": "I usually feel relieved once the difficult part is over."
+      },
+      {
+        "item": "overthink",
+        "pos": "v.",
+        "meaning_zh": "想太多",
+        "band": 6,
+        "example": "When I feel stressed, I tend to overthink small decisions."
+      },
+      {
+        "item": "settle down",
+        "pos": "v. phr.",
+        "meaning_zh": "平静下来",
+        "band": 6,
+        "example": "A short break usually helps me settle down."
+      },
+      {
+        "item": "state of mind",
+        "pos": "n. phr.",
+        "meaning_zh": "心理状态",
+        "band": 6,
+        "example": "That habit puts me in a better state of mind."
+      }
+    ],
+    "extended": [
+      {
+        "item": "low-level stress",
+        "pos": "n. phr.",
+        "meaning_zh": "低强度但持续的压力",
+        "note": "Very useful for realistic adult emotions."
+      },
+      {
+        "item": "mentally settled",
+        "pos": "adj. phr.",
+        "meaning_zh": "心里安定下来的",
+        "note": "Good for calm after uncertainty."
+      },
+      {
+        "item": "feel emotionally lighter",
+        "pos": "v. phr.",
+        "meaning_zh": "情绪上更轻松",
+        "note": "A softer alternative to happy."
+      },
+      {
+        "item": "carry tension",
+        "pos": "v. phr.",
+        "meaning_zh": "带着紧张状态",
+        "note": "Useful for describing stress in the body."
+      },
+      {
+        "item": "regain perspective",
+        "pos": "v. phr.",
+        "meaning_zh": "重新找回视角和判断",
+        "note": "Strong phrase for emotional recovery."
+      },
+      {
+        "item": "manageable",
+        "pos": "adj.",
+        "meaning_zh": "可应对的",
+        "note": "Important for balanced emotional answers."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "feel under pressure",
+        "meaning_zh": "感到有压力",
+        "band": 6,
+        "example": "I feel under pressure when several deadlines arrive at once."
+      },
+      {
+        "phrase": "get in my own head",
+        "meaning_zh": "陷入自己的想法里转圈",
+        "band": 6,
+        "example": "If I am too stressed, I start to get in my own head."
+      },
+      {
+        "phrase": "take a step back",
+        "meaning_zh": "先退一步想一想",
+        "band": 6,
+        "example": "I usually take a step back before reacting."
+      },
+      {
+        "phrase": "feel more settled",
+        "meaning_zh": "感觉更安定",
+        "band": 7,
+        "example": "After a short walk, I usually feel more settled."
+      },
+      {
+        "phrase": "regain perspective",
+        "meaning_zh": "重新找回判断",
+        "band": 7,
+        "example": "Talking to someone I trust helps me regain perspective."
+      },
+      {
+        "phrase": "not let it spiral",
+        "meaning_zh": "不让它越变越糟",
+        "band": 7,
+        "example": "I try to notice the feeling early and not let it spiral."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "carry tension in my shoulders",
+        "meaning_zh": "肩膀一直绷着",
+        "note": "Useful body-based detail for stress.",
+        "example": "When I am stressed, I usually carry tension in my shoulders."
+      },
+      {
+        "phrase": "feel emotionally lighter afterward",
+        "meaning_zh": "之后情绪上会轻松一点",
+        "note": "Good after difficult tasks or honest conversations.",
+        "example": "Once it is done, I feel emotionally lighter afterward."
+      },
+      {
+        "phrase": "name the feeling properly",
+        "meaning_zh": "先准确说出自己的感受",
+        "note": "Useful for reflection and self-management.",
+        "example": "It helps if I name the feeling properly instead of ignoring it."
+      },
+      {
+        "phrase": "keep it manageable",
+        "meaning_zh": "把它控制在可应对范围内",
+        "note": "Strong closing phrase for mature emotional responses.",
+        "example": "A clear routine helps me keep it manageable."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Describe a feeling with trigger, effect, and response in a balanced way.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Name the feeling and say when it usually appears.",
+          "Keep the label simple and clear."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe how the feeling shows up in your thoughts or body.",
+          "Use one repeated situation as evidence."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Explain how you handle the feeling now.",
+          "End with a realistic takeaway."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "I tend to feel this when ...",
+      "What usually happens is ...",
+      "Over time, I have learned to ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "A feeling I often experience is mild pressure before important deadlines. I would not say it is panic, but I definitely feel more tense than usual when I know something has to be finished soon.\n\nThe first thing I notice is that I start overthinking small things. I read messages too many times, and I sometimes find it hard to relax properly in the evening. For example, if I have to present something the next day, I may keep checking my notes even when I already know them.\n\nThe good thing is that I understand this feeling better now. I usually take a short break, make a simple list, and focus on one task at a time. That does not remove the pressure completely, but it makes it manageable.",
+      "highlights": [
+        "Balanced and realistic emotional description",
+        "Good difference between pressure and panic"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear trigger and simple coping response",
+        "opening": [
+          "A feeling I often experience is ...",
+          "I would not say it is panic, but ..."
+        ],
+        "body": [
+          "The first thing I notice is ...",
+          "For example, if I ..."
+        ],
+        "closing": [
+          "That does not remove it completely, but ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I feel nervous.",
+          "improved": "I feel mild pressure before important deadlines.",
+          "why": "This is more precise and more adult-sounding.",
+          "note": "Pressure works well for work or study situations."
+        },
+        {
+          "original": "I solve it by resting.",
+          "improved": "I make a simple list and focus on one task at a time.",
+          "why": "Specific coping actions sound more believable.",
+          "note": "Use one or two concrete steps."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The emotional state I probably experience most often is low-level stress before an important deadline. It is not intense enough to stop me from working, but it is definitely there in the background and affects the way I think.\n\nWhen that happens, I usually become more restless and less patient with myself. I check details too often, carry tension in my shoulders, and find it harder to switch off at night. A typical example would be the last few days before I have to deliver a presentation or finish a major task.\n\nWhat has changed over time is the way I respond to it. Instead of pretending I am fine, I try to name the feeling properly, take a step back, and regain perspective. Once I do that, the stress does not disappear, but it becomes much easier to handle.",
+      "highlights": [
+        "Shows emotional awareness without sounding heavy",
+        "Uses body detail and response naturally"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "More precise emotional vocabulary and stronger response",
+        "opening": [
+          "The emotional state I probably experience most often is ...",
+          "It is not intense enough to ..., but ..."
+        ],
+        "body": [
+          "When that happens, I usually ...",
+          "A typical example would be ..."
+        ],
+        "closing": [
+          "What has changed over time is ...",
+          "It becomes much easier to handle."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I get stressed.",
+          "improved": "I experience low-level stress before important deadlines.",
+          "why": "Low-level stress sounds more nuanced than get stressed.",
+          "note": "Useful for recurring emotional states."
+        },
+        {
+          "original": "I calm down later.",
+          "improved": "I try to regain perspective so it becomes easier to handle.",
+          "why": "The response sounds more mature and specific.",
+          "note": "Good for reflective closings."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "A feeling I have become more aware of in recent years is a quiet sense of pressure before important deadlines. I describe it that way because it is rarely dramatic, but it can still shape the tone of an entire day if I do not notice it early enough.\n\nIt usually shows up as mental crowding rather than fear. I become less decisive, more likely to overcheck things, and slightly disconnected from the present moment because part of my attention is already on the future task. In the past, I would just push through that state and let it linger. These days, I treat it more deliberately. I step back, narrow my focus, and remind myself what actually needs to be done first.\n\nThat response does not eliminate pressure, but it stops it from taking over my thinking. For me, the real progress is not feeling calm all the time; it is noticing the feeling early enough to keep it manageable.",
+      "highlights": [
+        "Quiet sense of pressure is nuanced and natural",
+        "Band 8 strength comes from clarity and self-awareness"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Nuance and mature self-observation",
+        "opening": [
+          "A feeling I have become more aware of is ...",
+          "I describe it that way because ..."
+        ],
+        "body": [
+          "It usually shows up as ...",
+          "These days, I treat it more deliberately."
+        ],
+        "closing": [
+          "The real progress is not ..., it is ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I feel stressed before work.",
+          "improved": "I notice a quiet sense of pressure before important deadlines.",
+          "why": "This is more controlled and more specific.",
+          "note": "Great for calm, thoughtful answers."
+        },
+        {
+          "original": "I try to calm down.",
+          "improved": "I try to notice the feeling early enough to keep it manageable.",
+          "why": "The focus shifts from emotion label to skillful response.",
+          "note": "A strong Band 8-style ending."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe a feeling you often experience and explain how it shows up and how you deal with it.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Name the feeling clearly.",
+      "Explain when it appears and what it does to you.",
+      "Add one response or coping method."
+    ],
+    "self_prompts": [
+      "What usually triggers this feeling?",
+      "How do you notice it in your body or thoughts?",
+      "What situation shows it clearly?",
+      "How do you respond now?"
+    ]
+  }
+}

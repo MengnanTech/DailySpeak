@@ -1,0 +1,425 @@
+{
+  "id": "s01_q08",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述日常生活状态",
+    "prompt_en": "Describe your current daily life situation.",
+    "learning_goal": "Learn to summarize current daily life with routine, pressure points, balance, and future uncertainty.",
+    "category": "daily-life",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Give the overall picture",
+        "content": [
+          "Describe your life in one balanced sentence first.",
+          "Words like busy, steady, transitional, or more balanced are useful."
+        ]
+      },
+      {
+        "title": "Describe the routine",
+        "content": [
+          "Mention the main parts of your weekdays.",
+          "Do not try to narrate every hour."
+        ]
+      },
+      {
+        "title": "Mention one challenge",
+        "content": [
+          "A current pressure point makes the answer realistic.",
+          "Keep it specific but not overly personal."
+        ]
+      },
+      {
+        "title": "End with direction",
+        "content": [
+          "Say whether life feels stable, improving, or still uncertain.",
+          "A balanced ending sounds more mature than forced optimism."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Overall situation",
+        "target": "Summarize your current stage of life in one sentence."
+      },
+      {
+        "phase": "Body",
+        "focus": "Routine and challenge",
+        "target": "Explain what most days look like and where the pressure comes from."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Balance and direction",
+        "target": "End with how you see your life right now."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Overall picture",
+        "value": "25%"
+      },
+      {
+        "label": "Routine + challenge",
+        "value": "50%"
+      },
+      {
+        "label": "Balance + direction",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Daily life answers sound stronger when you mix routine with interpretation.",
+      "Use moderate language such as fairly busy, a bit uncertain, or gradually more balanced.",
+      "Include one challenge, but keep the tone composed.",
+      "A realistic closing is often more impressive than a perfect-sounding life summary."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Listing tasks without perspective",
+          "why_it_hurts": "The answer sounds like a schedule instead of a life description.",
+          "fix": "Summarize the routine, then explain how it feels or what phase you are in."
+        },
+        {
+          "problem": "Pretending everything is perfect",
+          "why_it_hurts": "That often sounds artificial and less believable.",
+          "fix": "Mention one challenge and one area that is getting better."
+        },
+        {
+          "problem": "No sense of change or direction",
+          "why_it_hurts": "Current daily life sounds flat if there is no view on where things are heading.",
+          "fix": "End with whether life feels stable, transitional, or still evolving."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using life is too busyly",
+          "wrong_example": "My life is too busyly these days.",
+          "better_example": "My life is quite busy these days.",
+          "reason": "Busy is the correct adjective. Busyly is not a word."
+        },
+        {
+          "problem": "Using adapt with",
+          "wrong_example": "I am adapting with this new schedule.",
+          "better_example": "I am adapting to this new schedule.",
+          "reason": "The natural preposition is to."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "schedule",
+        "pos": "n.",
+        "meaning_zh": "日程安排",
+        "band": 6,
+        "example": "My current schedule is fairly packed during the week."
+      },
+      {
+        "item": "balance",
+        "pos": "n.",
+        "meaning_zh": "平衡",
+        "band": 6,
+        "example": "I am trying to find a better balance between work and rest."
+      },
+      {
+        "item": "packed",
+        "pos": "adj.",
+        "meaning_zh": "安排得很满的",
+        "band": 6,
+        "example": "Most weekdays feel quite packed at the moment."
+      },
+      {
+        "item": "routine",
+        "pos": "n.",
+        "meaning_zh": "固定节奏",
+        "band": 6,
+        "example": "Even though things are busy, I still have a basic routine."
+      },
+      {
+        "item": "adjust",
+        "pos": "v.",
+        "meaning_zh": "调整适应",
+        "band": 6,
+        "example": "I am still adjusting to a slightly different rhythm."
+      },
+      {
+        "item": "stable",
+        "pos": "adj.",
+        "meaning_zh": "稳定的",
+        "band": 6,
+        "example": "Some parts of my life feel stable now, which I appreciate."
+      }
+    ],
+    "extended": [
+      {
+        "item": "in a transitional phase",
+        "pos": "adj. phr.",
+        "meaning_zh": "处在过渡阶段",
+        "note": "Useful when life is not chaotic but not fully settled."
+      },
+      {
+        "item": "gradually more balanced",
+        "pos": "adj. phr.",
+        "meaning_zh": "逐渐更平衡",
+        "note": "Strong phrase for realistic improvement."
+      },
+      {
+        "item": "carry a fair amount of responsibility",
+        "pos": "v. phr.",
+        "meaning_zh": "承担不少责任",
+        "note": "Good for adult daily life answers."
+      },
+      {
+        "item": "room to improve",
+        "pos": "n. phr.",
+        "meaning_zh": "还有提升空间",
+        "note": "Useful for balanced endings."
+      },
+      {
+        "item": "find a workable rhythm",
+        "pos": "v. phr.",
+        "meaning_zh": "找到一个可持续的节奏",
+        "note": "Very practical phrase for current-life topics."
+      },
+      {
+        "item": "not fully settled yet",
+        "pos": "adj. phr.",
+        "meaning_zh": "还没有完全稳定下来",
+        "note": "Good for honest but calm endings."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "these days",
+        "meaning_zh": "最近这段时间",
+        "band": 6,
+        "example": "These days, my life feels quite structured but busy."
+      },
+      {
+        "phrase": "most of my weekdays",
+        "meaning_zh": "我大多数工作日",
+        "band": 6,
+        "example": "Most of my weekdays follow a similar pattern."
+      },
+      {
+        "phrase": "try to stay on top of things",
+        "meaning_zh": "尽量把事情都跟上",
+        "band": 6,
+        "example": "I spend a lot of time trying to stay on top of things."
+      },
+      {
+        "phrase": "find a better balance",
+        "meaning_zh": "找到更好的平衡",
+        "band": 7,
+        "example": "I am still trying to find a better balance between work and rest."
+      },
+      {
+        "phrase": "in a transitional phase",
+        "meaning_zh": "处于过渡阶段",
+        "band": 7,
+        "example": "I would say I am in a transitional phase right now."
+      },
+      {
+        "phrase": "moving in the right direction",
+        "meaning_zh": "在朝好的方向发展",
+        "band": 7,
+        "example": "It is not perfect, but it is moving in the right direction."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "my days have more structure than before",
+        "meaning_zh": "我的日子比以前更有结构感",
+        "note": "Useful when life is getting more organized.",
+        "example": "My days have more structure than before, which has helped a lot."
+      },
+      {
+        "phrase": "carry a fair amount of responsibility",
+        "meaning_zh": "承担不少责任",
+        "note": "Good for work, study, or family commitments.",
+        "example": "At the moment, I carry a fair amount of responsibility."
+      },
+      {
+        "phrase": "still have room to improve",
+        "meaning_zh": "仍然有提升空间",
+        "note": "Balanced phrase for non-perfect endings.",
+        "example": "Things are better now, but I still have room to improve."
+      },
+      {
+        "phrase": "find a workable rhythm",
+        "meaning_zh": "找到一个可持续的节奏",
+        "note": "Strong phrase for the current-life topic.",
+        "example": "I am gradually finding a workable rhythm."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Describe your current daily life with structure, challenge, and a balanced sense of direction.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Summarize your current life in one balanced sentence.",
+          "Avoid sounding either overly negative or unrealistically perfect."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe the main weekday routine.",
+          "Add one challenge or pressure point."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Explain whether life feels more stable, transitional, or still uncertain.",
+          "End with realistic direction."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "If I had to sum it up, ...",
+      "Most of my weekdays follow ...",
+      "Overall, I would say ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "If I had to describe my current daily life, I would say it is quite busy but more organized than before. Most of my weekdays follow a similar routine, and that structure has been helpful for me.\n\nI usually spend the first part of the day working, and later I deal with smaller tasks, exercise, or things at home. Sometimes it feels like there is always something waiting to be done, so I do feel under pressure from time to time. However, I have become better at planning my day and keeping my routine fairly stable.\n\nSo, even though life is not especially relaxed at the moment, it feels manageable. I still need to find a better balance between work and rest, but overall I think I am moving in the right direction.",
+      "highlights": [
+        "Balanced opening with routine plus challenge",
+        "Honest but steady closing"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Overall picture, routine, and challenge",
+        "opening": [
+          "If I had to describe my current daily life ...",
+          "Most of my weekdays follow ..."
+        ],
+        "body": [
+          "I usually spend the first part of the day ...",
+          "Sometimes it feels like ..."
+        ],
+        "closing": [
+          "Overall, I think I am moving in the right direction."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "My life is busy.",
+          "improved": "My life is quite busy but more organized than before.",
+          "why": "This sounds more balanced and informative.",
+          "note": "Useful opening pattern."
+        },
+        {
+          "original": "I have a lot to do.",
+          "improved": "There is always something waiting to be done.",
+          "why": "This sounds more spoken and natural.",
+          "note": "Good for busy daily-life answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "At the moment, I would describe my daily life as fairly structured, but still a bit demanding. My days have more routine than they used to, which I appreciate, although the schedule can feel packed at times.\n\nMost weekdays are divided between work, personal admin, and a few habits I try to protect, such as exercise or an evening walk. The main challenge is not chaos exactly, but the feeling that I am carrying a fair amount of responsibility and constantly trying to stay on top of things. That means I have to be more deliberate about rest than I used to be.\n\nOverall, I think I am in a transitional phase. Life is gradually becoming more balanced, but it is not fully settled yet. Even so, I can feel that I am finding a more workable rhythm than before.",
+      "highlights": [
+        "Good use of structured, demanding, and transitional phase",
+        "Stronger balance between routine and challenge"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "More nuanced summary of current life",
+        "opening": [
+          "At the moment, I would describe my daily life as ...",
+          "My days have more routine than they used to ..."
+        ],
+        "body": [
+          "Most weekdays are divided between ...",
+          "The main challenge is not chaos exactly, but ..."
+        ],
+        "closing": [
+          "Overall, I think I am in a transitional phase."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I am busy and tired.",
+          "improved": "My schedule can feel packed, and I carry a fair amount of responsibility.",
+          "why": "This is more precise and more adult-sounding.",
+          "note": "Useful for work-heavy routines."
+        },
+        {
+          "original": "Things are getting better.",
+          "improved": "I am gradually finding a more workable rhythm.",
+          "why": "The idea becomes more specific and less vague.",
+          "note": "A strong closing phrase."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I were to sum up my current daily life in one sentence, I would say it is stable enough to feel grounding, but still demanding enough that I have to manage it quite consciously. In other words, things are better organized now, though not effortless.\n\nMost weekdays follow a fairly predictable pattern, which I actually value. I work through the main part of the day, deal with practical responsibilities, and then try to protect a small amount of time for movement, reading, or simply resetting. The challenge is that the days can still feel compressed, and if I am not careful, everything starts to blur into one long stream of obligations.\n\nThat said, I do not see this period negatively. I would describe it as a phase of adjustment rather than instability. I still have room to improve, especially in terms of rest and boundaries, but overall I feel that my life is gradually becoming more intentional and better balanced.",
+      "highlights": [
+        "Band 8 answer balances stability, pressure, and direction",
+        "Intentional and better balanced are strong closing ideas"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Controlled summary with mature reflection",
+        "opening": [
+          "If I were to sum up my current daily life ...",
+          "Things are better organized now, though not effortless."
+        ],
+        "body": [
+          "Most weekdays follow a fairly predictable pattern ...",
+          "The challenge is that ..."
+        ],
+        "closing": [
+          "I would describe it as a phase of adjustment ...",
+          "My life is gradually becoming more intentional ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "My life is normal now.",
+          "improved": "My life is stable enough to feel grounding, but still demanding enough that I have to manage it consciously.",
+          "why": "This captures complexity in a natural way.",
+          "note": "Useful for present-life topics with mixed feelings."
+        },
+        {
+          "original": "It is getting better.",
+          "improved": "My life is gradually becoming more intentional and better balanced.",
+          "why": "The ending sounds more thoughtful and directional.",
+          "note": "A strong but realistic final sentence."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe your current daily life situation and explain how balanced or demanding it feels right now.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Summarize your current life in one sentence.",
+      "Describe the main weekday pattern.",
+      "Add one challenge and one direction or improvement."
+    ],
+    "self_prompts": [
+      "How would you describe your life overall these days?",
+      "What do most weekdays look like?",
+      "What feels demanding right now?",
+      "Do things feel stable, transitional, or uncertain?"
+    ]
+  }
+}

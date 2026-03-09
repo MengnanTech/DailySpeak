@@ -23,17 +23,17 @@ struct TaskOverviewView: View {
     @State private var stepSubtitleChars: [Int: Int] = [:]
 
     private var theme: StageTheme { stage.theme }
-    private var previewContent: LessonPreviewContent? { task.previewContent }
+    private var lessonContent: LessonContent? { task.lessonContent }
 
     var body: some View {
         ZStack {
             ZStack(alignment: .bottom) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        if let previewContent {
-                            previewBanner(previewContent)
-                            previewSummaryCard(previewContent)
-                            previewModulesCard
+                        if let lessonContent {
+                            lessonBanner(lessonContent)
+                            lessonSummaryCard(lessonContent)
+                            lessonModulesCard
                         } else {
                             topBanner
                             strategyCard
@@ -136,7 +136,7 @@ struct TaskOverviewView: View {
         .offset(y: appear ? 0 : 10)
     }
 
-    private func previewBanner(_ preview: LessonPreviewContent) -> some View {
+    private func lessonBanner(_ lesson: LessonContent) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 24)
                 .fill(theme.softGradient)
@@ -156,10 +156,9 @@ struct TaskOverviewView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 8) {
-                            previewChip(preview.topic.stageLabel)
-                            previewChip("Q\(String(format: "%02d", preview.questionID))")
-                            previewChip(task.questionType)
-                            previewChip(preview.topic.target)
+                            lessonChip(lesson.topic.stageLabel)
+                            lessonChip("Q\(String(format: "%02d", task.id))")
+                            lessonChip(task.questionType)
                         }
 
                         Text(task.title)
@@ -179,9 +178,9 @@ struct TaskOverviewView: View {
                 }
 
                 HStack(spacing: 10) {
-                    previewMetaPill(icon: "clock.fill", text: preview.practice.targetLength)
-                    previewMetaPill(icon: "text.quote", text: "\(task.sampleAnswers.count) samples")
-                    previewMetaPill(icon: "books.vertical.fill", text: "\(task.vocabulary.count) vocab")
+                    lessonMetaPill(icon: "clock.fill", text: lesson.practice.targetLength)
+                    lessonMetaPill(icon: "text.quote", text: "\(task.sampleAnswers.count) samples")
+                    lessonMetaPill(icon: "books.vertical.fill", text: "\(task.vocabulary.count) vocab")
                 }
             }
             .padding(20)
@@ -192,7 +191,7 @@ struct TaskOverviewView: View {
         .offset(y: appear ? 0 : 10)
     }
 
-    private func previewChip(_ text: String) -> some View {
+    private func lessonChip(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 10, weight: .bold, design: .rounded))
             .foregroundStyle(.white.opacity(0.82))
@@ -202,7 +201,7 @@ struct TaskOverviewView: View {
             .clipShape(Capsule())
     }
 
-    private func previewMetaPill(icon: String, text: String) -> some View {
+    private func lessonMetaPill(icon: String, text: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .bold))
@@ -216,14 +215,14 @@ struct TaskOverviewView: View {
         .clipShape(Capsule())
     }
 
-    private func previewSummaryCard(_ preview: LessonPreviewContent) -> some View {
+    private func lessonSummaryCard(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("学习重点")
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
                 Spacer()
-                Text(preview.practice.targetLength)
+                Text(lesson.practice.targetLength)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.startColor)
                     .padding(.horizontal, 8)
@@ -232,24 +231,24 @@ struct TaskOverviewView: View {
                     .clipShape(Capsule())
             }
 
-            Text(preview.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
+            Text(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
                 .font(.subheadline)
                 .foregroundStyle(AppColors.secondText)
                 .fixedSize(horizontal: false, vertical: true)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(preview.strategy.angles, id: \.title) { angle in
-                        previewAngleChip(title: angle.title)
+                    ForEach(lesson.strategy.angles, id: \.title) { angle in
+                        lessonAngleChip(title: angle.title)
                     }
                 }
             }
 
             HStack(spacing: 8) {
-                previewMiniStat(title: "Angles", value: "\(preview.strategy.angles.count)")
-                previewMiniStat(title: "Bands", value: "\(task.sampleAnswers.count)")
-                previewMiniStat(title: "Vocab", value: "\(task.vocabulary.count)")
-                previewMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)")
+                lessonMiniStat(title: "Angles", value: "\(lesson.strategy.angles.count)")
+                lessonMiniStat(title: "Bands", value: "\(task.sampleAnswers.count)")
+                lessonMiniStat(title: "Vocab", value: "\(task.vocabulary.count)")
+                lessonMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)")
             }
 
             Divider().background(AppColors.border)
@@ -268,7 +267,7 @@ struct TaskOverviewView: View {
         .cardStyle()
     }
 
-    private func previewAngleChip(title: String) -> some View {
+    private func lessonAngleChip(title: String) -> some View {
         Text(title)
             .font(.caption.bold())
             .foregroundStyle(theme.startColor)
@@ -278,7 +277,7 @@ struct TaskOverviewView: View {
             .clipShape(Capsule())
     }
 
-    private func previewMiniStat(title: String, value: String) -> some View {
+    private func lessonMiniStat(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.caption2.bold())
@@ -290,7 +289,7 @@ struct TaskOverviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var previewModulesCard: some View {
+    private var lessonModulesCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("学习流程")

@@ -1,0 +1,424 @@
+{
+  "id": "s01_q04",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述一个活动或习惯",
+    "prompt_en": "Describe an activity or habit that shapes your daily life.",
+    "learning_goal": "Learn to describe a repeated habit through origin, routine, one benefit, and a believable example.",
+    "category": "habit",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Name the habit simply",
+        "content": [
+          "Choose one habit you actually do often enough to explain naturally.",
+          "Say when you started or why it became part of your life."
+        ]
+      },
+      {
+        "title": "Describe the routine",
+        "content": [
+          "Mention when, how long, and in what setting you do it.",
+          "Small routine details make the answer sound real."
+        ]
+      },
+      {
+        "title": "Show one benefit",
+        "content": [
+          "Focus on one main effect such as better mood, clearer thinking, or more energy.",
+          "Avoid claiming that the habit changed your whole life."
+        ]
+      },
+      {
+        "title": "Use one example",
+        "content": [
+          "Give one day or period when the habit clearly helped.",
+          "This proves the value without sounding exaggerated."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "What the habit is",
+        "target": "Name the habit and how it started."
+      },
+      {
+        "phase": "Body",
+        "focus": "Routine and benefit",
+        "target": "Explain how you do it and what it adds to your day."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Why you keep it",
+        "target": "End with a realistic reason the habit still matters."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Habit setup",
+        "value": "25%"
+      },
+      {
+        "label": "Routine + benefit",
+        "value": "50%"
+      },
+      {
+        "label": "Example + takeaway",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Simple daily habits often sound better than unusual hobbies because the details are easier to support.",
+      "Use one measurable routine detail such as after dinner, for twenty minutes, or three times a week.",
+      "Keep the benefit modest and believable.",
+      "If the habit is ordinary, the reflection needs to be clear."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Confusing a habit with a life philosophy",
+          "why_it_hurts": "The answer becomes abstract too early and loses concrete detail.",
+          "fix": "Start with what you do, when you do it, and why it fits your routine."
+        },
+        {
+          "problem": "Talking about many habits at once",
+          "why_it_hurts": "The answer loses focus and never develops one idea properly.",
+          "fix": "Choose one habit and build depth through example and effect."
+        },
+        {
+          "problem": "Claiming a huge transformation",
+          "why_it_hurts": "The answer can sound forced if a small habit supposedly changed everything.",
+          "fix": "Describe one realistic benefit such as better sleep, calmer evenings, or clearer thinking."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using insist myself",
+          "wrong_example": "I insist myself to walk every night.",
+          "better_example": "I make myself go for a walk every night.",
+          "reason": "Make myself is a natural spoken pattern. Insist myself is not."
+        },
+        {
+          "problem": "Mixing habit and hobby carelessly",
+          "wrong_example": "My hobby is walking every night after dinner because it is a habit.",
+          "better_example": "It is more of a habit than a hobby because I do it to reset after work.",
+          "reason": "Differentiate hobby and habit when needed instead of treating them as identical."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "routine",
+        "pos": "n.",
+        "meaning_zh": "规律安排",
+        "band": 6,
+        "example": "The habit fits naturally into my evening routine."
+      },
+      {
+        "item": "consistently",
+        "pos": "adv.",
+        "meaning_zh": "持续稳定地",
+        "band": 6,
+        "example": "I have done it consistently for nearly a year."
+      },
+      {
+        "item": "reset",
+        "pos": "v.",
+        "meaning_zh": "重置，缓过来",
+        "band": 6,
+        "example": "It helps me reset after a long day."
+      },
+      {
+        "item": "energy level",
+        "pos": "n. phr.",
+        "meaning_zh": "精力状态",
+        "band": 6,
+        "example": "It improves my energy level in the evening."
+      },
+      {
+        "item": "maintain",
+        "pos": "v.",
+        "meaning_zh": "维持",
+        "band": 6,
+        "example": "The habit helps me maintain a better rhythm."
+      },
+      {
+        "item": "discipline",
+        "pos": "n.",
+        "meaning_zh": "自律",
+        "band": 6,
+        "example": "It is a small form of discipline that actually feels manageable."
+      }
+    ],
+    "extended": [
+      {
+        "item": "wind down",
+        "pos": "v. phr.",
+        "meaning_zh": "慢慢放松下来",
+        "note": "Very natural for evening habits."
+      },
+      {
+        "item": "clear accumulated stress",
+        "pos": "v. phr.",
+        "meaning_zh": "消化积累的压力",
+        "note": "Useful when the habit helps after work."
+      },
+      {
+        "item": "sustainable",
+        "pos": "adj.",
+        "meaning_zh": "可持续坚持的",
+        "note": "Good alternative to easy or simple."
+      },
+      {
+        "item": "low-pressure",
+        "pos": "adj.",
+        "meaning_zh": "没有太大压力的",
+        "note": "Useful when the habit is helpful because it is easy to keep."
+      },
+      {
+        "item": "stick to",
+        "pos": "v. phr.",
+        "meaning_zh": "坚持下去",
+        "note": "A very common spoken phrase for habits and plans."
+      },
+      {
+        "item": "anchor my day",
+        "pos": "v. phr.",
+        "meaning_zh": "成为我一天的锚点",
+        "note": "Band 8 style phrase for habits that create stability."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "go for a walk",
+        "meaning_zh": "去散步",
+        "band": 6,
+        "example": "I usually go for a walk after dinner."
+      },
+      {
+        "phrase": "help me wind down",
+        "meaning_zh": "帮助我放松下来",
+        "band": 6,
+        "example": "The habit helps me wind down before the evening ends."
+      },
+      {
+        "phrase": "clear my mind",
+        "meaning_zh": "清空思绪",
+        "band": 6,
+        "example": "Even twenty minutes of walking helps clear my mind."
+      },
+      {
+        "phrase": "stick to it",
+        "meaning_zh": "坚持这个习惯",
+        "band": 7,
+        "example": "I have managed to stick to it because it is simple."
+      },
+      {
+        "phrase": "set the tone for",
+        "meaning_zh": "为……定下基调",
+        "band": 7,
+        "example": "It sets the tone for the rest of my evening."
+      },
+      {
+        "phrase": "make a real difference",
+        "meaning_zh": "真的带来变化",
+        "band": 7,
+        "example": "It is a small habit, but it makes a real difference."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "nothing fancy, but effective",
+        "meaning_zh": "不花哨，但有效",
+        "note": "Useful for ordinary habits.",
+        "example": "It is nothing fancy, but it is surprisingly effective."
+      },
+      {
+        "phrase": "keep the habit sustainable",
+        "meaning_zh": "让这个习惯可持续",
+        "note": "Good when explaining why a simple routine works.",
+        "example": "I keep it short so the habit stays sustainable."
+      },
+      {
+        "phrase": "break up the day",
+        "meaning_zh": "把一天切开，打断疲惫感",
+        "note": "Natural phrase for walks, stretches, or reading breaks.",
+        "example": "It helps break up the day if work feels too heavy."
+      },
+      {
+        "phrase": "give me a mental reset",
+        "meaning_zh": "给我一个头脑重置的机会",
+        "note": "Strong but still natural reflective phrase.",
+        "example": "That short walk gives me a mental reset."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Describe one repeatable habit through routine, benefit, and realistic value.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Name the habit and say when you started doing it.",
+          "Explain when it usually happens in your day."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe what the routine looks like in practice.",
+          "Explain one main benefit with a small example."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Say why the habit is worth keeping.",
+          "Keep the lesson practical, not dramatic."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "What I like about this habit is ...",
+      "It may sound simple, but ...",
+      "That is why I have managed to keep it."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "One habit that has become important in my daily life is going for a walk after dinner. I started doing it a few years ago because I used to stay inside all evening and feel tired after work.\n\nNow I usually walk for about twenty or thirty minutes around my neighborhood. I do not treat it like serious exercise. It is just a simple way to move a little, get fresh air, and take a break from screens.\n\nWhat makes this habit useful is that it helps me relax and clear my mind. On busy days, I often feel mentally full by the end of the evening. A short walk makes me feel calmer and helps me sleep better later. So it is not an exciting habit, but it is one that genuinely improves my routine.",
+      "highlights": [
+        "Strong simple routine with clear benefit",
+        "Natural modest closing"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Routine, timing, and one benefit",
+        "opening": [
+          "One habit that has become important is ...",
+          "I started doing it because ..."
+        ],
+        "body": [
+          "Now I usually ...",
+          "I do not treat it like ..."
+        ],
+        "closing": [
+          "So it is not exciting, but ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It helps me relax.",
+          "improved": "It helps me clear my mind after work.",
+          "why": "This gives the benefit more shape.",
+          "note": "Use after work, before bed, or in the morning for context."
+        },
+        {
+          "original": "I do it every day.",
+          "improved": "I usually walk for about twenty or thirty minutes after dinner.",
+          "why": "Specific routine detail sounds more believable.",
+          "note": "Time markers make habits sound real."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "I would like to talk about a very simple habit I have built over the past year, which is taking a short walk after dinner. I began doing it at first for practical reasons, mainly because I was spending too much time sitting and scrolling on my phone in the evening.\n\nThese days I usually head outside for around twenty minutes, even if I am not especially energetic. What I like about it is that it is low-pressure and easy to maintain. I do not need special equipment or a lot of motivation, so it is a habit I can actually stick to.\n\nA good example of its value is during stressful work periods. If I go straight from dinner back to my laptop, I feel tense for the rest of the night. But if I go for a walk first, it helps me wind down and set a calmer tone for the evening. That is why such a small habit has become surprisingly valuable to me.",
+      "highlights": [
+        "Good explanation of why the habit is sustainable",
+        "More controlled reflection without exaggeration"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Sustainability and realistic benefit",
+        "opening": [
+          "I would like to talk about a very simple habit ...",
+          "I began doing it for practical reasons ..."
+        ],
+        "body": [
+          "What I like about it is that ...",
+          "A good example of its value is ..."
+        ],
+        "closing": [
+          "That is why such a small habit has become ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It is easy to do.",
+          "improved": "It is low-pressure and easy to maintain.",
+          "why": "This sounds more natural and more nuanced.",
+          "note": "Great for habits that last because they are manageable."
+        },
+        {
+          "original": "It helps me sleep.",
+          "improved": "It helps me wind down and sets a calmer tone for the evening.",
+          "why": "The benefit is described through feeling and routine, not just result.",
+          "note": "Useful for evening habits."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "A habit that quietly anchors my day is taking a short walk after dinner. It is not the sort of routine people usually describe as life-changing, but that is exactly why I value it: it is sustainable, low-effort, and consistently helpful.\n\nI started doing it during a busy stretch at work when I noticed that my evenings had become shapeless. I would finish dinner, sit down with my phone or laptop, and somehow lose the rest of the night. The walk now acts as a small transition point. It breaks up the day, gives me a mental reset, and helps me return home feeling less mentally cluttered.\n\nWhat matters most is that it works without requiring much discipline. I can still do it when I am tired, distracted, or short on motivation. In that sense, it is a small routine with a stabilizing effect, and I think that is why I have kept it for so long.",
+      "highlights": [
+        "Band 8 answer uses subtle reflection and controlled phrasing",
+        "Anchors my day and stabilizing effect are strong but still teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Nuance, rhythm, and realistic reflection",
+        "opening": [
+          "A habit that quietly anchors my day is ...",
+          "That is exactly why I value it ..."
+        ],
+        "body": [
+          "I started doing it during ...",
+          "The walk now acts as ..."
+        ],
+        "closing": [
+          "In that sense, it is a small routine with ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It is part of my life.",
+          "improved": "It quietly anchors my day.",
+          "why": "This is more vivid while staying concise.",
+          "note": "Use for habits that create structure."
+        },
+        {
+          "original": "It helps me feel better.",
+          "improved": "It gives me a mental reset and a stabilizing effect.",
+          "why": "The impact becomes clearer and more mature.",
+          "note": "Good for low-drama reflective endings."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe one activity or habit that has become part of your life and explain why you keep it.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Say what the habit is and how it started.",
+      "Describe when and how you usually do it.",
+      "Explain one clear benefit with a small example."
+    ],
+    "self_prompts": [
+      "When did you start it?",
+      "How often do you do it?",
+      "What benefit do you notice most?",
+      "Why is it easy or hard to keep?"
+    ]
+  }
+}

@@ -9,10 +9,12 @@ enum StepType: Int, CaseIterable, Codable {
     case framework  = 3
     case samples    = 4
     case practice   = 5
+    case review     = 6
 
     var title: String {
         switch self {
         case .strategy:   "答题策略"
+        case .review:     "高分检查"
         case .vocabulary:  "核心词汇"
         case .phrases:     "实用词组"
         case .framework:   "表达框架"
@@ -23,7 +25,8 @@ enum StepType: Int, CaseIterable, Codable {
 
     var englishTitle: String {
         switch self {
-        case .strategy:   "Strategy & Tips"
+        case .strategy:   "Answer Structure"
+        case .review:     "Score Check"
         case .vocabulary:  "Key Vocabulary"
         case .phrases:     "Useful Phrases"
         case .framework:   "Expression Framework"
@@ -34,7 +37,8 @@ enum StepType: Int, CaseIterable, Codable {
 
     var subtitle: String {
         switch self {
-        case .strategy:   "了解如何组织你的回答"
+        case .strategy:   "先搭答案骨架，再安排表达顺序"
+        case .review:     "检查提分点、内容漏洞和语言问题"
         case .vocabulary:  "掌握关键词汇和发音"
         case .phrases:     "学习地道表达和例句"
         case .framework:   "掌握答题模板与升级表达"
@@ -46,6 +50,7 @@ enum StepType: Int, CaseIterable, Codable {
     var icon: String {
         switch self {
         case .strategy:   "lightbulb.fill"
+        case .review:     "checklist"
         case .vocabulary:  "textbook"
         case .phrases:     "text.quote"
         case .framework:   "rectangle.3.group.fill"
@@ -57,6 +62,7 @@ enum StepType: Int, CaseIterable, Codable {
     var color: Color {
         switch self {
         case .strategy:   Color(hex: "F59E0B")
+        case .review:     Color(hex: "F97316")
         case .vocabulary:  Color(hex: "4A90D9")
         case .phrases:     Color(hex: "10B981")
         case .framework:   Color(hex: "8B5CF6")
@@ -248,7 +254,7 @@ struct SpeakingTask: Identifiable {
     let frameworkSentences: [String]
     let sampleAnswers: [SampleAnswer]
     let upgradeExpressions: [(original: String, upgraded: String)]
-    let previewContent: LessonPreviewContent?
+    let lessonContent: LessonContent?
 
     init(
         id: Int,
@@ -266,7 +272,7 @@ struct SpeakingTask: Identifiable {
         frameworkSentences: [String],
         sampleAnswers: [SampleAnswer],
         upgradeExpressions: [(original: String, upgraded: String)],
-        previewContent: LessonPreviewContent? = nil
+        lessonContent: LessonContent? = nil
     ) {
         self.id = id
         self.title = title
@@ -283,7 +289,7 @@ struct SpeakingTask: Identifiable {
         self.frameworkSentences = frameworkSentences
         self.sampleAnswers = sampleAnswers
         self.upgradeExpressions = upgradeExpressions
-        self.previewContent = previewContent
+        self.lessonContent = lessonContent
     }
 
     static func placeholder(id: Int, title: String, englishTitle: String, prompt: String) -> SpeakingTask {
@@ -597,16 +603,7 @@ enum CourseData {
             title: "Basic Description",
             chineseTitle: "基础描述",
             description: "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。",
-            tasks: [
-                PreviewTaskFactory.q01DescribePersonTask(id: 1),
-                .placeholder(id: 2, title: "描述一个物品", englishTitle: "Describe an Object", prompt: "Describe an object you use every day."),
-                .placeholder(id: 3, title: "描述一个地点", englishTitle: "Describe a Place", prompt: "Describe a place you enjoy going to."),
-                .placeholder(id: 4, title: "描述一个活动或习惯", englishTitle: "Describe an Activity or Habit", prompt: "Describe an activity or habit that is part of your life."),
-                .placeholder(id: 5, title: "描述天气或季节", englishTitle: "Describe Weather or a Season", prompt: "Describe weather or a season that affects your daily life."),
-                .placeholder(id: 6, title: "描述情绪与感受", englishTitle: "Describe Feelings", prompt: "Describe a feeling or emotional state you often experience."),
-                .placeholder(id: 7, title: "描述喜好与偏好", englishTitle: "Describe Preferences", prompt: "Describe something you enjoy or strongly prefer."),
-                .placeholder(id: 8, title: "描述日常生活状态", englishTitle: "Describe Daily Life", prompt: "Describe your current daily life situation."),
-            ]
+            tasks: LessonRepository.loadStageOneTasks()
         ),
         Stage(
             id: 2,

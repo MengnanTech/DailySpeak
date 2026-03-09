@@ -1,0 +1,424 @@
+{
+  "id": "s01_q07",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述喜好与偏好",
+    "prompt_en": "Describe something you genuinely enjoy or strongly prefer.",
+    "learning_goal": "Learn to express preference with reasons, contrast, and a natural personal example.",
+    "category": "preference",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "State the preference clearly",
+        "content": [
+          "Say what you prefer and, if useful, what you prefer it over.",
+          "A small contrast makes the answer easier to follow."
+        ]
+      },
+      {
+        "title": "Give practical reasons",
+        "content": [
+          "Explain why the preference fits your personality or routine.",
+          "Two honest reasons are enough."
+        ]
+      },
+      {
+        "title": "Add one example",
+        "content": [
+          "Use a daily or weekly example instead of a big story.",
+          "Preferences are often best explained through small patterns."
+        ]
+      },
+      {
+        "title": "Close with self-understanding",
+        "content": [
+          "Show what the preference says about you.",
+          "This turns a simple opinion into a fuller answer."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Preference statement",
+        "target": "Say what you prefer and set up a light contrast."
+      },
+      {
+        "phase": "Body",
+        "focus": "Reasons and example",
+        "target": "Explain why it works for you and show one real situation."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Personal meaning",
+        "target": "End with what the preference reflects about your nature or routine."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Preference statement",
+        "value": "25%"
+      },
+      {
+        "label": "Reasons + example",
+        "value": "50%"
+      },
+      {
+        "label": "Reflection",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Strong preference answers sound better when the contrast is clear but not aggressive.",
+      "Use preference verbs naturally: prefer, tend to choose, feel more comfortable with.",
+      "Do not try to defend your preference like an argument essay.",
+      "A quiet personal insight often gives the best ending."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Giving only one shallow reason",
+          "why_it_hurts": "The answer sounds too thin for a full 1-2 minute response.",
+          "fix": "Add one practical reason and one personality-based reason."
+        },
+        {
+          "problem": "Turning preference into absolute judgment",
+          "why_it_hurts": "The answer can sound extreme or immature.",
+          "fix": "Use softer contrast such as it suits me better or I tend to feel more comfortable with."
+        },
+        {
+          "problem": "No example from real life",
+          "why_it_hurts": "The preference stays abstract and generic.",
+          "fix": "Mention one context where your preference shows up clearly."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using more prefer",
+          "wrong_example": "I more prefer quiet places.",
+          "better_example": "I prefer quiet places.",
+          "reason": "Prefer already expresses comparison by itself."
+        },
+        {
+          "problem": "Using better to for preference",
+          "wrong_example": "It is better to me.",
+          "better_example": "It suits me better.",
+          "reason": "Suits me better is a natural spoken phrase for personal preference."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "prefer",
+        "pos": "v.",
+        "meaning_zh": "更喜欢",
+        "band": 6,
+        "example": "I prefer smaller cafes to crowded chain stores."
+      },
+      {
+        "item": "quiet",
+        "pos": "adj.",
+        "meaning_zh": "安静的",
+        "band": 6,
+        "example": "I feel more focused in a quiet environment."
+      },
+      {
+        "item": "focused",
+        "pos": "adj.",
+        "meaning_zh": "专注的",
+        "band": 6,
+        "example": "It is easier for me to stay focused in calmer places."
+      },
+      {
+        "item": "crowded",
+        "pos": "adj.",
+        "meaning_zh": "拥挤的",
+        "band": 6,
+        "example": "I get distracted in crowded places."
+      },
+      {
+        "item": "atmosphere",
+        "pos": "n.",
+        "meaning_zh": "氛围",
+        "band": 6,
+        "example": "The atmosphere affects my mood more than I expected."
+      },
+      {
+        "item": "concentrate",
+        "pos": "v.",
+        "meaning_zh": "集中注意力",
+        "band": 6,
+        "example": "I can concentrate better in a quieter setting."
+      }
+    ],
+    "extended": [
+      {
+        "item": "low-key",
+        "pos": "adj.",
+        "meaning_zh": "低调平和的",
+        "note": "A natural word for calm social settings or plans."
+      },
+      {
+        "item": "overstimulating",
+        "pos": "adj.",
+        "meaning_zh": "刺激过强的",
+        "note": "Useful when noisy places drain your attention."
+      },
+      {
+        "item": "work better for me",
+        "pos": "v. phr.",
+        "meaning_zh": "对我来说更合适",
+        "note": "Very natural spoken alternative to prefer."
+      },
+      {
+        "item": "leave room to think",
+        "pos": "v. phr.",
+        "meaning_zh": "给思考留出空间",
+        "note": "Good for quiet or simple preferences."
+      },
+      {
+        "item": "feel socially drained",
+        "pos": "adj. phr.",
+        "meaning_zh": "社交上被耗尽",
+        "note": "Useful when explaining why you avoid noisy or crowded settings."
+      },
+      {
+        "item": "a better fit",
+        "pos": "n. phr.",
+        "meaning_zh": "更适合的选择",
+        "note": "Strong flexible phrase for preference answers."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "tend to choose",
+        "meaning_zh": "往往会选择",
+        "band": 6,
+        "example": "I tend to choose smaller cafes when I need to focus."
+      },
+      {
+        "phrase": "feel more comfortable with",
+        "meaning_zh": "对……感觉更自在",
+        "band": 6,
+        "example": "I feel more comfortable with quieter spaces."
+      },
+      {
+        "phrase": "too much going on",
+        "meaning_zh": "周围事情太多太杂",
+        "band": 6,
+        "example": "I cannot focus when there is too much going on around me."
+      },
+      {
+        "phrase": "suit me better",
+        "meaning_zh": "更适合我",
+        "band": 7,
+        "example": "Low-key places suit me better than loud ones."
+      },
+      {
+        "phrase": "leave room to think",
+        "meaning_zh": "让我有思考空间",
+        "band": 7,
+        "example": "Quiet spaces leave room to think."
+      },
+      {
+        "phrase": "feel drained afterward",
+        "meaning_zh": "之后觉得被耗尽了",
+        "band": 7,
+        "example": "If I stay too long in noisy places, I feel drained afterward."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "not against it, just not my first choice",
+        "meaning_zh": "不是反对，只是不是我的首选",
+        "note": "Useful for balanced contrast.",
+        "example": "I am not against busy cafes, but they are not my first choice."
+      },
+      {
+        "phrase": "a better fit for my personality",
+        "meaning_zh": "更符合我的性格",
+        "note": "Strong closing phrase for preference answers.",
+        "example": "That kind of place is simply a better fit for my personality."
+      },
+      {
+        "phrase": "help me stay present",
+        "meaning_zh": "帮助我保持当下感",
+        "note": "Good for calm environments or simple activities.",
+        "example": "Quieter spaces help me stay present."
+      },
+      {
+        "phrase": "avoid sensory overload",
+        "meaning_zh": "避免感官过载",
+        "note": "Useful for stronger Band 8 explanations of preference.",
+        "example": "I prefer calmer places because they help me avoid sensory overload."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Express preference with contrast, reasons, and one realistic example.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "State what you prefer.",
+          "Set up a gentle contrast if helpful."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Give two reasons why it works for you.",
+          "Add one specific context where the preference shows clearly."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Explain what the preference reflects about you.",
+          "Keep the final tone balanced."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "I tend to choose ...",
+      "That works better for me because ...",
+      "I think it is simply a better fit for me."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "One preference I can describe quite clearly is that I prefer small, quiet cafes to large, noisy ones. I do not dislike busy places completely, but they usually make it harder for me to focus.\n\nWhat I like about smaller cafes is the atmosphere. They are usually calmer, less crowded, and easier to sit in for an hour or two. If I want to read, write, or think about work, that kind of space helps me concentrate. In a loud cafe, I often notice too many conversations and movements around me.\n\nFor example, when I need to plan something or finish a few tasks, I almost always choose a quieter place. It suits me better because I like environments that feel simple and calm. I think that says a lot about my personality.",
+      "highlights": [
+        "Clear contrast without sounding extreme",
+        "Links preference to concentration and personality"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Preference, reason, and example",
+        "opening": [
+          "I prefer ... to ...",
+          "I do not dislike ..., but ..."
+        ],
+        "body": [
+          "What I like about it is ...",
+          "If I want to ..., that kind of space ..."
+        ],
+        "closing": [
+          "It suits me better because ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I like quiet cafes.",
+          "improved": "I prefer small, quiet cafes to large, noisy ones.",
+          "why": "The contrast immediately makes the answer clearer.",
+          "note": "Great opening pattern for preferences."
+        },
+        {
+          "original": "It is good for me.",
+          "improved": "It suits me better because I like simple and calm environments.",
+          "why": "This sounds more natural and more personal.",
+          "note": "Use suits me better often."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "A preference I have noticed more clearly as I have grown older is that I strongly prefer low-key cafes to loud, crowded ones, especially when I am alone. It is not that I never enjoy busy social spaces, but they do not usually work well for me when I need to think.\n\nThe main reason is probably mental rather than practical. In quieter places, I can stay focused and feel more present. In louder environments, I get distracted easily and sometimes feel socially drained even if I am not actually talking to anyone. A smaller cafe with gentle background noise is a much better fit for me.\n\nFor instance, when I need to read or organize my week, I almost automatically choose a calm place with fewer people. That preference has taught me that I am someone who values space and clarity more than stimulation.",
+      "highlights": [
+        "Balanced contrast with stronger emotional explanation",
+        "Ends with self-understanding"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Preference with subtle personality insight",
+        "opening": [
+          "A preference I have noticed more clearly is ...",
+          "It is not that I never enjoy ..., but ..."
+        ],
+        "body": [
+          "The main reason is probably ...",
+          "For instance, when I need to ..."
+        ],
+        "closing": [
+          "That preference has taught me that ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "Busy places make me tired.",
+          "improved": "Louder environments can leave me socially drained.",
+          "why": "This is more precise and natural.",
+          "note": "Useful when crowds affect your energy."
+        },
+        {
+          "original": "Quiet places are better.",
+          "improved": "A calmer place is a much better fit for me.",
+          "why": "Better fit sounds more personal and balanced.",
+          "note": "A reliable phrase for preference answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "One preference that consistently shapes my daily choices is my tendency to choose quieter, more low-key spaces over loud and crowded ones. I do not mean that I reject busy places in principle; they are simply more stimulating than I usually want, especially when I am trying to think clearly.\n\nWhat I value in a quieter environment is the sense of mental space it creates. A calm room, a smaller cafe, or even a less crowded corner of a public place leaves room for my attention to settle. By contrast, very noisy environments can feel mildly overstimulating, and after a while I notice that I become less present and more internally scattered.\n\nThat preference has become clearer to me over time because I now recognize it as part of how I function best. It is less about taste in the superficial sense and more about choosing conditions that help me stay focused, grounded, and emotionally balanced.",
+      "highlights": [
+        "Band 8 answer explains preference as self-knowledge",
+        "Uses overstimulating and mentally space in a natural way"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Nuance, contrast, and self-awareness",
+        "opening": [
+          "One preference that consistently shapes ...",
+          "I do not mean that I reject ... in principle ..."
+        ],
+        "body": [
+          "What I value in a quieter environment is ...",
+          "By contrast, very noisy environments ..."
+        ],
+        "closing": [
+          "It is less about taste ... and more about ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "I like calm places.",
+          "improved": "I tend to choose quieter, more low-key spaces over loud and crowded ones.",
+          "why": "This sounds more natural and more flexible than a blunt like statement.",
+          "note": "Tend to choose is a very useful spoken pattern."
+        },
+        {
+          "original": "They help me focus.",
+          "improved": "They create the conditions that help me stay focused and grounded.",
+          "why": "The explanation feels more mature and precise.",
+          "note": "Strong final insight for preference topics."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe one thing you strongly prefer and explain why it suits you better than the alternative.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "State the preference and a light contrast.",
+      "Give two reasons it works for you.",
+      "Add one real context and one reflective ending."
+    ],
+    "self_prompts": [
+      "What do you prefer exactly?",
+      "What do you usually choose instead?",
+      "Why does it work better for you?",
+      "What does that preference say about you?"
+    ]
+  }
+}

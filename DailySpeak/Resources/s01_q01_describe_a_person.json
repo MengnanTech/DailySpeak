@@ -1,0 +1,426 @@
+{
+  "id": "s01_q01",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述一个人",
+    "prompt_en": "Describe a person you know well.",
+    "learning_goal": "Learn how to describe one person through relationship, character, one concrete story, and a personal takeaway.",
+    "category": "person",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Who this person is",
+        "content": [
+          "Say your relationship first so the listener can follow easily.",
+          "Give one quick identity detail such as age, role, or shared history."
+        ]
+      },
+      {
+        "title": "What stands out",
+        "content": [
+          "Pick two traits you can actually explain, not a long list of adjectives.",
+          "Use one contrast if helpful, for example calm but direct."
+        ]
+      },
+      {
+        "title": "One real moment",
+        "content": [
+          "Add one short story that proves those traits.",
+          "A small everyday example usually sounds more believable than a dramatic event."
+        ]
+      },
+      {
+        "title": "Why this person matters",
+        "content": [
+          "End with influence, not just description.",
+          "Explain what you learned or how this person affects your choices."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Relationship and context",
+        "target": "Name the person and show why talking about them makes sense."
+      },
+      {
+        "phase": "Body",
+        "focus": "Traits plus example",
+        "target": "Prove two qualities with one specific moment."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Impact",
+        "target": "Finish with a clear personal takeaway instead of repeating the opening."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Background",
+        "value": "25%"
+      },
+      {
+        "label": "Traits + story",
+        "value": "50%"
+      },
+      {
+        "label": "Reflection",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Choose someone you can describe with natural detail, not the most impressive person you know.",
+      "Let one short story do the heavy lifting instead of stacking adjectives.",
+      "Use balanced wording like calm, dependable, and straightforward rather than dramatic praise.",
+      "Finish with influence or change so the answer feels complete."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Listing traits without evidence",
+          "why_it_hurts": "The answer sounds generic because the listener never sees those qualities in action.",
+          "fix": "Pick one story that naturally shows patience, honesty, or support."
+        },
+        {
+          "problem": "Talking only about appearance",
+          "why_it_hurts": "Appearance gives surface detail, but it does not create a memorable answer by itself.",
+          "fix": "Move quickly from looks to personality, behavior, and personal impact."
+        },
+        {
+          "problem": "Ending with a flat sentence",
+          "why_it_hurts": "The answer feels unfinished if you stop after basic description.",
+          "fix": "Close with what you learned, copied, or still admire about this person."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Overusing very",
+          "wrong_example": "She is very kind and very helpful.",
+          "better_example": "She is warm-hearted and consistently helpful.",
+          "reason": "Specific adjectives sound more natural and more precise than repeating very."
+        },
+        {
+          "problem": "Using know for too many ideas",
+          "wrong_example": "I know her since primary school.",
+          "better_example": "I have known her since primary school.",
+          "reason": "Present perfect is the natural tense when the relationship started in the past and continues now."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "supportive",
+        "pos": "adj.",
+        "meaning_zh": "愿意支持他人的",
+        "band": 6,
+        "example": "She is supportive without making a big show of it."
+      },
+      {
+        "item": "patient",
+        "pos": "adj.",
+        "meaning_zh": "有耐心的",
+        "band": 6,
+        "example": "He is patient even when other people panic."
+      },
+      {
+        "item": "dependable",
+        "pos": "adj.",
+        "meaning_zh": "可靠的",
+        "band": 6,
+        "example": "She is one of the most dependable people in my life."
+      },
+      {
+        "item": "straightforward",
+        "pos": "adj.",
+        "meaning_zh": "坦率直接的",
+        "band": 6,
+        "example": "He is straightforward, but never rude."
+      },
+      {
+        "item": "encourage",
+        "pos": "v.",
+        "meaning_zh": "鼓励",
+        "band": 6,
+        "example": "She encouraged me to trust my own judgment."
+      },
+      {
+        "item": "role model",
+        "pos": "n.",
+        "meaning_zh": "榜样",
+        "band": 6,
+        "example": "She became a role model for me over time."
+      }
+    ],
+    "extended": [
+      {
+        "item": "level-headed",
+        "pos": "adj.",
+        "meaning_zh": "冷静理智的",
+        "note": "Useful when you want to describe calm decision-making."
+      },
+      {
+        "item": "emotionally intelligent",
+        "pos": "adj.",
+        "meaning_zh": "情绪上成熟、有共情力的",
+        "note": "Good for Band 7-8 when describing people who read situations well."
+      },
+      {
+        "item": "lead by example",
+        "pos": "v. phr.",
+        "meaning_zh": "以身作则",
+        "note": "Natural for describing quiet influence instead of giving speeches."
+      },
+      {
+        "item": "keep me grounded",
+        "pos": "v. phr.",
+        "meaning_zh": "让我保持踏实清醒",
+        "note": "Useful when the person helps you stay balanced."
+      },
+      {
+        "item": "quiet confidence",
+        "pos": "n. phr.",
+        "meaning_zh": "低调的自信",
+        "note": "Sounds more nuanced than simply saying confident."
+      },
+      {
+        "item": "show up for someone",
+        "pos": "v. phr.",
+        "meaning_zh": "在别人需要时出现并支持",
+        "note": "Very natural spoken English for dependable people."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "get along with",
+        "meaning_zh": "与某人相处得好",
+        "band": 6,
+        "example": "I get along with her because she is easy to talk to."
+      },
+      {
+        "phrase": "look up to someone",
+        "meaning_zh": "敬佩某人",
+        "band": 6,
+        "example": "I look up to her for the way she handles pressure."
+      },
+      {
+        "phrase": "be there for someone",
+        "meaning_zh": "在别人需要时支持对方",
+        "band": 6,
+        "example": "She is always there for people when things get difficult."
+      },
+      {
+        "phrase": "have a calming effect on",
+        "meaning_zh": "对某人有安抚作用",
+        "band": 7,
+        "example": "She has a calming effect on me when I overthink things."
+      },
+      {
+        "phrase": "set a good example",
+        "meaning_zh": "树立好榜样",
+        "band": 7,
+        "example": "He sets a good example without trying to impress anyone."
+      },
+      {
+        "phrase": "rub off on someone",
+        "meaning_zh": "影响某人并被模仿",
+        "band": 7,
+        "example": "Her calm attitude has rubbed off on me over the years."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "call someone out gently",
+        "meaning_zh": "温和地点出别人的问题",
+        "note": "Useful when the person is honest but still respectful.",
+        "example": "She can call me out gently when I am avoiding a decision."
+      },
+      {
+        "phrase": "have a strong sense of responsibility",
+        "meaning_zh": "有很强的责任感",
+        "note": "Works well for family members, teachers, or managers.",
+        "example": "She has a strong sense of responsibility, especially toward her family."
+      },
+      {
+        "phrase": "make people feel heard",
+        "meaning_zh": "让别人觉得自己被倾听",
+        "note": "A useful way to describe empathy in natural spoken English.",
+        "example": "She makes people feel heard even in short conversations."
+      },
+      {
+        "phrase": "keep things in perspective",
+        "meaning_zh": "帮助看清轻重缓急",
+        "note": "Strong Band 8 style phrase for grounded people.",
+        "example": "Talking to her helps me keep things in perspective."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Describe one person clearly, prove the key traits, and end with influence.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Say who the person is and how long you have known them.",
+          "Give one short reason why they are worth talking about."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Name two traits that genuinely fit this person.",
+          "Use one small story to show those traits in action."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Explain how this person influences you.",
+          "Finish with one clear feeling or lesson."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "What stands out most about her is ...",
+      "A good example of that is when ...",
+      "That may sound small, but it changed the way I ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "The person I want to describe is my older sister. I have known her all my life, of course, but we became especially close after I started working. She is the kind of person who stays calm when everyone else is stressed.\n\nWhat I admire most is that she is both patient and honest. She does not talk too much, but when she gives advice, it is usually useful. For example, last year I was confused about changing jobs, and she did not tell me what to do straight away. Instead, she asked me a few simple questions and helped me think more clearly.\n\nThat conversation was not dramatic, but it really helped me. Since then, I have tried to be less emotional when I make decisions. So, she is important to me not only because she is family, but also because she has had a positive influence on me.",
+      "highlights": [
+        "Clear relationship and context",
+        "Two traits supported by one believable example"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear structure and believable detail",
+        "opening": [
+          "The person I want to describe is ...",
+          "I have known her for ..."
+        ],
+        "body": [
+          "What I admire most is that ...",
+          "For example, last year ..."
+        ],
+        "closing": [
+          "So, she is important to me because ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "She is very calm.",
+          "improved": "She stays calm even when other people are stressed.",
+          "why": "The upgrade sounds more spoken and more vivid.",
+          "note": "Show behavior, not just a label."
+        },
+        {
+          "original": "She helped me a lot.",
+          "improved": "She helped me think more clearly.",
+          "why": "More specific impact creates a stronger closing.",
+          "note": "Use precise verbs like think, decide, notice, or reflect."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "I would like to talk about my older sister, who is probably the person I rely on most for honest advice. Although we have quite different personalities, we have become much closer as adults.\n\nIf I had to describe her in a few words, I would say she is dependable, level-headed, and quietly confident. She is not the type to give long speeches, but she leads by example. I remember once when I was torn between staying in a stable job and moving to a smaller company. Instead of pushing her opinion on me, she helped me look at the situation from a practical point of view. That made me realize I was focusing too much on fear and not enough on what I actually wanted.\n\nWhat I appreciate most is that she makes difficult situations feel manageable. Over time, her way of thinking has rubbed off on me, and I have become more balanced in the way I deal with pressure.",
+      "highlights": [
+        "Natural balance between description and reflection",
+        "More precise adjectives and cleaner transitions"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Sharper detail and better cohesion",
+        "opening": [
+          "I would like to talk about ...",
+          "We have become much closer as adults."
+        ],
+        "body": [
+          "If I had to describe her in a few words ...",
+          "I remember once when ..."
+        ],
+        "closing": [
+          "What I appreciate most is that ...",
+          "Over time, ... has rubbed off on me."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "She gives me good advice.",
+          "improved": "I rely on her for honest advice.",
+          "why": "Rely on sounds more natural and personal in spoken English.",
+          "note": "Good for people you trust regularly."
+        },
+        {
+          "original": "She is confident.",
+          "improved": "She has a kind of quiet confidence.",
+          "why": "This sounds more nuanced and less blunt.",
+          "note": "Useful for calm, capable people."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "The person I would like to describe is my older sister, not because she is flashy or unusually successful, but because she has had a steady influence on the way I think. We are close in age, and over the years she has become the person I turn to when I need perspective rather than comfort alone.\n\nWhat distinguishes her is a mix of emotional intelligence and straightforwardness. She notices when people are overwhelmed, yet she never pretends everything is fine just to be polite. A good example of this was when I was considering a career move and kept changing my mind every few days. She listened carefully, then pointed out that I was treating uncertainty as failure. That was such a simple comment, but it cut through the noise in my head immediately.\n\nI think that is why she matters so much to me. She keeps me grounded without limiting me, and her calm way of dealing with pressure has shaped my own standards for adulthood more than I realized at first.",
+      "highlights": [
+        "Strong reflection without sounding rehearsed",
+        "Band 8 upgrade comes from precision and control, not difficult words"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Nuance, rhythm, and mature reflection",
+        "opening": [
+          "The person I would like to describe is ...",
+          "She has had a steady influence on the way I think."
+        ],
+        "body": [
+          "What distinguishes her is ...",
+          "A good example of this was when ..."
+        ],
+        "closing": [
+          "That is why she matters so much to me.",
+          "She has shaped my own standards for adulthood."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "She always helps me.",
+          "improved": "She gives me perspective rather than comfort alone.",
+          "why": "This sounds more thoughtful and specific.",
+          "note": "Useful for describing mature support."
+        },
+        {
+          "original": "She is honest.",
+          "improved": "She never pretends everything is fine just to be polite.",
+          "why": "Concrete paraphrase often sounds more natural than a single adjective.",
+          "note": "Band 8 answers often unpack the meaning of a trait."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe one person you know well and explain why they matter to you.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Say who the person is and your relationship.",
+      "Describe two traits with one supporting story.",
+      "End with personal impact or a lesson."
+    ],
+    "self_prompts": [
+      "How do you know them?",
+      "What quality stands out most?",
+      "What happened that proves it?",
+      "How have they influenced you?"
+    ]
+  }
+}

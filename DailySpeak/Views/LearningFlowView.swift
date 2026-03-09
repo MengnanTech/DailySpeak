@@ -87,6 +87,7 @@ struct LearningFlowView: View {
     private func stepView(for type: StepType) -> some View {
         switch type {
         case .strategy:   StrategyStepView(task: task, accentColor: theme.startColor)
+        case .review:     ReviewStepView(task: task, accentColor: theme.startColor)
         case .vocabulary:  VocabularyStepView(task: task, accentColor: theme.startColor)
         case .phrases:     PhrasesStepView(task: task, accentColor: theme.startColor)
         case .framework:   FrameworkStepView(task: task, accentColor: theme.startColor)
@@ -222,7 +223,7 @@ struct StepHeroHeader: View {
     }
 }
 
-struct PreviewStepHeader: View {
+struct LessonStepHeader: View {
     let label: String
     let title: String
     let subtitle: String
@@ -277,15 +278,15 @@ struct StrategyStepView: View {
     let accentColor: Color
 
     @State private var appeared = false
-    private var preview: LessonPreviewContent? { task.previewContent }
+    private var lesson: LessonContent? { task.lessonContent }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if preview != nil {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
-                    title: "答题思路",
-                    subtitle: "先定角度，再讲故事和影响，不靠堆形容词。",
+            if lesson != nil {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
+                    title: "先搭答案骨架",
+                    subtitle: "先定人物关系和特质，再用一个故事收住影响。",
                     accentColor: Color(hex: "F59E0B")
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -301,8 +302,8 @@ struct StrategyStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            if let preview {
-                previewStrategyContent(preview)
+            if let lesson {
+                lessonStrategyContent(lesson)
             } else {
                 standardStrategyContent
             }
@@ -382,14 +383,14 @@ struct StrategyStepView: View {
         }
     }
 
-    private func previewStrategyContent(_ preview: LessonPreviewContent) -> some View {
+    private func lessonStrategyContent(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 12) {
-                Text("先想这 4 个方面")
+                Text("先想这 4 点")
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
 
-                ForEach(Array(preview.strategy.angles.enumerated()), id: \.offset) { index, angle in
+                ForEach(Array(lesson.strategy.angles.enumerated()), id: \.offset) { index, angle in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(alignment: .top, spacing: 10) {
                             Text("\(index + 1)")
@@ -418,11 +419,11 @@ struct StrategyStepView: View {
             .staggerIn(index: 2, appeared: appeared)
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("答题节奏")
-                    .font(.caption.bold())
-                    .foregroundStyle(accentColor)
+                Text("按这个顺序说")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
 
-                ForEach(Array(preview.strategy.sequence.enumerated()), id: \.offset) { index, item in
+                ForEach(Array(lesson.strategy.sequence.enumerated()), id: \.offset) { index, item in
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(alignment: .top, spacing: 10) {
                             Text("\(index + 1)")
@@ -451,7 +452,7 @@ struct StrategyStepView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        if index < preview.strategy.sequence.count - 1 {
+                        if index < lesson.strategy.sequence.count - 1 {
                             Divider().background(AppColors.border.opacity(0.7))
                                 .padding(.leading, 28)
                         }
@@ -460,11 +461,11 @@ struct StrategyStepView: View {
 
                 Divider().background(AppColors.border)
 
-                Text("Content Ratio")
-                    .font(.caption.bold())
-                    .foregroundStyle(accentColor)
+                Text("内容分配")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
 
-                ForEach(preview.strategy.contentRatio, id: \.label) { ratio in
+                ForEach(lesson.strategy.contentRatio, id: \.label) { ratio in
                     HStack {
                         Text(ratio.label)
                             .font(.caption)
@@ -479,157 +480,8 @@ struct StrategyStepView: View {
             .padding(16)
             .cardStyle()
             .staggerIn(index: 3, appeared: appeared)
-
-            VStack(alignment: .leading, spacing: 12) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("High-Score Tips")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
-
-                    ForEach(preview.strategy.highScoreTips, id: \.self) { tip in
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 11))
-                                .foregroundStyle(accentColor)
-                                .padding(.top, 3)
-                            Text(tip)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.secondText)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                }
-
-                Divider().background(AppColors.border)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Content Pitfalls")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
-
-                    ForEach(preview.strategy.contentMistakes, id: \.problem) { mistake in
-                        previewMistakeCard(
-                            title: mistake.problem,
-                            detail: mistake.whyItHurts,
-                            fix: mistake.fix,
-                            tint: Color(hex: "EF4444")
-                        )
-                    }
-                }
-
-                Divider().background(AppColors.border)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Language Fixes")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
-
-                    ForEach(preview.strategy.languageMistakes, id: \.problem) { mistake in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(mistake.problem)
-                                .font(.subheadline.bold())
-                                .foregroundStyle(AppColors.primaryText)
-
-                            previewComparisonLine(
-                                tag: "Wrong",
-                                text: mistake.wrongExample,
-                                tagTint: Color(hex: "B91C1C"),
-                                textColor: AppColors.primaryText
-                            )
-
-                            previewComparisonLine(
-                                tag: "Better",
-                                text: mistake.betterExample,
-                                tagTint: AppColors.success,
-                                textColor: AppColors.primaryText
-                            )
-
-                            Text(mistake.reason)
-                                .font(.caption)
-                                .foregroundStyle(AppColors.tertiaryText)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AppColors.surface.opacity(0.7))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                    }
-                }
-            }
-            .padding(16)
-            .cardStyle()
-            .staggerIn(index: 4, appeared: appeared)
         }
     }
-
-    private func strategyCallout(title: String, body: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title.uppercased())
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(accentColor)
-            Text(body)
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondText)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(accentColor.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func previewDisclosureLabel(title: String, tint: Color) -> some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(tint.opacity(0.14))
-                .frame(width: 24, height: 24)
-                .overlay(
-                    Image(systemName: "plus")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(tint)
-                )
-            Text(title)
-                .font(.subheadline.bold())
-                .foregroundStyle(AppColors.primaryText)
-        }
-    }
-
-    private func previewMistakeCard(title: String, detail: String, fix: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(.subheadline.bold())
-                .foregroundStyle(AppColors.primaryText)
-            Text(detail)
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("Fix: \(fix)")
-                .font(.caption)
-                .foregroundStyle(AppColors.secondText)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(tint.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private func previewComparisonLine(tag: String, text: String, tagTint: Color, textColor: Color) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text(tag)
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(tagTint)
-                .clipShape(Capsule())
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(textColor)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
 }
 
 // MARK: - Vocabulary Step
@@ -676,7 +528,7 @@ struct VocabularyStepView: View {
     @State private var flashcardIndex = 0
     @State private var flashcardFlipped = false
     @State private var appeared = false
-    private var hasPreview: Bool { task.previewContent != nil }
+    private var hasLessonContent: Bool { task.lessonContent != nil }
 
     private var coreItems: [VocabItem] {
         task.vocabulary.filter { $0.band == .core }
@@ -696,9 +548,9 @@ struct VocabularyStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if hasPreview {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
+            if hasLessonContent {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
                     title: "核心词汇",
                     subtitle: "先抓最常用的描述词，再补更成熟的升级表达。",
                     accentColor: Color(hex: "4A90D9")
@@ -1294,13 +1146,13 @@ struct PhrasesStepView: View {
     let accentColor: Color
 
     @State private var appeared = false
-    private var hasPreview: Bool { task.previewContent != nil }
+    private var hasLessonContent: Bool { task.lessonContent != nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if hasPreview {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
+            if hasLessonContent {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
                     title: "实用词组",
                     subtitle: "用短语拉开自然度，避免一句一句直译。",
                     accentColor: Color(hex: "10B981")
@@ -1446,13 +1298,13 @@ struct FrameworkStepView: View {
 
     @State private var appeared = false
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
-    private var preview: LessonPreviewContent? { task.previewContent }
+    private var lesson: LessonContent? { task.lessonContent }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if preview != nil {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
+            if lesson != nil {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
                     title: "表达框架",
                     subtitle: "先看总结构，再补连接表达和升级表达。",
                     accentColor: Color(hex: "8B5CF6")
@@ -1470,8 +1322,8 @@ struct FrameworkStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            if let preview {
-                previewFrameworkContent(preview)
+            if let lesson {
+                lessonFrameworkContent(lesson)
             } else {
                 standardFrameworkContent
             }
@@ -1551,20 +1403,20 @@ struct FrameworkStepView: View {
         }
     }
 
-    private func previewFrameworkContent(_ preview: LessonPreviewContent) -> some View {
+    private func lessonFrameworkContent(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Framework Goal")
                     .font(.caption.bold())
                     .foregroundStyle(accentColor)
-                Text(preview.framework.goal)
+                Text(lesson.framework.goal)
                     .font(.subheadline)
                     .foregroundStyle(AppColors.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Divider().background(AppColors.border)
 
-                ForEach(preview.framework.defaultStructure, id: \.section) { section in
+                ForEach(lesson.framework.defaultStructure, id: \.section) { section in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(section.section)
                             .font(.caption.bold())
@@ -1607,7 +1459,7 @@ struct FrameworkStepView: View {
 
                 Divider().background(AppColors.border)
 
-                previewMarkersContent(preview.framework.deliveryMarkers)
+                lessonMarkersContent(lesson.framework.deliveryMarkers)
             }
             .padding(16)
             .cardStyle()
@@ -1649,7 +1501,7 @@ struct FrameworkStepView: View {
         }
     }
 
-    private func previewMarkersContent(_ markers: [String]) -> some View {
+    private func lessonMarkersContent(_ markers: [String]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(markers, id: \.self) { marker in
                 HStack(alignment: .top, spacing: 10) {
@@ -1750,8 +1602,8 @@ struct SamplesStepView: View {
 
     @State private var selectedBand = 0
     @State private var appeared = false
-    private var hasPreview: Bool { task.previewContent != nil }
-    private var preview: LessonPreviewContent? { task.previewContent }
+    private var hasLessonContent: Bool { task.lessonContent != nil }
+    private var lesson: LessonContent? { task.lessonContent }
 
     private var bandColors: [Color] {
         [Color(hex: "4A90D9"), Color(hex: "F59E0B"), Color(hex: "EF4444")]
@@ -1759,9 +1611,9 @@ struct SamplesStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if hasPreview {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
+            if hasLessonContent {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
                     title: "范文学习",
                     subtitle: "用 Band 6 / 7 / 8 对照看内容深度和表达差异。",
                     accentColor: Color(hex: "EC4899")
@@ -1944,7 +1796,7 @@ struct SamplesStepView: View {
                     insertion: .opacity.combined(with: .move(edge: .trailing)),
                     removal: .opacity.combined(with: .move(edge: .leading))
                 ))
-                .staggerIn(index: preview == nil ? 2 : 3, appeared: appeared)
+                .staggerIn(index: lesson == nil ? 2 : 3, appeared: appeared)
             }
         }
         .onAppear { appeared = true }
@@ -2033,7 +1885,7 @@ struct PracticePromptView: View {
     let task: SpeakingTask
     let accentColor: Color
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
-    private var preview: LessonPreviewContent? { task.previewContent }
+    private var lesson: LessonContent? { task.lessonContent }
 
     @StateObject private var speechInput = SpeechInputManager()
     @State private var inputMode: PracticeInputMode = .text
@@ -2064,9 +1916,9 @@ struct PracticePromptView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            if preview != nil {
-                PreviewStepHeader(
-                    label: "Q01 Preview",
+            if lesson != nil {
+                LessonStepHeader(
+                    label: "Stage 1 Lesson",
                     title: "口语练习",
                     subtitle: "按提示把内容真正说出来，不要只停留在阅读。",
                     accentColor: Color(hex: "EF4444")
@@ -2086,8 +1938,8 @@ struct PracticePromptView: View {
 
             topicCard
                 .staggerIn(index: 1, appeared: appeared)
-            if let preview {
-                practiceChecklistCard(preview)
+            if let lesson {
+                practiceChecklistCard(lesson)
                     .staggerIn(index: 2, appeared: appeared)
             }
             frameworkHints
@@ -2154,8 +2006,8 @@ struct PracticePromptView: View {
                     .foregroundStyle(accentColor)
                     .tracking(1)
                 Spacer()
-                if let preview {
-                    Text(preview.practice.targetLength)
+                if let lesson {
+                    Text(lesson.practice.targetLength)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
                         .foregroundStyle(accentColor)
                         .padding(.horizontal, 8)
@@ -2164,8 +2016,8 @@ struct PracticePromptView: View {
                         .clipShape(Capsule())
                 }
             }
-            if let preview {
-                Text(preview.practice.task)
+            if let lesson {
+                Text(lesson.practice.task)
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
             }
@@ -2184,13 +2036,13 @@ struct PracticePromptView: View {
             )
     }
 
-    private func practiceChecklistCard(_ preview: LessonPreviewContent) -> some View {
+    private func practiceChecklistCard(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Speaking Checklist")
                 .font(.subheadline.bold())
                 .foregroundStyle(AppColors.primaryText)
 
-            ForEach(preview.practice.checklist, id: \.self) { item in
+            ForEach(lesson.practice.checklist, id: \.self) { item in
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 12))
@@ -2210,7 +2062,7 @@ struct PracticePromptView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(preview.practice.selfPrompts, id: \.self) { prompt in
+                    ForEach(lesson.practice.selfPrompts, id: \.self) { prompt in
                         Text(prompt)
                             .font(.caption.bold())
                             .foregroundStyle(accentColor)

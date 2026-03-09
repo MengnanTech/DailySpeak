@@ -1,0 +1,424 @@
+{
+  "id": "s01_q05",
+  "topic": {
+    "stage": 1,
+    "stage_label": "Stage 1",
+    "title_cn": "描述天气或季节",
+    "prompt_en": "Describe weather or a season that affects your mood or routine.",
+    "learning_goal": "Learn to describe weather or a season through sensory detail, routine change, and personal effect.",
+    "category": "season",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Choose one season or weather pattern",
+        "content": [
+          "Pick something specific such as early autumn or rainy afternoons.",
+          "Avoid trying to cover the whole year."
+        ]
+      },
+      {
+        "title": "Describe the feeling of it",
+        "content": [
+          "Use temperature, light, pace, and clothing to make it real.",
+          "Keep the detail practical rather than poetic."
+        ]
+      },
+      {
+        "title": "Explain how it changes your routine",
+        "content": [
+          "Show what you do differently in that season or weather.",
+          "Small changes make the answer believable."
+        ]
+      },
+      {
+        "title": "End with mood or preference",
+        "content": [
+          "Explain why you enjoy it or why it suits you.",
+          "A personal reason is stronger than saying it is nice."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "What kind of weather or season",
+        "target": "Name it clearly and say when it usually happens."
+      },
+      {
+        "phase": "Body",
+        "focus": "Atmosphere and routine",
+        "target": "Describe what it feels like and how it changes your day."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Personal preference",
+        "target": "Explain why it affects your mood in a positive or negative way."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Season setup",
+        "value": "25%"
+      },
+      {
+        "label": "Atmosphere + routine",
+        "value": "50%"
+      },
+      {
+        "label": "Mood + preference",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "A familiar season often works better than a dramatic one because the details are easier to support.",
+      "Describe how the weather changes what you wear, do, or feel.",
+      "Keep the language sensory but controlled.",
+      "If you talk about preference, explain why it fits your personality or lifestyle."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Only saying the season is beautiful",
+          "why_it_hurts": "The answer stays too general and does not sound personal.",
+          "fix": "Add practical details such as the air feeling cooler, fewer people outside, or walking more often."
+        },
+        {
+          "problem": "No routine change",
+          "why_it_hurts": "The weather sounds disconnected from your life.",
+          "fix": "Show one thing you do differently because of that season."
+        },
+        {
+          "problem": "Too much description, no opinion",
+          "why_it_hurts": "The answer sounds like a report instead of spoken preference.",
+          "fix": "Finish with why that weather suits your mood or pace."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using the weather are",
+          "wrong_example": "The weather are cool and comfortable.",
+          "better_example": "The weather is cool and comfortable.",
+          "reason": "Weather is singular in English."
+        },
+        {
+          "problem": "Using too much like with weather",
+          "wrong_example": "I like autumn because it is like comfortable.",
+          "better_example": "I like autumn because it feels comfortable and calm.",
+          "reason": "Feels comfortable is the natural pattern here."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "mild",
+        "pos": "adj.",
+        "meaning_zh": "温和的",
+        "band": 6,
+        "example": "The temperature is usually mild in early autumn."
+      },
+      {
+        "item": "breeze",
+        "pos": "n.",
+        "meaning_zh": "微风",
+        "band": 6,
+        "example": "There is often a light breeze in the evening."
+      },
+      {
+        "item": "crisp",
+        "pos": "adj.",
+        "meaning_zh": "清爽微凉的",
+        "band": 6,
+        "example": "The air feels crisp but not cold."
+      },
+      {
+        "item": "humid",
+        "pos": "adj.",
+        "meaning_zh": "潮湿闷热的",
+        "band": 6,
+        "example": "I do not enjoy weather that is too humid."
+      },
+      {
+        "item": "layer",
+        "pos": "v.",
+        "meaning_zh": "分层穿衣",
+        "band": 6,
+        "example": "It is the kind of season when you can layer comfortably."
+      },
+      {
+        "item": "refreshing",
+        "pos": "adj.",
+        "meaning_zh": "让人神清气爽的",
+        "band": 6,
+        "example": "The cooler air feels refreshing after summer."
+      }
+    ],
+    "extended": [
+      {
+        "item": "settled weather",
+        "pos": "n. phr.",
+        "meaning_zh": "稳定的天气",
+        "note": "Useful when the season feels reliable and comfortable."
+      },
+      {
+        "item": "a softer pace",
+        "pos": "n. phr.",
+        "meaning_zh": "更柔和的节奏",
+        "note": "Good for describing how a season changes your mood."
+      },
+      {
+        "item": "ease into the day",
+        "pos": "v. phr.",
+        "meaning_zh": "轻松进入一天的状态",
+        "note": "Useful for calm mornings in pleasant weather."
+      },
+      {
+        "item": "feel less drained",
+        "pos": "v. phr.",
+        "meaning_zh": "不那么疲惫",
+        "note": "Natural for comparing with hot or humid weather."
+      },
+      {
+        "item": "subtle shift",
+        "pos": "n. phr.",
+        "meaning_zh": "微妙变化",
+        "note": "Good for gentle seasonal transitions like early autumn."
+      },
+      {
+        "item": "in a better frame of mind",
+        "pos": "adj. phr.",
+        "meaning_zh": "心境更好",
+        "note": "Strong but teachable phrase for mood effects."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "cool down a little",
+        "meaning_zh": "稍微凉快下来",
+        "band": 6,
+        "example": "I like it when the weather cools down a little after summer."
+      },
+      {
+        "phrase": "go for longer walks",
+        "meaning_zh": "走更久的路",
+        "band": 6,
+        "example": "I tend to go for longer walks in that season."
+      },
+      {
+        "phrase": "sleep more comfortably",
+        "meaning_zh": "睡得更舒服",
+        "band": 6,
+        "example": "The cooler nights help me sleep more comfortably."
+      },
+      {
+        "phrase": "put me in a better mood",
+        "meaning_zh": "让我心情更好",
+        "band": 7,
+        "example": "That kind of weather usually puts me in a better mood."
+      },
+      {
+        "phrase": "feel easier to breathe",
+        "meaning_zh": "感觉呼吸更轻松",
+        "band": 7,
+        "example": "The air feels easier to breathe when it is less humid."
+      },
+      {
+        "phrase": "suit my pace",
+        "meaning_zh": "适合我的节奏",
+        "band": 7,
+        "example": "Autumn suits my pace better than summer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "there is a subtle shift in the air",
+        "meaning_zh": "空气里有一种微妙的变化",
+        "note": "Useful for early seasonal changes.",
+        "example": "In early autumn, there is a subtle shift in the air."
+      },
+      {
+        "phrase": "feel less physically drained",
+        "meaning_zh": "身体上没那么疲惫",
+        "note": "Good for comparing hot and mild weather.",
+        "example": "I feel less physically drained when the weather is mild."
+      },
+      {
+        "phrase": "have a calming effect on me",
+        "meaning_zh": "对我有安抚作用",
+        "note": "Strong phrase for weather and seasons that improve mood.",
+        "example": "That kind of weather has a calming effect on me."
+      },
+      {
+        "phrase": "make everyday life feel lighter",
+        "meaning_zh": "让日常生活感觉更轻松",
+        "note": "Good closing phrase for weather preference.",
+        "example": "It makes everyday life feel lighter somehow."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Describe weather or a season through feeling, routine change, and preference.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Name the season or weather pattern.",
+          "Say when it usually appears and your general feeling toward it."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe what it feels like in practical terms.",
+          "Explain how it changes your routine or comfort level."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Say why it suits or does not suit you.",
+          "Keep the final point personal and grounded."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "What I enjoy most about it is ...",
+      "Compared with summer, ...",
+      "That is why this season suits me so well."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "The season I want to talk about is early autumn. I like it because the weather becomes cooler after summer, but it is not cold yet, so it feels comfortable.\n\nWhat I enjoy most is the air. It is usually mild and a little crisp, especially in the morning and evening. Because of that, I spend more time outside. I often go for longer walks, and I also sleep more comfortably at night.\n\nAnother reason I like early autumn is that it puts me in a better mood. Summer in my city can be very hot and humid, so by the time autumn arrives, I feel more relaxed and less tired. It is not a dramatic change, but it makes everyday life easier for me.",
+      "highlights": [
+        "Simple comparison with summer",
+        "Links weather to walking and sleep"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear weather detail and one routine effect",
+        "opening": [
+          "The season I want to talk about is ...",
+          "I like it because ..."
+        ],
+        "body": [
+          "What I enjoy most is ...",
+          "Because of that, I ..."
+        ],
+        "closing": [
+          "It makes everyday life easier for me."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "The weather is nice.",
+          "improved": "The weather is cooler, mild, and a little crisp.",
+          "why": "Specific weather words make the picture clearer.",
+          "note": "Use two or three sensory words, not ten."
+        },
+        {
+          "original": "I feel good in autumn.",
+          "improved": "It puts me in a better mood and helps me feel less tired.",
+          "why": "This gives the effect more substance.",
+          "note": "Connect mood with daily life."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The season I would like to describe is early autumn, mainly because it changes the pace of my daily life in a very gentle way. In my city, summer tends to be hot, heavy, and humid, so the first few weeks of autumn always feel refreshing.\n\nThere is usually a light breeze, cooler evenings, and a more settled kind of weather overall. I find that I naturally go outside more, whether that means walking instead of taking transport for short distances or simply spending more time outdoors after work. I also feel less drained physically, which improves my concentration.\n\nWhat I like most is that early autumn has a calming effect on me. It is not dramatic or exciting, but it creates a softer rhythm in my day. That is probably why it is the season I look forward to most every year.",
+      "highlights": [
+        "Season described through pace and routine",
+        "Uses comparison and reflection smoothly"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Better rhythm and stronger comparison",
+        "opening": [
+          "The season I would like to describe is ...",
+          "Summer tends to be ..."
+        ],
+        "body": [
+          "There is usually ...",
+          "I find that I naturally ..."
+        ],
+        "closing": [
+          "It creates a softer rhythm in my day."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It is comfortable.",
+          "improved": "It creates a softer rhythm in my day.",
+          "why": "This is more reflective and personal.",
+          "note": "Useful when describing seasonal pace."
+        },
+        {
+          "original": "I have more energy.",
+          "improved": "I feel less drained physically, which improves my concentration.",
+          "why": "The effect becomes more precise and believable.",
+          "note": "Great for work or study context."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to choose one kind of weather that genuinely affects my mood, it would be the beginning of autumn. What appeals to me is not just the temperature itself, but the subtle shift in how the day feels. The air is cooler, the light is softer, and everyday movement seems slightly less rushed.\n\nAfter a long summer, that change feels almost corrective. I sleep better, walk more, and generally approach the day in a calmer frame of mind. It is the sort of weather that makes me want to step outside rather than escape into air-conditioning, which already says a lot about the difference it makes.\n\nI think that is why I value it so much. It does not transform my life in any dramatic sense, but it makes ordinary routines feel lighter and more manageable. For me, that quiet effect is far more valuable than dramatic weather I only enjoy from a distance.",
+      "highlights": [
+        "Band 8 answer uses restraint and subtle contrast",
+        "Quiet effect is a strong, teachable closing"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Subtle sensory detail and mature reflection",
+        "opening": [
+          "If I had to choose one kind of weather ...",
+          "What appeals to me is not just ..."
+        ],
+        "body": [
+          "After a long summer, that change feels ...",
+          "It is the sort of weather that ..."
+        ],
+        "closing": [
+          "It makes ordinary routines feel lighter ..."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It changes my mood.",
+          "improved": "It puts me in a calmer frame of mind.",
+          "why": "This sounds more natural and precise.",
+          "note": "A useful Band 8 phrase for emotional effect."
+        },
+        {
+          "original": "I like it a lot.",
+          "improved": "That quiet effect is far more valuable to me.",
+          "why": "The closing is reflective without sounding dramatic.",
+          "note": "Good for moderate, thoughtful preference."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe a season or kind of weather that affects your mood or routine.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Name the season or weather clearly.",
+      "Describe what it feels like in practical terms.",
+      "Explain one routine change and one personal effect."
+    ],
+    "self_prompts": [
+      "What does the air or light feel like?",
+      "What do you do differently then?",
+      "How does it affect your energy or mood?",
+      "Why does it suit you?"
+    ]
+  }
+}
