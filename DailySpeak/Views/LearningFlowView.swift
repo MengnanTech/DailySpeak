@@ -222,6 +222,33 @@ struct StepHeroHeader: View {
     }
 }
 
+struct PreviewStepHeader: View {
+    let label: String
+    let title: String
+    let subtitle: String
+    let accentColor: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label.uppercased())
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(accentColor)
+                .tracking(1.1)
+
+            Text(title)
+                .font(.title3.bold())
+                .foregroundStyle(AppColors.primaryText)
+
+            Text(subtitle)
+                .font(.subheadline)
+                .foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
+    }
+}
+
 // MARK: - Staggered Animation Modifier
 struct StaggeredAppear: ViewModifier {
     let index: Int
@@ -250,20 +277,41 @@ struct StrategyStepView: View {
     let accentColor: Color
 
     @State private var appeared = false
+    private var preview: LessonPreviewContent? { task.previewContent }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeroHeader(
-                icon: "lightbulb.max.fill",
-                title: "答题策略",
-                english: "Strategy & Tips",
-                subtitle: "了解如何组织你的回答，掌握答题思路",
-                accentColor: Color(hex: "F59E0B"),
-                secondaryColor: Color(hex: "F97316")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if preview != nil {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "答题思路",
+                    subtitle: "先定角度，再讲故事和影响，不靠堆形容词。",
+                    accentColor: Color(hex: "F59E0B")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "lightbulb.max.fill",
+                    title: "答题策略",
+                    english: "Strategy & Tips",
+                    subtitle: "了解如何组织你的回答，掌握答题思路",
+                    accentColor: Color(hex: "F59E0B"),
+                    secondaryColor: Color(hex: "F97316")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
-            // Tips
+            if let preview {
+                previewStrategyContent(preview)
+            } else {
+                standardStrategyContent
+            }
+        }
+        .onAppear { appeared = true }
+    }
+
+    private var standardStrategyContent: some View {
+        Group {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
                     HStack(alignment: .top, spacing: 12) {
@@ -284,7 +332,6 @@ struct StrategyStepView: View {
             .cardStyle()
             .staggerIn(index: 1, appeared: appeared)
 
-            // Prompt reminder
             VStack(alignment: .leading, spacing: 8) {
                 Text("TOPIC")
                     .font(.caption2.bold())
@@ -305,7 +352,6 @@ struct StrategyStepView: View {
             )
             .staggerIn(index: 2, appeared: appeared)
 
-            // Pass criteria
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "target")
@@ -334,8 +380,256 @@ struct StrategyStepView: View {
             .cardStyle()
             .staggerIn(index: 3, appeared: appeared)
         }
-        .onAppear { appeared = true }
     }
+
+    private func previewStrategyContent(_ preview: LessonPreviewContent) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("先想这 4 个方面")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+
+                ForEach(Array(preview.strategy.angles.enumerated()), id: \.offset) { index, angle in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 22, height: 22)
+                                .background(accentColor)
+                                .clipShape(Circle())
+
+                            Text(angle.title)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(AppColors.primaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+
+                        ForEach(angle.content, id: \.self) { item in
+                            Text(item)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.leading, 32)
+                        }
+                    }
+                }
+            }
+            .staggerIn(index: 2, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("答题节奏")
+                    .font(.caption.bold())
+                    .foregroundStyle(accentColor)
+
+                ForEach(Array(preview.strategy.sequence.enumerated()), id: \.offset) { index, item in
+                    VStack(alignment: .leading, spacing: 5) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(accentColor)
+                                .frame(width: 18, height: 18)
+                                .background(accentColor.opacity(0.1))
+                                .clipShape(Circle())
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 6) {
+                                    Text(item.phase)
+                                        .font(.caption.bold())
+                                        .foregroundStyle(AppColors.primaryText)
+
+                                    Text(item.focus)
+                                        .font(.caption)
+                                        .foregroundStyle(accentColor)
+                                }
+
+                                Text(item.target)
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        if index < preview.strategy.sequence.count - 1 {
+                            Divider().background(AppColors.border.opacity(0.7))
+                                .padding(.leading, 28)
+                        }
+                    }
+                }
+
+                Divider().background(AppColors.border)
+
+                Text("Content Ratio")
+                    .font(.caption.bold())
+                    .foregroundStyle(accentColor)
+
+                ForEach(preview.strategy.contentRatio, id: \.label) { ratio in
+                    HStack {
+                        Text(ratio.label)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.secondText)
+                        Spacer()
+                        Text(ratio.value)
+                            .font(.caption.bold())
+                            .foregroundStyle(AppColors.primaryText)
+                    }
+                }
+            }
+            .padding(16)
+            .cardStyle()
+            .staggerIn(index: 3, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("High-Score Tips")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+
+                    ForEach(preview.strategy.highScoreTips, id: \.self) { tip in
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 11))
+                                .foregroundStyle(accentColor)
+                                .padding(.top, 3)
+                            Text(tip)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+
+                Divider().background(AppColors.border)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Content Pitfalls")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+
+                    ForEach(preview.strategy.contentMistakes, id: \.problem) { mistake in
+                        previewMistakeCard(
+                            title: mistake.problem,
+                            detail: mistake.whyItHurts,
+                            fix: mistake.fix,
+                            tint: Color(hex: "EF4444")
+                        )
+                    }
+                }
+
+                Divider().background(AppColors.border)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Language Fixes")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+
+                    ForEach(preview.strategy.languageMistakes, id: \.problem) { mistake in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(mistake.problem)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(AppColors.primaryText)
+
+                            previewComparisonLine(
+                                tag: "Wrong",
+                                text: mistake.wrongExample,
+                                tagTint: Color(hex: "B91C1C"),
+                                textColor: AppColors.primaryText
+                            )
+
+                            previewComparisonLine(
+                                tag: "Better",
+                                text: mistake.betterExample,
+                                tagTint: AppColors.success,
+                                textColor: AppColors.primaryText
+                            )
+
+                            Text(mistake.reason)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.tertiaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppColors.surface.opacity(0.7))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                }
+            }
+            .padding(16)
+            .cardStyle()
+            .staggerIn(index: 4, appeared: appeared)
+        }
+    }
+
+    private func strategyCallout(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(accentColor)
+            Text(body)
+                .font(.subheadline)
+                .foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(accentColor.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func previewDisclosureLabel(title: String, tint: Color) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(tint.opacity(0.14))
+                .frame(width: 24, height: 24)
+                .overlay(
+                    Image(systemName: "plus")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(tint)
+                )
+            Text(title)
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+        }
+    }
+
+    private func previewMistakeCard(title: String, detail: String, fix: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+            Text(detail)
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("Fix: \(fix)")
+                .font(.caption)
+                .foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(tint.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func previewComparisonLine(tag: String, text: String, tagTint: Color, textColor: Color) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text(tag)
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(tagTint)
+                .clipShape(Capsule())
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(textColor)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
 }
 
 // MARK: - Vocabulary Step
@@ -382,6 +676,7 @@ struct VocabularyStepView: View {
     @State private var flashcardIndex = 0
     @State private var flashcardFlipped = false
     @State private var appeared = false
+    private var hasPreview: Bool { task.previewContent != nil }
 
     private var coreItems: [VocabItem] {
         task.vocabulary.filter { $0.band == .core }
@@ -401,15 +696,25 @@ struct VocabularyStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeroHeader(
-                icon: "character.book.closed.fill",
-                title: "核心词汇",
-                english: "Key Vocabulary",
-                subtitle: "掌握 \(coreItems.count) 个核心词 · \(upgradeItems.count + advancedItems.count) 个进阶词",
-                accentColor: Color(hex: "4A90D9"),
-                secondaryColor: Color(hex: "7AB4E8")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if hasPreview {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "核心词汇",
+                    subtitle: "先抓最常用的描述词，再补更成熟的升级表达。",
+                    accentColor: Color(hex: "4A90D9")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "character.book.closed.fill",
+                    title: "核心词汇",
+                    english: "Key Vocabulary",
+                    subtitle: "掌握 \(coreItems.count) 个核心词 · \(upgradeItems.count + advancedItems.count) 个进阶词",
+                    accentColor: Color(hex: "4A90D9"),
+                    secondaryColor: Color(hex: "7AB4E8")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
             // Mode switcher: List / Flashcard
             HStack(spacing: 0) {
@@ -491,9 +796,11 @@ struct VocabularyStepView: View {
                                     .font(.system(size: 28, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppColors.primaryText)
 
-                                Text(item.phonetic)
-                                    .font(.system(size: 15, weight: .medium))
-                                    .foregroundStyle(AppColors.tertiaryText)
+                                if !item.phonetic.isEmpty {
+                                    Text(item.phonetic)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                }
 
                                 Text(item.partOfSpeech)
                                     .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -535,20 +842,32 @@ struct VocabularyStepView: View {
                                     .font(.title3.bold())
                                     .foregroundStyle(accentColor)
 
-                                Text(item.englishMeaning)
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppColors.secondText)
+                                if !item.englishMeaning.isEmpty {
+                                    Text(item.englishMeaning)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondText)
+                                }
+
+                                if let sourceBand = item.sourceBand ?? item.nativeNote {
+                                    Text(sourceBand)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                }
 
                                 Divider().background(AppColors.border)
 
-                                Text(item.example)
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppColors.primaryText)
-                                    .italic()
+                                if !item.example.isEmpty {
+                                    Text(item.example)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.primaryText)
+                                        .italic()
+                                }
 
-                                Text(item.exampleTranslation)
-                                    .font(.caption)
-                                    .foregroundStyle(AppColors.tertiaryText)
+                                if !item.exampleTranslation.isEmpty {
+                                    Text(item.exampleTranslation)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
@@ -736,9 +1055,11 @@ struct VocabCardView: View {
                         .foregroundStyle(AppColors.primaryText)
 
                     HStack(spacing: 8) {
-                        Text(item.phonetic)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(AppColors.secondText)
+                        if !item.phonetic.isEmpty {
+                            Text(item.phonetic)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(AppColors.secondText)
+                        }
 
                         Text(item.partOfSpeech)
                             .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -785,9 +1106,16 @@ struct VocabCardView: View {
 
                 Spacer()
 
-                Text(item.band.bandLabel)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppColors.tertiaryText)
+                VStack(alignment: .trailing, spacing: 3) {
+                    Text(item.band.bandLabel)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.tertiaryText)
+                    if let sourceBand = item.sourceBand {
+                        Text(sourceBand)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(item.band.color)
+                    }
+                }
             }
         }
         .padding(14)
@@ -816,9 +1144,11 @@ struct VocabDetailSheet: View {
                             Text(item.word)
                                 .font(.title2.bold())
                                 .foregroundStyle(AppColors.primaryText)
-                            Text(item.phonetic)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.tertiaryText)
+                            if !item.phonetic.isEmpty {
+                                Text(item.phonetic)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
                             Text(item.partOfSpeech)
                                 .font(.system(size: 11, weight: .bold, design: .rounded))
                                 .foregroundStyle(accentColor)
@@ -832,9 +1162,23 @@ struct VocabDetailSheet: View {
                             .font(.headline)
                             .foregroundStyle(accentColor)
 
-                        Text(item.englishMeaning)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
+                        if !item.englishMeaning.isEmpty {
+                            Text(item.englishMeaning)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                        }
+
+                        if let sourceBand = item.sourceBand {
+                            Text(sourceBand)
+                                .font(.caption.bold())
+                                .foregroundStyle(AppColors.tertiaryText)
+                        }
+
+                        if let nativeNote = item.nativeNote {
+                            Text(nativeNote)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.tertiaryText)
+                        }
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -865,22 +1209,28 @@ struct VocabDetailSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .cardShadow()
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("例句")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(AppColors.primaryText)
-                        Text(item.example)
-                            .font(.body)
-                            .foregroundStyle(AppColors.primaryText)
-                        Text(item.exampleTranslation)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.tertiaryText)
+                    if !item.example.isEmpty || !item.exampleTranslation.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("例句")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(AppColors.primaryText)
+                            if !item.example.isEmpty {
+                                Text(item.example)
+                                    .font(.body)
+                                    .foregroundStyle(AppColors.primaryText)
+                            }
+                            if !item.exampleTranslation.isEmpty {
+                                Text(item.exampleTranslation)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppColors.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .cardShadow()
                     }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .cardShadow()
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 12)
@@ -944,18 +1294,29 @@ struct PhrasesStepView: View {
     let accentColor: Color
 
     @State private var appeared = false
+    private var hasPreview: Bool { task.previewContent != nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeroHeader(
-                icon: "quote.bubble.fill",
-                title: "实用词组",
-                english: "Useful Phrases",
-                subtitle: "掌握 \(task.phrases.count) 个地道表达，让口语更自然",
-                accentColor: Color(hex: "10B981"),
-                secondaryColor: Color(hex: "34D399")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if hasPreview {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "实用词组",
+                    subtitle: "用短语拉开自然度，避免一句一句直译。",
+                    accentColor: Color(hex: "10B981")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "quote.bubble.fill",
+                    title: "实用词组",
+                    english: "Useful Phrases",
+                    subtitle: "掌握 \(task.phrases.count) 个地道表达，让口语更自然",
+                    accentColor: Color(hex: "10B981"),
+                    secondaryColor: Color(hex: "34D399")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
             ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
                 PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor)
@@ -991,6 +1352,12 @@ struct PhraseCard: View {
                     Text(phrase.phrase)
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
+
+                    if let meaning = phrase.meaning {
+                        Text(meaning)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.secondText)
+                    }
                 }
 
                 Spacer()
@@ -1024,13 +1391,29 @@ struct PhraseCard: View {
                     }
                     .foregroundStyle(accentColor.opacity(0.7))
 
+                    if let sourceBand = phrase.sourceBand {
+                        Text(sourceBand)
+                            .font(.caption2.bold())
+                            .foregroundStyle(accentColor)
+                    }
+
                     if exampleVisible {
-                        Text(phrase.example)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .italic()
-                            .lineSpacing(3)
-                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        if !phrase.example.isEmpty {
+                            Text(phrase.example)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .italic()
+                                .lineSpacing(3)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+
+                        if let nativeNote = phrase.nativeNote {
+                            Text(nativeNote)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.tertiaryText)
+                                .lineSpacing(2)
+                                .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1063,20 +1446,41 @@ struct FrameworkStepView: View {
 
     @State private var appeared = false
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
+    private var preview: LessonPreviewContent? { task.previewContent }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeroHeader(
-                icon: "rectangle.3.group.fill",
-                title: "表达框架",
-                english: "Expression Framework",
-                subtitle: "掌握答题模板，让表达有条理",
-                accentColor: Color(hex: "8B5CF6"),
-                secondaryColor: Color(hex: "A78BFA")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if preview != nil {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "表达框架",
+                    subtitle: "先看总结构，再补连接表达和升级表达。",
+                    accentColor: Color(hex: "8B5CF6")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "rectangle.3.group.fill",
+                    title: "表达框架",
+                    english: "Expression Framework",
+                    subtitle: "掌握答题模板，让表达有条理",
+                    accentColor: Color(hex: "8B5CF6"),
+                    secondaryColor: Color(hex: "A78BFA")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
-            // Framework cards (replacing timeline)
+            if let preview {
+                previewFrameworkContent(preview)
+            } else {
+                standardFrameworkContent
+            }
+        }
+        .onAppear { appeared = true }
+    }
+
+    private var standardFrameworkContent: some View {
+        Group {
             VStack(spacing: 10) {
                 ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
                     FrameworkSentenceCard(
@@ -1090,7 +1494,6 @@ struct FrameworkStepView: View {
                 }
             }
 
-            // Upgrade expressions
             if !task.upgradeExpressions.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
@@ -1146,7 +1549,121 @@ struct FrameworkStepView: View {
                 .staggerIn(index: task.frameworkSentences.count + 1, appeared: appeared)
             }
         }
-        .onAppear { appeared = true }
+    }
+
+    private func previewFrameworkContent(_ preview: LessonPreviewContent) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Framework Goal")
+                    .font(.caption.bold())
+                    .foregroundStyle(accentColor)
+                Text(preview.framework.goal)
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Divider().background(AppColors.border)
+
+                ForEach(preview.framework.defaultStructure, id: \.section) { section in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(section.section)
+                            .font(.caption.bold())
+                            .foregroundStyle(accentColor)
+
+                        ForEach(section.moves, id: \.self) { move in
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(accentColor)
+                                    .padding(.top, 4)
+                                Text(move)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(16)
+            .cardStyle()
+            .staggerIn(index: 1, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 10) {
+                    Circle()
+                        .fill(Color(hex: "5B6EF5").opacity(0.12))
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "text.quote")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Color(hex: "5B6EF5"))
+                        )
+
+                    Text("Delivery Markers")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+                }
+
+                Divider().background(AppColors.border)
+
+                previewMarkersContent(preview.framework.deliveryMarkers)
+            }
+            .padding(16)
+            .cardStyle()
+            .staggerIn(index: 2, appeared: appeared)
+        }
+    }
+
+    private func frameworkSection(title: String, lines: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption.bold())
+                .foregroundStyle(accentColor)
+
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.secondText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(accentColor.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+
+    private func labelLine(tag: String, text: String, tint: Color, strike: Bool) -> some View {
+        HStack(spacing: 6) {
+            Text(tag)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(tint)
+                .clipShape(Capsule())
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(strike ? AppColors.tertiaryText : AppColors.primaryText)
+                .strikethrough(strike)
+        }
+    }
+
+    private func previewMarkersContent(_ markers: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ForEach(markers, id: \.self) { marker in
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "quote.bubble.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: "5B6EF5"))
+                        .padding(.top, 3)
+                    Text(marker)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
     }
 }
 
@@ -1233,6 +1750,8 @@ struct SamplesStepView: View {
 
     @State private var selectedBand = 0
     @State private var appeared = false
+    private var hasPreview: Bool { task.previewContent != nil }
+    private var preview: LessonPreviewContent? { task.previewContent }
 
     private var bandColors: [Color] {
         [Color(hex: "4A90D9"), Color(hex: "F59E0B"), Color(hex: "EF4444")]
@@ -1240,15 +1759,25 @@ struct SamplesStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepHeroHeader(
-                icon: "doc.richtext.fill",
-                title: "范文学习",
-                english: "Sample Answers",
-                subtitle: "三个水平的示范回答，对比学习",
-                accentColor: Color(hex: "EC4899"),
-                secondaryColor: Color(hex: "F472B6")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if hasPreview {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "范文学习",
+                    subtitle: "用 Band 6 / 7 / 8 对照看内容深度和表达差异。",
+                    accentColor: Color(hex: "EC4899")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "doc.richtext.fill",
+                    title: "范文学习",
+                    english: "Sample Answers",
+                    subtitle: "三个水平的示范回答，对比学习",
+                    accentColor: Color(hex: "EC4899"),
+                    secondaryColor: Color(hex: "F472B6")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
             // Band selector
             HStack(spacing: 8) {
@@ -1272,6 +1801,46 @@ struct SamplesStepView: View {
                 }
             }
             .staggerIn(index: 1, appeared: appeared)
+
+            if selectedBand < task.sampleAnswers.count, let bandGuide = task.sampleAnswers[selectedBand].bandGuide {
+
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Band \(bandGuide.band) 表达框架")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(AppColors.primaryText)
+                        Spacer()
+                        Text(bandGuide.focus)
+                            .font(.caption.bold())
+                            .foregroundStyle(bandColors[selectedBand])
+                    }
+
+                    frameworkGuideSection(
+                        title: "Opening",
+                        lines: bandGuide.opening,
+                        tint: bandColors[selectedBand]
+                    )
+                    frameworkGuideSection(
+                        title: "Body",
+                        lines: bandGuide.body,
+                        tint: bandColors[selectedBand]
+                    )
+                    frameworkGuideSection(
+                        title: "Closing",
+                        lines: bandGuide.closing,
+                        tint: bandColors[selectedBand]
+                    )
+                }
+                .padding(16)
+                .background(AppColors.card)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(bandColors[selectedBand].opacity(0.14), lineWidth: 1)
+                )
+                .cardShadow()
+                .staggerIn(index: 2, appeared: appeared)
+            }
 
             // Sample content
             if selectedBand < task.sampleAnswers.count {
@@ -1311,6 +1880,57 @@ struct SamplesStepView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)
+
+                    if !sample.nativeFeatures.isEmpty {
+                        Divider().background(AppColors.border)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Native Features")
+                                .font(.caption.bold())
+                                .foregroundStyle(bandColors[selectedBand])
+
+                            ForEach(sample.nativeFeatures, id: \.self) { feature in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: "sparkles")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(bandColors[selectedBand])
+                                        .padding(.top, 4)
+                                    Text(feature)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.secondText)
+                                }
+                            }
+                        }
+                    }
+
+                    if !sample.upgrades.isEmpty {
+                        Divider().background(AppColors.border)
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Expression Upgrades")
+                                .font(.caption.bold())
+                                .foregroundStyle(bandColors[selectedBand])
+
+                            ForEach(Array(sample.upgrades.enumerated()), id: \.offset) { _, item in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    upgradeLabelLine(tag: "Original", text: item.original, tint: AppColors.tertiaryText)
+                                    upgradeLabelLine(tag: "Improved", text: item.improved, tint: bandColors[selectedBand])
+                                    Text(item.why)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    Text(item.note)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(AppColors.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                            }
+                        }
+                    }
                 }
                 .padding(16)
                 .background(AppColors.card)
@@ -1324,10 +1944,28 @@ struct SamplesStepView: View {
                     insertion: .opacity.combined(with: .move(edge: .trailing)),
                     removal: .opacity.combined(with: .move(edge: .leading))
                 ))
-                .staggerIn(index: 2, appeared: appeared)
+                .staggerIn(index: preview == nil ? 2 : 3, appeared: appeared)
             }
         }
         .onAppear { appeared = true }
+    }
+
+    private func frameworkGuideSection(title: String, lines: [String], tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption.bold())
+                .foregroundStyle(tint)
+
+            ForEach(lines, id: \.self) { line in
+                Text(line)
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.secondText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(tint.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
     }
 
     // Highlight vocabulary words from this task in the sample text
@@ -1357,6 +1995,22 @@ struct SamplesStepView: View {
             return r
         })
     }
+
+    private func upgradeLabelLine(tag: String, text: String, tint: Color) -> some View {
+        HStack(spacing: 6) {
+            Text(tag)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(tint)
+                .clipShape(Capsule())
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(AppColors.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
 }
 
 // MARK: - Practice Prompt
@@ -1379,6 +2033,7 @@ struct PracticePromptView: View {
     let task: SpeakingTask
     let accentColor: Color
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
+    private var preview: LessonPreviewContent? { task.previewContent }
 
     @StateObject private var speechInput = SpeechInputManager()
     @State private var inputMode: PracticeInputMode = .text
@@ -1409,24 +2064,38 @@ struct PracticePromptView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            StepHeroHeader(
-                icon: "mic.fill",
-                title: "口语练习",
-                english: "Speaking Practice",
-                subtitle: "实战演练，开口说英语",
-                accentColor: Color(hex: "EF4444"),
-                secondaryColor: Color(hex: "F97316")
-            )
-            .staggerIn(index: 0, appeared: appeared)
+            if preview != nil {
+                PreviewStepHeader(
+                    label: "Q01 Preview",
+                    title: "口语练习",
+                    subtitle: "按提示把内容真正说出来，不要只停留在阅读。",
+                    accentColor: Color(hex: "EF4444")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            } else {
+                StepHeroHeader(
+                    icon: "mic.fill",
+                    title: "口语练习",
+                    english: "Speaking Practice",
+                    subtitle: "实战演练，开口说英语",
+                    accentColor: Color(hex: "EF4444"),
+                    secondaryColor: Color(hex: "F97316")
+                )
+                .staggerIn(index: 0, appeared: appeared)
+            }
 
             topicCard
                 .staggerIn(index: 1, appeared: appeared)
+            if let preview {
+                practiceChecklistCard(preview)
+                    .staggerIn(index: 2, appeared: appeared)
+            }
             frameworkHints
-                .staggerIn(index: 2, appeared: appeared)
-            inputCard
                 .staggerIn(index: 3, appeared: appeared)
-            actionArea
+            inputCard
                 .staggerIn(index: 4, appeared: appeared)
+            actionArea
+                .staggerIn(index: 5, appeared: appeared)
 
             if !translatedEnglish.isEmpty {
                 resultCard(
@@ -1479,10 +2148,27 @@ struct PracticePromptView: View {
 
     private var topicCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("TOPIC")
-                .font(.caption2.bold())
-                .foregroundStyle(accentColor)
-                .tracking(1)
+            HStack {
+                Text("TOPIC")
+                    .font(.caption2.bold())
+                    .foregroundStyle(accentColor)
+                    .tracking(1)
+                Spacer()
+                if let preview {
+                    Text(preview.practice.targetLength)
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundStyle(accentColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(accentColor.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+            }
+            if let preview {
+                Text(preview.practice.task)
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+            }
             Text(task.prompt)
                 .font(.body)
                 .foregroundStyle(AppColors.primaryText)
@@ -1495,7 +2181,49 @@ struct PracticePromptView: View {
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(accentColor.opacity(0.15), lineWidth: 1)
-        )
+            )
+    }
+
+    private func practiceChecklistCard(_ preview: LessonPreviewContent) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Speaking Checklist")
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+
+            ForEach(preview.practice.checklist, id: \.self) { item in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(accentColor)
+                        .padding(.top, 3)
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+                }
+            }
+
+            Divider().background(AppColors.border)
+
+            Text("Self Prompts")
+                .font(.caption.bold())
+                .foregroundStyle(accentColor)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(preview.practice.selfPrompts, id: \.self) { prompt in
+                        Text(prompt)
+                            .font(.caption.bold())
+                            .foregroundStyle(accentColor)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 7)
+                            .background(accentColor.opacity(0.08))
+                            .clipShape(Capsule())
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .cardStyle()
     }
 
     private var frameworkHints: some View {

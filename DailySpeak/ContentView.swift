@@ -8,8 +8,61 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let previewStage = CourseData.stages[0]
+    private var previewTask: SpeakingTask { previewStage.tasks[0] }
+    private let arguments = ProcessInfo.processInfo.arguments
+
+    private var previewStrategyView: some View {
+        ScrollView(showsIndicators: false) {
+            StrategyStepView(task: previewTask, accentColor: previewStage.theme.startColor)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 100)
+        }
+        .background(AppColors.background.ignoresSafeArea())
+        .navigationTitle("答题策略")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var previewFrameworkView: some View {
+        ScrollView(showsIndicators: false) {
+            FrameworkStepView(task: previewTask, accentColor: previewStage.theme.startColor)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 100)
+        }
+        .background(AppColors.background.ignoresSafeArea())
+        .navigationTitle("表达框架")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var previewPracticeView: some View {
+        ScrollView(showsIndicators: false) {
+            PracticePromptView(stageId: previewStage.id, task: previewTask, accentColor: previewStage.theme.startColor)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 100)
+        }
+        .background(AppColors.background.ignoresSafeArea())
+        .navigationTitle("口语练习")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
     var body: some View {
-        StageListView()
+        if arguments.contains("--preview-q01-learning") {
+            NavigationStack {
+                LearningFlowView(stage: previewStage, task: previewTask)
+            }
+        } else if arguments.contains("--preview-q01-strategy") {
+            NavigationStack { previewStrategyView }
+        } else if arguments.contains("--preview-q01-framework") {
+            NavigationStack { previewFrameworkView }
+        } else if arguments.contains("--preview-q01-practice") {
+            NavigationStack { previewPracticeView }
+        } else if arguments.contains("--preview-q01-overview") {
+            NavigationStack {
+                TaskOverviewView(stage: previewStage, task: previewTask)
+            }
+        } else {
+            StageListView()
+        }
     }
 }
 

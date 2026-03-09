@@ -93,6 +93,33 @@ struct VocabItem: Identifiable {
     let example: String
     let exampleTranslation: String
     let band: BandLevel
+    let providedPartOfSpeech: String?
+    let sourceBand: String?
+    let nativeNote: String?
+
+    init(
+        word: String,
+        phonetic: String,
+        meaning: String,
+        englishMeaning: String,
+        example: String,
+        exampleTranslation: String,
+        band: BandLevel,
+        providedPartOfSpeech: String? = nil,
+        sourceBand: String? = nil,
+        nativeNote: String? = nil
+    ) {
+        self.word = word
+        self.phonetic = phonetic
+        self.meaning = meaning
+        self.englishMeaning = englishMeaning
+        self.example = example
+        self.exampleTranslation = exampleTranslation
+        self.band = band
+        self.providedPartOfSpeech = providedPartOfSpeech
+        self.sourceBand = sourceBand
+        self.nativeNote = nativeNote
+    }
 
     enum BandLevel: String, CaseIterable {
         case core     = "Core"
@@ -117,20 +144,23 @@ struct VocabItem: Identifiable {
     }
 
     var partOfSpeech: String {
+        if let providedPartOfSpeech, !providedPartOfSpeech.isEmpty {
+            return providedPartOfSpeech
+        }
         switch word {
         case "practical", "durable", "convenient", "lightweight", "reliable",
              "affordable", "time-saving", "user-friendly", "portable",
              "functional", "versatile", "long-lasting", "cost-effective",
              "irreplaceable", "indispensable":
-            "adj."
+            return "adj."
         case "sentimental value", "subtle impact", "mindful habit":
-            "n. phr."
+            return "n. phr."
         case "stay hydrated", "serve a specific purpose", "strike a balance":
-            "v. phr."
+            return "v. phr."
         case "environmentally friendly", "aesthetically pleasing":
-            "adj. phr."
+            return "adj. phr."
         default:
-            "expr."
+            return "expr."
         }
     }
 }
@@ -140,14 +170,65 @@ struct PhraseItem: Identifiable {
     let id = UUID()
     let phrase: String
     let example: String
+    let meaning: String?
+    let sourceBand: String?
+    let nativeNote: String?
+
+    init(
+        phrase: String,
+        example: String,
+        meaning: String? = nil,
+        sourceBand: String? = nil,
+        nativeNote: String? = nil
+    ) {
+        self.phrase = phrase
+        self.example = example
+        self.meaning = meaning
+        self.sourceBand = sourceBand
+        self.nativeNote = nativeNote
+    }
 }
 
 // MARK: - Sample Answer
 struct SampleAnswer: Identifiable {
+    struct BandGuide {
+        let band: Int
+        let focus: String
+        let opening: [String]
+        let body: [String]
+        let closing: [String]
+    }
+
+    struct Upgrade {
+        let original: String
+        let improved: String
+        let why: String
+        let note: String
+    }
+
     let id = UUID()
     let band: String
     let wordCount: Int
     let content: String
+    let nativeFeatures: [String]
+    let bandGuide: BandGuide?
+    let upgrades: [Upgrade]
+
+    init(
+        band: String,
+        wordCount: Int,
+        content: String,
+        nativeFeatures: [String] = [],
+        bandGuide: BandGuide? = nil,
+        upgrades: [Upgrade] = []
+    ) {
+        self.band = band
+        self.wordCount = wordCount
+        self.content = content
+        self.nativeFeatures = nativeFeatures
+        self.bandGuide = bandGuide
+        self.upgrades = upgrades
+    }
 }
 
 // MARK: - Speaking Task
@@ -167,6 +248,43 @@ struct SpeakingTask: Identifiable {
     let frameworkSentences: [String]
     let sampleAnswers: [SampleAnswer]
     let upgradeExpressions: [(original: String, upgraded: String)]
+    let previewContent: LessonPreviewContent?
+
+    init(
+        id: Int,
+        title: String,
+        englishTitle: String,
+        prompt: String,
+        questionType: String,
+        suggestedTime: String,
+        difficulty: String,
+        passCriteria: [String],
+        steps: [LearningStep],
+        tips: [String],
+        vocabulary: [VocabItem],
+        phrases: [PhraseItem],
+        frameworkSentences: [String],
+        sampleAnswers: [SampleAnswer],
+        upgradeExpressions: [(original: String, upgraded: String)],
+        previewContent: LessonPreviewContent? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.englishTitle = englishTitle
+        self.prompt = prompt
+        self.questionType = questionType
+        self.suggestedTime = suggestedTime
+        self.difficulty = difficulty
+        self.passCriteria = passCriteria
+        self.steps = steps
+        self.tips = tips
+        self.vocabulary = vocabulary
+        self.phrases = phrases
+        self.frameworkSentences = frameworkSentences
+        self.sampleAnswers = sampleAnswers
+        self.upgradeExpressions = upgradeExpressions
+        self.previewContent = previewContent
+    }
 
     static func placeholder(id: Int, title: String, englishTitle: String, prompt: String) -> SpeakingTask {
         SpeakingTask(
@@ -480,15 +598,14 @@ enum CourseData {
             chineseTitle: "基础描述",
             description: "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。",
             tasks: [
-                .placeholder(id: 1, title: "描述一个物品", englishTitle: "Describe an Object", prompt: "Describe an object you use every day."),
-                .placeholder(id: 2, title: "描述一个人", englishTitle: "Describe a Person", prompt: "Describe a person who has influenced you."),
-                .placeholder(id: 3, title: "描述一个地方", englishTitle: "Describe a Place", prompt: "Describe a place you like to visit."),
-                .placeholder(id: 4, title: "描述一项活动", englishTitle: "Describe an Activity", prompt: "Describe an activity you enjoy doing."),
-                .placeholder(id: 5, title: "描述一顿饭", englishTitle: "Describe a Meal", prompt: "Describe a meal you enjoyed recently."),
-                .placeholder(id: 6, title: "描述一件衣服", englishTitle: "Describe Clothing", prompt: "Describe a piece of clothing you like."),
-                .placeholder(id: 7, title: "描述一种动物", englishTitle: "Describe an Animal", prompt: "Describe an animal you find interesting."),
-                .placeholder(id: 8, title: "描述一个房间", englishTitle: "Describe a Room", prompt: "Describe a room you spend time in."),
-                .placeholder(id: 9, title: "描述一个工具", englishTitle: "Describe a Tool", prompt: "Describe a tool or device that helps you."),
+                PreviewTaskFactory.q01DescribePersonTask(id: 1),
+                .placeholder(id: 2, title: "描述一个物品", englishTitle: "Describe an Object", prompt: "Describe an object you use every day."),
+                .placeholder(id: 3, title: "描述一个地点", englishTitle: "Describe a Place", prompt: "Describe a place you enjoy going to."),
+                .placeholder(id: 4, title: "描述一个活动或习惯", englishTitle: "Describe an Activity or Habit", prompt: "Describe an activity or habit that is part of your life."),
+                .placeholder(id: 5, title: "描述天气或季节", englishTitle: "Describe Weather or a Season", prompt: "Describe weather or a season that affects your daily life."),
+                .placeholder(id: 6, title: "描述情绪与感受", englishTitle: "Describe Feelings", prompt: "Describe a feeling or emotional state you often experience."),
+                .placeholder(id: 7, title: "描述喜好与偏好", englishTitle: "Describe Preferences", prompt: "Describe something you enjoy or strongly prefer."),
+                .placeholder(id: 8, title: "描述日常生活状态", englishTitle: "Describe Daily Life", prompt: "Describe your current daily life situation."),
             ]
         ),
         Stage(

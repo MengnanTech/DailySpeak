@@ -23,15 +23,22 @@ struct TaskOverviewView: View {
     @State private var stepSubtitleChars: [Int: Int] = [:]
 
     private var theme: StageTheme { stage.theme }
+    private var previewContent: LessonPreviewContent? { task.previewContent }
 
     var body: some View {
         ZStack {
             ZStack(alignment: .bottom) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        topBanner
-                        strategyCard
-                        stepsTimeline
+                        if let previewContent {
+                            previewBanner(previewContent)
+                            previewSummaryCard(previewContent)
+                            previewModulesCard
+                        } else {
+                            topBanner
+                            strategyCard
+                            stepsTimeline
+                        }
                         Color.clear.frame(height: 70)
                     }
                     .padding(.horizontal, 20)
@@ -127,6 +134,213 @@ struct TaskOverviewView: View {
         .heroShadow()
         .opacity(appear ? 1 : 0)
         .offset(y: appear ? 0 : 10)
+    }
+
+    private func previewBanner(_ preview: LessonPreviewContent) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(theme.softGradient)
+
+            GeometryReader { geo in
+                Circle()
+                    .fill(.white.opacity(0.12))
+                    .frame(width: 120)
+                    .offset(x: geo.size.width - 70, y: -30)
+                Circle()
+                    .fill(.white.opacity(0.08))
+                    .frame(width: 64)
+                    .offset(x: -10, y: 92)
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            previewChip(preview.topic.stageLabel)
+                            previewChip("Q\(String(format: "%02d", preview.questionID))")
+                            previewChip(task.questionType)
+                            previewChip(preview.topic.target)
+                        }
+
+                        Text(task.title)
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text(task.prompt)
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.82))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    Text(theme.emoji)
+                        .font(.system(size: 40))
+                }
+
+                HStack(spacing: 10) {
+                    previewMetaPill(icon: "clock.fill", text: preview.practice.targetLength)
+                    previewMetaPill(icon: "text.quote", text: "\(task.sampleAnswers.count) samples")
+                    previewMetaPill(icon: "books.vertical.fill", text: "\(task.vocabulary.count) vocab")
+                }
+            }
+            .padding(20)
+        }
+        .frame(minHeight: 190)
+        .heroShadow()
+        .opacity(appear ? 1 : 0)
+        .offset(y: appear ? 0 : 10)
+    }
+
+    private func previewChip(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .foregroundStyle(.white.opacity(0.82))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(.white.opacity(0.14))
+            .clipShape(Capsule())
+    }
+
+    private func previewMetaPill(icon: String, text: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
+            Text(text)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.white.opacity(0.12))
+        .clipShape(Capsule())
+    }
+
+    private func previewSummaryCard(_ preview: LessonPreviewContent) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("学习重点")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Text(preview.practice.targetLength)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.startColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(theme.startColor.opacity(0.08))
+                    .clipShape(Capsule())
+            }
+
+            Text(preview.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
+                .font(.subheadline)
+                .foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(preview.strategy.angles, id: \.title) { angle in
+                        previewAngleChip(title: angle.title)
+                    }
+                }
+            }
+
+            HStack(spacing: 8) {
+                previewMiniStat(title: "Angles", value: "\(preview.strategy.angles.count)")
+                previewMiniStat(title: "Bands", value: "\(task.sampleAnswers.count)")
+                previewMiniStat(title: "Vocab", value: "\(task.vocabulary.count)")
+                previewMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)")
+            }
+
+            Divider().background(AppColors.border)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("建议顺序")
+                    .font(.caption.bold())
+                    .foregroundStyle(theme.startColor)
+
+                Text("先看答题思路，再学词汇和框架，最后对照范文开口练。")
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.primaryText)
+            }
+        }
+        .padding(16)
+        .cardStyle()
+    }
+
+    private func previewAngleChip(title: String) -> some View {
+        Text(title)
+            .font(.caption.bold())
+            .foregroundStyle(theme.startColor)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(theme.startColor.opacity(0.08))
+            .clipShape(Capsule())
+    }
+
+    private func previewMiniStat(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption2.bold())
+                .foregroundStyle(AppColors.tertiaryText)
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(AppColors.primaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var previewModulesCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("学习流程")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Text("\(task.steps.count) steps")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(theme.startColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(theme.startColor.opacity(0.08))
+                    .clipShape(Capsule())
+            }
+
+            VStack(spacing: 10) {
+                ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
+                    VStack(spacing: 10) {
+                        HStack(alignment: .top, spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(theme.startColor.opacity(0.12))
+                                    .frame(width: 28, height: 28)
+                                Text("\(index + 1)")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .foregroundStyle(theme.startColor)
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(step.title)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(AppColors.primaryText)
+                                Text(step.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
+
+                            Spacer()
+                        }
+
+                        if index < task.steps.count - 1 {
+                            Divider().background(AppColors.border)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+        .padding(16)
+        .cardStyle()
     }
 
     // MARK: - Strategy Card
