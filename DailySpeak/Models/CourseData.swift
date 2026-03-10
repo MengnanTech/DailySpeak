@@ -603,123 +603,63 @@ enum CourseData {
             title: "Basic Description",
             chineseTitle: "基础描述",
             description: "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。",
-            tasks: LessonRepository.loadStageOneTasks()
+            tasks: LessonRepository.loadTasks(forStage: 1)
         ),
         Stage(
             id: 2,
-            title: "Daily Life",
-            chineseTitle: "日常生活",
-            description: "作用：训练日常话题输出\n目标：稳定描述习惯与生活方式。",
-            tasks: [
-                .placeholder(id: 1, title: "日常作息", englishTitle: "Daily Routine", prompt: "Describe your typical daily routine."),
-                .placeholder(id: 2, title: "饮食习惯", englishTitle: "Eating Habits", prompt: "Talk about your eating habits."),
-                .placeholder(id: 3, title: "运动锻炼", englishTitle: "Exercise", prompt: "Describe your exercise routine."),
-                .placeholder(id: 4, title: "休闲时光", englishTitle: "Leisure Time", prompt: "How do you spend your free time?"),
-                .placeholder(id: 5, title: "购物习惯", englishTitle: "Shopping", prompt: "Describe your shopping habits."),
-                .placeholder(id: 6, title: "通勤方式", englishTitle: "Commuting", prompt: "How do you commute to work or school?"),
-            ]
+            title: "Events & Early Reflection",
+            chineseTitle: "事件叙述与初级认知",
+            description: "作用：训练事件讲述与初步反思\n目标：把发生了什么、为什么重要说完整。",
+            tasks: LessonRepository.loadTasks(forStage: 2)
         ),
         Stage(
             id: 3,
-            title: "People & Relations",
-            chineseTitle: "人物关系",
-            description: "作用：强化人物关系表达\n目标：讲清人物特征、关系与影响。",
-            tasks: [
-                .placeholder(id: 1, title: "家庭成员", englishTitle: "Family Member", prompt: "Describe a family member you admire."),
-                .placeholder(id: 2, title: "好朋友", englishTitle: "Close Friend", prompt: "Talk about your best friend."),
-                .placeholder(id: 3, title: "老师", englishTitle: "A Teacher", prompt: "Describe a teacher who influenced you."),
-                .placeholder(id: 4, title: "名人偶像", englishTitle: "A Celebrity", prompt: "Talk about a celebrity you admire."),
-                .placeholder(id: 5, title: "邻居", englishTitle: "A Neighbor", prompt: "Describe a neighbor you know well."),
-                .placeholder(id: 6, title: "同事或同学", englishTitle: "Colleague", prompt: "Describe a colleague or classmate."),
-                .placeholder(id: 7, title: "陌生人的善意", englishTitle: "A Kind Stranger", prompt: "Describe a time a stranger helped you."),
-                .placeholder(id: 8, title: "童年玩伴", englishTitle: "Childhood Friend", prompt: "Talk about a childhood friend."),
-            ]
+            title: "Process, Problems & Judgment",
+            chineseTitle: "过程、问题与判断",
+            description: "作用：解释做事过程与决策依据\n目标：说清步骤、取舍和判断逻辑。",
+            tasks: LessonRepository.loadTasks(forStage: 3)
         ),
         Stage(
             id: 4,
-            title: "Places & Travel",
-            chineseTitle: "地点旅行",
-            description: "作用：提升地点与旅行叙述\n目标：按时间线讲完整经历。",
-            tasks: [
-                .placeholder(id: 1, title: "家乡", englishTitle: "Hometown", prompt: "Describe your hometown."),
-                .placeholder(id: 2, title: "旅行经历", englishTitle: "A Trip", prompt: "Describe a memorable trip."),
-                .placeholder(id: 3, title: "喜欢的城市", englishTitle: "Favorite City", prompt: "Describe a city you'd like to visit."),
-                .placeholder(id: 4, title: "自然风景", englishTitle: "Natural Scenery", prompt: "Describe a beautiful natural place."),
-                .placeholder(id: 5, title: "一家餐厅", englishTitle: "A Restaurant", prompt: "Describe a restaurant you enjoy."),
-            ]
+            title: "Opinions & Comparisons",
+            chineseTitle: "观点、比较与不确定性",
+            description: "作用：进入观点题与比较题\n目标：表达立场时保留弹性，不走极端。",
+            tasks: LessonRepository.loadTasks(forStage: 4)
         ),
         Stage(
             id: 5,
-            title: "Events & Experiences",
-            chineseTitle: "事件经历",
-            description: "作用：训练事件复盘能力\n目标：说清背景、过程、结果与感受。",
-            tasks: [
-                .placeholder(id: 1, title: "难忘的一天", englishTitle: "Memorable Day", prompt: "Describe a day you'll never forget."),
-                .placeholder(id: 2, title: "一次成功", englishTitle: "An Achievement", prompt: "Describe something you achieved."),
-                .placeholder(id: 3, title: "一次挑战", englishTitle: "A Challenge", prompt: "Describe a challenge you overcame."),
-                .placeholder(id: 4, title: "一次聚会", englishTitle: "A Gathering", prompt: "Describe a party or celebration you attended."),
-                .placeholder(id: 5, title: "一次迟到", englishTitle: "Being Late", prompt: "Describe a time you were late."),
-                .placeholder(id: 6, title: "一次学习新技能", englishTitle: "Learning a Skill", prompt: "Describe a time you learned something new."),
-                .placeholder(id: 7, title: "一次帮助别人", englishTitle: "Helping Others", prompt: "Describe a time you helped someone."),
-            ]
+            title: "Real-life Communication",
+            chineseTitle: "现实情境与沟通策略",
+            description: "作用：覆盖真实服务沟通场景\n目标：提出需求、拒绝和协商时保持分寸。",
+            tasks: LessonRepository.loadTasks(forStage: 5)
         ),
         Stage(
             id: 6,
-            title: "Media & Entertainment",
-            chineseTitle: "媒体娱乐",
-            description: "作用：扩展媒体娱乐话题\n目标：能评价内容并给出理由。",
-            tasks: [
-                .placeholder(id: 1, title: "一本书", englishTitle: "A Book", prompt: "Describe a book that impressed you."),
-                .placeholder(id: 2, title: "一部电影", englishTitle: "A Movie", prompt: "Describe a movie you enjoyed."),
-                .placeholder(id: 3, title: "一首歌", englishTitle: "A Song", prompt: "Describe a song that is special to you."),
-                .placeholder(id: 4, title: "一个电视节目", englishTitle: "A TV Show", prompt: "Describe a TV show you watch regularly."),
-                .placeholder(id: 5, title: "一个网站或App", englishTitle: "A Website/App", prompt: "Describe a website or app you use often."),
-                .placeholder(id: 6, title: "一则新闻", englishTitle: "A News Story", prompt: "Describe a news story that interested you."),
-            ]
+            title: "Workplace Responsibility",
+            chineseTitle: "职场表达与责任意识",
+            description: "作用：进入工作语境和责任表达\n目标：汇报、解释和分歧沟通都更稳。",
+            tasks: LessonRepository.loadTasks(forStage: 6)
         ),
         Stage(
             id: 7,
-            title: "Education & Work",
-            chineseTitle: "教育工作",
-            description: "作用：覆盖学习与职场场景\n目标：清楚表达经历、能力和规划。",
-            tasks: [
-                .placeholder(id: 1, title: "学校经历", englishTitle: "School Experience", prompt: "Describe your school experience."),
-                .placeholder(id: 2, title: "工作经验", englishTitle: "Work Experience", prompt: "Describe a job you have or had."),
-                .placeholder(id: 3, title: "未来计划", englishTitle: "Future Plans", prompt: "Describe your future career plans."),
-                .placeholder(id: 4, title: "一门课程", englishTitle: "A Course", prompt: "Describe a course you found useful."),
-                .placeholder(id: 5, title: "职场技能", englishTitle: "A Work Skill", prompt: "Describe a skill important for your work."),
-                .placeholder(id: 6, title: "理想工作", englishTitle: "Dream Job", prompt: "Describe your dream job."),
-                .placeholder(id: 7, title: "一次面试", englishTitle: "An Interview", prompt: "Describe a job interview experience."),
-                .placeholder(id: 8, title: "在线学习", englishTitle: "Online Learning", prompt: "Describe your online learning experience."),
-                .placeholder(id: 9, title: "团队合作", englishTitle: "Teamwork", prompt: "Describe a time you worked in a team."),
-            ]
+            title: "Relationships & Emotions",
+            chineseTitle: "人际关系与情感沟通",
+            description: "作用：练真实但克制的人际表达\n目标：支持、拒绝、道歉和担忧都说得自然。",
+            tasks: LessonRepository.loadTasks(forStage: 7)
         ),
         Stage(
             id: 8,
-            title: "Society & Issues",
-            chineseTitle: "社会议题",
-            description: "作用：进入观点型讨论\n目标：能表态、论证并举例支撑。",
-            tasks: [
-                .placeholder(id: 1, title: "环境保护", englishTitle: "Environment", prompt: "Talk about an environmental issue."),
-                .placeholder(id: 2, title: "科技影响", englishTitle: "Technology", prompt: "How has technology changed your life?"),
-                .placeholder(id: 3, title: "健康生活", englishTitle: "Health", prompt: "Talk about healthy living."),
-                .placeholder(id: 4, title: "城市vs农村", englishTitle: "City vs Rural", prompt: "Compare city and rural life."),
-                .placeholder(id: 5, title: "文化差异", englishTitle: "Cultural Differences", prompt: "Talk about cultural differences."),
-                .placeholder(id: 6, title: "社交媒体", englishTitle: "Social Media", prompt: "Discuss the impact of social media."),
-            ]
+            title: "Abstract Topics & Values",
+            chineseTitle: "抽象话题与价值判断",
+            description: "作用：过渡到抽象价值讨论\n目标：能谈理念，但不空泛。",
+            tasks: LessonRepository.loadTasks(forStage: 8)
         ),
         Stage(
             id: 9,
-            title: "Abstract & Advanced",
-            chineseTitle: "抽象进阶",
-            description: "作用：攻克抽象题\n目标：在高难话题中保持逻辑与深度。",
-            tasks: [
-                .placeholder(id: 1, title: "成功的定义", englishTitle: "Success", prompt: "What does success mean to you?"),
-                .placeholder(id: 2, title: "幸福感", englishTitle: "Happiness", prompt: "What makes people happy?"),
-                .placeholder(id: 3, title: "时间管理", englishTitle: "Time Management", prompt: "How do you manage your time?"),
-                .placeholder(id: 4, title: "改变与适应", englishTitle: "Change", prompt: "How do you deal with change?"),
-                .placeholder(id: 5, title: "创造力", englishTitle: "Creativity", prompt: "Talk about the importance of creativity."),
-            ]
+            title: "Reflection & Self-Positioning",
+            chineseTitle: "反思、整合与自我定位",
+            description: "作用：把经验和价值整合成闭环表达\n目标：回顾变化，也能谈未来的不确定性。",
+            tasks: LessonRepository.loadTasks(forStage: 9)
         ),
     ]
 }

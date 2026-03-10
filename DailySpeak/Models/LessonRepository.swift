@@ -208,19 +208,12 @@ struct BundleLessonContentSource: LessonContentSource {
 }
 
 enum LessonRepository {
-    private static let stageOneFallbackLessons: [LessonManifest.LessonDescriptor] = [
-        .init(id: 1, stage: 1, titleCn: "描述一个人", titleEn: "Describe a Person", prompt: "Describe a person you know well.", filename: "s01_q01_describe_a_person.json", structuredContent: true),
-        .init(id: 2, stage: 1, titleCn: "描述一个物品", titleEn: "Describe an Object", prompt: "Describe an object that is part of your routine.", filename: "s01_q02_describe_an_object.json", structuredContent: true),
-        .init(id: 3, stage: 1, titleCn: "描述一个地点", titleEn: "Describe a Place", prompt: "Describe a place you enjoy spending time in.", filename: "s01_q03_describe_a_place.json", structuredContent: true),
-        .init(id: 4, stage: 1, titleCn: "描述一个活动或习惯", titleEn: "Describe an Activity or Habit", prompt: "Describe an activity or habit that shapes your daily life.", filename: "s01_q04_describe_an_activity_or_habit.json", structuredContent: true),
-        .init(id: 5, stage: 1, titleCn: "描述天气或季节", titleEn: "Describe Weather or a Season", prompt: "Describe weather or a season that affects your mood or routine.", filename: "s01_q05_describe_weather_or_a_season.json", structuredContent: true),
-        .init(id: 6, stage: 1, titleCn: "描述情绪与感受", titleEn: "Describe Feelings", prompt: "Describe a feeling or emotional state you often experience.", filename: "s01_q06_describe_feelings.json", structuredContent: true),
-        .init(id: 7, stage: 1, titleCn: "描述喜好与偏好", titleEn: "Describe Preferences", prompt: "Describe something you genuinely enjoy or strongly prefer.", filename: "s01_q07_describe_preferences.json", structuredContent: true),
-        .init(id: 8, stage: 1, titleCn: "描述日常生活状态", titleEn: "Describe Daily Life", prompt: "Describe your current daily life situation.", filename: "s01_q08_describe_daily_life_state.json", structuredContent: true)
-    ]
+    static func loadTasks(forStage stage: Int, source: any LessonContentSource = BundleLessonContentSource()) -> [SpeakingTask] {
+        guard let manifest = try? source.loadManifest(named: "stage\(stage)_manifest") else {
+            return []
+        }
 
-    static func loadStageOneTasks(source: any LessonContentSource = BundleLessonContentSource()) -> [SpeakingTask] {
-        let descriptors = (try? source.loadManifest(named: "stage1_manifest").lessons) ?? stageOneFallbackLessons
+        let descriptors = manifest.lessons
 
         return descriptors.map { descriptor in
             guard descriptor.structuredContent,

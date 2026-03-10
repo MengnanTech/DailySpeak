@@ -284,7 +284,7 @@ struct StrategyStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if lesson != nil {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "先搭答案骨架",
                     subtitle: "先定人物关系和特质，再用一个故事收住影响。",
                     accentColor: Color(hex: "F59E0B")
@@ -550,7 +550,7 @@ struct VocabularyStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if hasLessonContent {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "核心词汇",
                     subtitle: "先抓最常用的描述词，再补更成熟的升级表达。",
                     accentColor: Color(hex: "4A90D9")
@@ -1152,7 +1152,7 @@ struct PhrasesStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if hasLessonContent {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "实用词组",
                     subtitle: "用短语拉开自然度，避免一句一句直译。",
                     accentColor: Color(hex: "10B981")
@@ -1304,7 +1304,7 @@ struct FrameworkStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if lesson != nil {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "表达框架",
                     subtitle: "先看总结构，再补连接表达和升级表达。",
                     accentColor: Color(hex: "8B5CF6")
@@ -1613,7 +1613,7 @@ struct SamplesStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if hasLessonContent {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "范文学习",
                     subtitle: "用 Band 6 / 7 / 8 对照看内容深度和表达差异。",
                     accentColor: Color(hex: "EC4899")
@@ -1918,7 +1918,7 @@ struct PracticePromptView: View {
         VStack(alignment: .leading, spacing: 18) {
             if lesson != nil {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "口语练习",
                     subtitle: "按提示把内容真正说出来，不要只停留在阅读。",
                     accentColor: Color(hex: "EF4444")

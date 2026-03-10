@@ -1,0 +1,51 @@
+{
+  "stage_id": 8,
+  "stage_label": "Stage 8",
+  "lessons": [
+    {
+      "id": 42,
+      "stage": 8,
+      "title_cn": "谈论成功及其代价",
+      "title_en": "Talk About Success And Its Cost",
+      "prompt": "Talk about success and the cost that can come with it.",
+      "filename": "s08_q42_talk_about_success_and_its_cost.json",
+      "structured_content": true
+    },
+    {
+      "id": 43,
+      "stage": 8,
+      "title_cn": "谈论幸福与满足感",
+      "title_en": "Talk About Happiness And Contentment",
+      "prompt": "Talk about happiness and contentment.",
+      "filename": "s08_q43_talk_about_happiness_and_contentment.json",
+      "structured_content": true
+    },
+    {
+      "id": 44,
+      "stage": 8,
+      "title_cn": "谈论自由、限制与责任",
+      "title_en": "Talk About Freedom Limits And Responsibility",
+      "prompt": "Talk about freedom, limits, and responsibility.",
+      "filename": "s08_q44_talk_about_freedom_limits_and_responsibility.json",
+      "structured_content": true
+    },
+    {
+      "id": 45,
+      "stage": 8,
+      "title_cn": "谈论变化与不确定性",
+      "title_en": "Talk About Change And Uncertainty",
+      "prompt": "Talk about change and uncertainty.",
+      "filename": "s08_q45_talk_about_change_and_uncertainty.json",
+      "structured_content": true
+    },
+    {
+      "id": 46,
+      "stage": 8,
+      "title_cn": "谈论科技、趋势与影响",
+      "title_en": "Talk About Technology Trends And Impact",
+      "prompt": "Talk about technology trends and their impact.",
+      "filename": "s08_q46_talk_about_technology_trends_and_impact.json",
+      "structured_content": true
+    }
+  ]
+}

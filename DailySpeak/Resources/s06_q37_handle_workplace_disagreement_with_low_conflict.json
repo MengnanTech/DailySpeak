@@ -1,0 +1,424 @@
+{
+  "id": "s06_q37",
+  "topic": {
+    "stage": 6,
+    "stage_label": "Stage 6",
+    "title_cn": "处理职场分歧与低冲突沟通",
+    "prompt_en": "Describe how you handle disagreement at work while keeping conflict low.",
+    "learning_goal": "Learn to describe disagreement through professional tone, reasoning, and low-conflict communication.",
+    "category": "workplace-disagreement",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Set the work context",
+        "content": [
+          "Say what the work situation is and what your role is.",
+          "That gives the listener a frame before the details begin."
+        ]
+      },
+      {
+        "title": "Explain the issue or task",
+        "content": [
+          "Describe the task, bug, delay, or concept in practical terms.",
+          "Avoid jargon if the topic is about clear communication."
+        ]
+      },
+      {
+        "title": "Clarify responsibility",
+        "content": [
+          "Show what belongs to you, to the team, or to the process.",
+          "That keeps the answer professional instead of defensive."
+        ]
+      },
+      {
+        "title": "End with the next step",
+        "content": [
+          "Finish with what you did or plan to do next.",
+          "A work answer should feel forward-looking."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Work context",
+        "target": "State the role, project, or workplace situation clearly."
+      },
+      {
+        "phase": "Body",
+        "focus": "Issue and response",
+        "target": "Explain what happened and how you handled it."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Ownership and next step",
+        "target": "End with responsibility, learning, or action."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Context",
+        "value": "25%"
+      },
+      {
+        "label": "Issue + response",
+        "value": "50%"
+      },
+      {
+        "label": "Ownership",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Workplace answers sound stronger when they focus on clarity, not self-praise.",
+      "Explain the practical effect of a problem, not just the technical label.",
+      "Responsibility language should sound calm and specific.",
+      "End with the next step or lesson so the answer feels professional."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Too much jargon",
+          "why_it_hurts": "A workplace answer loses impact if the listener cannot understand the main point.",
+          "fix": "Translate the issue into plain effect, such as delay, confusion, or customer impact."
+        },
+        {
+          "problem": "Defensive tone",
+          "why_it_hurts": "The answer sounds weaker if you only try to avoid blame.",
+          "fix": "Explain responsibility honestly and move quickly to what you did next."
+        },
+        {
+          "problem": "No action plan",
+          "why_it_hurts": "Work answers feel incomplete if the story stops at the problem.",
+          "fix": "End with the next step, fix, or communication follow-up."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using happen passive incorrectly",
+          "wrong_example": "The bug was happened yesterday.",
+          "better_example": "The bug happened yesterday.",
+          "reason": "Happen is intransitive and does not take passive form."
+        },
+        {
+          "problem": "Using explain someone",
+          "wrong_example": "I explained him the problem.",
+          "better_example": "I explained the problem to him.",
+          "reason": "Explain usually takes the thing before the person with to."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "role",
+        "pos": "n.",
+        "meaning_zh": "角色，职责",
+        "band": 6,
+        "example": "I would naturally use \"role\" when talking about this topic."
+      },
+      {
+        "item": "deadline",
+        "pos": "n.",
+        "meaning_zh": "截止时间",
+        "band": 6,
+        "example": "I would naturally use \"deadline\" when talking about this topic."
+      },
+      {
+        "item": "issue",
+        "pos": "n.",
+        "meaning_zh": "问题",
+        "band": 6,
+        "example": "I would naturally use \"issue\" when talking about this topic."
+      },
+      {
+        "item": "update",
+        "pos": "n.",
+        "meaning_zh": "进展汇报",
+        "band": 6,
+        "example": "I would naturally use \"update\" when talking about this topic."
+      },
+      {
+        "item": "team",
+        "pos": "n.",
+        "meaning_zh": "团队",
+        "band": 6,
+        "example": "I would naturally use \"team\" when talking about this topic."
+      },
+      {
+        "item": "responsibility",
+        "pos": "n.",
+        "meaning_zh": "责任",
+        "band": 6,
+        "example": "I would naturally use \"responsibility\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "root cause",
+        "pos": "n. phr.",
+        "meaning_zh": "根本原因",
+        "note": "Useful for bug explanations and practical analysis."
+      },
+      {
+        "item": "ownership",
+        "pos": "n.",
+        "meaning_zh": "负责意识",
+        "note": "Important when talking about responsibility."
+      },
+      {
+        "item": "non-technical",
+        "pos": "adj.",
+        "meaning_zh": "非技术性的",
+        "note": "Useful when simplifying complex ideas."
+      },
+      {
+        "item": "blocker",
+        "pos": "n.",
+        "meaning_zh": "阻塞点",
+        "note": "Natural for progress and delay reports."
+      },
+      {
+        "item": "practical impact",
+        "pos": "n. phr.",
+        "meaning_zh": "实际影响",
+        "note": "Useful when translating a work issue into plain language."
+      },
+      {
+        "item": "follow-up",
+        "pos": "n.",
+        "meaning_zh": "后续跟进",
+        "note": "Useful for next-step endings."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "I am responsible for",
+        "meaning_zh": "我负责……",
+        "band": 6,
+        "example": "I would use \"I am responsible for\" naturally in this answer."
+      },
+      {
+        "phrase": "at the moment",
+        "meaning_zh": "目前",
+        "band": 6,
+        "example": "I would use \"at the moment\" naturally in this answer."
+      },
+      {
+        "phrase": "the main issue is",
+        "meaning_zh": "主要问题是",
+        "band": 6,
+        "example": "I would use \"the main issue is\" naturally in this answer."
+      },
+      {
+        "phrase": "the next step is",
+        "meaning_zh": "下一步是",
+        "band": 6,
+        "example": "I would use \"the next step is\" naturally in this answer."
+      },
+      {
+        "phrase": "to put it simply",
+        "meaning_zh": "简单来说",
+        "band": 6,
+        "example": "I would use \"to put it simply\" naturally in this answer."
+      },
+      {
+        "phrase": "take responsibility for",
+        "meaning_zh": "为……负责",
+        "band": 7,
+        "example": "I would use \"take responsibility for\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "from a practical point of view",
+        "meaning_zh": "从实际角度看",
+        "note": "Useful for workplace explanations.",
+        "example": "I would use \"from a practical point of view\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "what I did next was",
+        "meaning_zh": "我接下来做的是",
+        "note": "Useful for action-focused endings.",
+        "example": "I would use \"what I did next was\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "the impact on the team was",
+        "meaning_zh": "对团队的影响是",
+        "note": "Good for work context.",
+        "example": "I would use \"the impact on the team was\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I wanted to make it clear that",
+        "meaning_zh": "我想明确说明的是",
+        "note": "Useful for ownership and explanation.",
+        "example": "I would use \"I wanted to make it clear that\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Handle workplace topics through context, issue, responsibility, and next step.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Set the work context and your role.",
+          "Show why the situation matters."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Explain the issue, update, or concept in practical language.",
+          "State how you responded or communicated."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "Clarify ownership and the next action.",
+          "Keep the ending constructive and professional."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "In my role, I usually ...",
+      "The practical impact was ...",
+      "What I did next was ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "A disagreement at work where keeping the relationship stable still matters is something I can talk about quite naturally. If I disagree with someone at work, I usually try to slow the conversation down before I argue for my own view too strongly. I want to understand whether the disagreement is about goals, facts, timing, or simply different preferences, because each one needs a different response. Once that is clear, I explain my concern in terms of impact rather than personal criticism. If the other person still prefers a different approach, I look for a small test, a compromise, or a decision-maker rather than turning it into a personal clash.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. For me, good disagreement means protecting the work without damaging trust. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 处理职场分歧与低冲突沟通 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear work context and next step",
+        "opening": [
+          "The topic that comes to mind is a disagreement at work where keeping the relationship stable still matters.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, good disagreement means protecting the work without damaging trust.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Once that is clear, I explain my concern in terms of impact rather than personal criticism.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is a disagreement at work where keeping the relationship stable still matters. If I disagree with someone at work, I usually try to slow the conversation down before I argue for my own view too strongly. I want to understand whether the disagreement is about goals, facts, timing, or simply different preferences, because each one needs a different response. What stood out most was that once that is clear, I explain my concern in terms of impact rather than personal criticism.\n\nAfter that, if the other person still prefers a different approach, I look for a small test, a compromise, or a decision-maker rather than turning it into a personal clash. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. For me, good disagreement means protecting the work without damaging trust. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 处理职场分歧与低冲突沟通 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Clearer ownership and practical explanation",
+        "opening": [
+          "The topic that comes to mind is a disagreement at work where keeping the relationship stable still matters.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, good disagreement means protecting the work without damaging trust.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Once that is clear, I explain my concern in terms of impact rather than personal criticism.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with a disagreement at work where keeping the relationship stable still matters. If I disagree with someone at work, I usually try to slow the conversation down before I argue for my own view too strongly. I want to understand whether the disagreement is about goals, facts, timing, or simply different preferences, because each one needs a different response. The turning point, for me, was that once that is clear, I explain my concern in terms of impact rather than personal criticism.\n\nFrom there, if the other person still prefers a different approach, I look for a small test, a compromise, or a decision-maker rather than turning it into a personal clash. What matters now is not the surface event or statement alone, but the shift in perspective behind it. For me, good disagreement means protecting the work without damaging trust. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 处理职场分歧与低冲突沟通 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Professional clarity without jargon",
+        "opening": [
+          "The topic that comes to mind is a disagreement at work where keeping the relationship stable still matters.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, good disagreement means protecting the work without damaging trust.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Once that is clear, I explain my concern in terms of impact rather than personal criticism.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe how you handle disagreement at work while keeping conflict low.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "State the work context and your role.",
+      "Explain the issue or concept in clear language.",
+      "End with ownership and a next step."
+    ],
+    "self_prompts": [
+      "What was your role?",
+      "What was the actual issue or task?",
+      "What part was your responsibility?",
+      "What did you do next?"
+    ]
+  }
+}

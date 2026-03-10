@@ -1,0 +1,60 @@
+{
+  "stage_id": 5,
+  "stage_label": "Stage 5",
+  "lessons": [
+    {
+      "id": 27,
+      "stage": 5,
+      "title_cn": "餐厅或咖啡馆交流（含需求与拒绝）",
+      "title_en": "Restaurant Or Cafe Communication",
+      "prompt": "Describe how you would handle a restaurant or cafe interaction, including a request or polite refusal.",
+      "filename": "s05_q27_restaurant_or_cafe_communication.json",
+      "structured_content": true
+    },
+    {
+      "id": 28,
+      "stage": 5,
+      "title_cn": "购物与服务沟通（含投诉与协商）",
+      "title_en": "Shopping And Service Communication",
+      "prompt": "Describe how you would handle shopping or service communication, including a complaint or negotiation.",
+      "filename": "s05_q28_shopping_and_service_communication.json",
+      "structured_content": true
+    },
+    {
+      "id": 29,
+      "stage": 5,
+      "title_cn": "问路、出行与时间协调",
+      "title_en": "Asking For Directions And Time Coordination",
+      "prompt": "Describe how you would ask for directions, travel help, or time coordination.",
+      "filename": "s05_q29_asking_for_directions_and_time_coordination.json",
+      "structured_content": true
+    },
+    {
+      "id": 30,
+      "stage": 5,
+      "title_cn": "酒店、住宿与问题处理",
+      "title_en": "Hotel Or Stay Issue Handling",
+      "prompt": "Describe how you would handle a hotel or accommodation problem.",
+      "filename": "s05_q30_hotel_or_stay_issue_handling.json",
+      "structured_content": true
+    },
+    {
+      "id": 31,
+      "stage": 5,
+      "title_cn": "表达不满但保持礼貌",
+      "title_en": "Express Dissatisfaction Politely",
+      "prompt": "Describe how you express dissatisfaction while staying polite.",
+      "filename": "s05_q31_express_dissatisfaction_politely.json",
+      "structured_content": true
+    },
+    {
+      "id": 32,
+      "stage": 5,
+      "title_cn": "设定个人边界与拒绝请求",
+      "title_en": "Set Boundaries And Refuse Requests",
+      "prompt": "Describe how you set boundaries or refuse a request.",
+      "filename": "s05_q32_set_boundaries_and_refuse_requests.json",
+      "structured_content": true
+    }
+  ]
+}

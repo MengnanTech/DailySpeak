@@ -1,0 +1,78 @@
+{
+  "stage_id": 2,
+  "stage_label": "Stage 2",
+  "lessons": [
+    {
+      "id": 9,
+      "stage": 2,
+      "title_cn": "描述最近发生的一件事",
+      "title_en": "Describe A Recent Event",
+      "prompt": "Describe something that happened recently and stayed on your mind.",
+      "filename": "s02_q09_describe_a_recent_event.json",
+      "structured_content": true
+    },
+    {
+      "id": 10,
+      "stage": 2,
+      "title_cn": "描述一次难忘经历",
+      "title_en": "Describe A Memorable Experience",
+      "prompt": "Describe an experience you still remember clearly.",
+      "filename": "s02_q10_describe_a_memorable_experience.json",
+      "structured_content": true
+    },
+    {
+      "id": 11,
+      "stage": 2,
+      "title_cn": "描述一次成功与收获",
+      "title_en": "Describe A Success And What You Gained",
+      "prompt": "Describe a success and explain what you gained from it.",
+      "filename": "s02_q11_describe_a_success_and_what_you_gained.json",
+      "structured_content": true
+    },
+    {
+      "id": 12,
+      "stage": 2,
+      "title_cn": "描述一次失败或错误",
+      "title_en": "Describe A Failure Or Mistake",
+      "prompt": "Describe a mistake or failure and explain what it taught you.",
+      "filename": "s02_q12_describe_a_failure_or_mistake.json",
+      "structured_content": true
+    },
+    {
+      "id": 13,
+      "stage": 2,
+      "title_cn": "描述一次尴尬或不适经历",
+      "title_en": "Describe An Awkward Or Uncomfortable Experience",
+      "prompt": "Describe an awkward or uncomfortable experience.",
+      "filename": "s02_q13_describe_an_awkward_or_uncomfortable_experience.json",
+      "structured_content": true
+    },
+    {
+      "id": 14,
+      "stage": 2,
+      "title_cn": "描述一次误会与澄清",
+      "title_en": "Describe A Misunderstanding And How You Cleared It Up",
+      "prompt": "Describe a misunderstanding and explain how it was cleared up.",
+      "filename": "s02_q14_describe_a_misunderstanding_and_how_you_cleared_it_up.json",
+      "structured_content": true
+    },
+    {
+      "id": 15,
+      "stage": 2,
+      "title_cn": "描述一次旅行或出行经历",
+      "title_en": "Describe A Trip Or Travel Experience",
+      "prompt": "Describe a trip or travel experience that stands out to you.",
+      "filename": "s02_q15_describe_a_trip_or_travel_experience.json",
+      "structured_content": true
+    },
+    {
+      "id": 16,
+      "stage": 2,
+      "title_cn": "描述一次重要决定与原因",
+      "title_en": "Describe An Important Decision And The Reason",
+      "prompt": "Describe an important decision and explain why you made it.",
+      "filename": "s02_q16_describe_an_important_decision_and_the_reason.json",
+      "structured_content": true
+    }
+  ]
+}

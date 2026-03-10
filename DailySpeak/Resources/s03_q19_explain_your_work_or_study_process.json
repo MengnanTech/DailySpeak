@@ -1,0 +1,424 @@
+{
+  "id": "s03_q19",
+  "topic": {
+    "stage": 3,
+    "stage_label": "Stage 3",
+    "title_cn": "解释你的工作或学习流程",
+    "prompt_en": "Explain how you usually work or study.",
+    "learning_goal": "Learn to describe your own workflow with routine, focus, and adjustment.",
+    "category": "work-study-process",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Name the process",
+        "content": [
+          "Start by saying what you are trying to achieve.",
+          "That gives the listener a reason to care about the steps."
+        ]
+      },
+      {
+        "title": "Break it into steps",
+        "content": [
+          "Explain the process in a sequence people can picture.",
+          "Do not rush through the middle of the answer."
+        ]
+      },
+      {
+        "title": "Mention one difficulty",
+        "content": [
+          "A real obstacle makes the explanation more useful and believable.",
+          "Show how you respond when the process is not smooth."
+        ]
+      },
+      {
+        "title": "Show your judgment",
+        "content": [
+          "End with how you choose, prioritise, or adjust.",
+          "That is where your thinking becomes visible."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Goal",
+        "target": "State what process, problem, or choice you are talking about."
+      },
+      {
+        "phase": "Body",
+        "focus": "Steps and logic",
+        "target": "Walk through the main steps and explain why they matter."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Priority and adjustment",
+        "target": "End with the principle or trade-off that guides you."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Goal",
+        "value": "25%"
+      },
+      {
+        "label": "Steps",
+        "value": "50%"
+      },
+      {
+        "label": "Judgment",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Keep the explanation practical and linear so the listener can follow it easily.",
+      "Mention one real difficulty to avoid sounding like a textbook answer.",
+      "Use clear markers like first, after that, and in the end to control the flow.",
+      "Your final sentence should show what principle guides your decisions."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Listing steps with no reason",
+          "why_it_hurts": "A process feels mechanical if the listener never hears why each step matters.",
+          "fix": "Add a short reason or condition after the important steps."
+        },
+        {
+          "problem": "Trying to explain everything",
+          "why_it_hurts": "Too much detail hides the main structure of the process.",
+          "fix": "Focus on the steps that change the outcome or decision."
+        },
+        {
+          "problem": "No personal judgment",
+          "why_it_hurts": "The answer stays generic if it never shows how you choose or adapt.",
+          "fix": "End with the factor you care about most, such as time, quality, or risk."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using solve with",
+          "wrong_example": "I solve this problem with checking everything again.",
+          "better_example": "I solve this problem by checking everything again.",
+          "reason": "By is the natural linker before a method or action."
+        },
+        {
+          "problem": "Using more easier",
+          "wrong_example": "This way is more easier for me.",
+          "better_example": "This way is easier for me.",
+          "reason": "Comparative adjectives do not take both more and -er."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "process",
+        "pos": "n.",
+        "meaning_zh": "过程，流程",
+        "band": 6,
+        "example": "I would naturally use \"process\" when talking about this topic."
+      },
+      {
+        "item": "step",
+        "pos": "n.",
+        "meaning_zh": "步骤",
+        "band": 6,
+        "example": "I would naturally use \"step\" when talking about this topic."
+      },
+      {
+        "item": "priority",
+        "pos": "n.",
+        "meaning_zh": "优先级",
+        "band": 6,
+        "example": "I would naturally use \"priority\" when talking about this topic."
+      },
+      {
+        "item": "option",
+        "pos": "n.",
+        "meaning_zh": "选项",
+        "band": 6,
+        "example": "I would naturally use \"option\" when talking about this topic."
+      },
+      {
+        "item": "decision",
+        "pos": "n.",
+        "meaning_zh": "决定",
+        "band": 6,
+        "example": "I would naturally use \"decision\" when talking about this topic."
+      },
+      {
+        "item": "method",
+        "pos": "n.",
+        "meaning_zh": "方法",
+        "band": 6,
+        "example": "I would naturally use \"method\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "break something down",
+        "pos": "v. phr.",
+        "meaning_zh": "把事情拆解开",
+        "note": "Useful when explaining complex work in smaller steps."
+      },
+      {
+        "item": "workable",
+        "pos": "adj.",
+        "meaning_zh": "可行的",
+        "note": "Good for practical solutions and realistic choices."
+      },
+      {
+        "item": "trade-off",
+        "pos": "n.",
+        "meaning_zh": "取舍，权衡",
+        "note": "Useful for decision and priority answers."
+      },
+      {
+        "item": "narrow something down",
+        "pos": "v. phr.",
+        "meaning_zh": "缩小范围",
+        "note": "Natural when choosing between options."
+      },
+      {
+        "item": "long-term effect",
+        "pos": "n. phr.",
+        "meaning_zh": "长期影响",
+        "note": "Useful when ranking priorities."
+      },
+      {
+        "item": "criterion",
+        "pos": "n.",
+        "meaning_zh": "标准",
+        "note": "Good for explaining how you judge choices."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "the first step is",
+        "meaning_zh": "第一步是",
+        "band": 6,
+        "example": "I would use \"the first step is\" naturally in this answer."
+      },
+      {
+        "phrase": "after that",
+        "meaning_zh": "之后",
+        "band": 6,
+        "example": "I would use \"after that\" naturally in this answer."
+      },
+      {
+        "phrase": "what matters most is",
+        "meaning_zh": "最重要的是",
+        "band": 6,
+        "example": "I would use \"what matters most is\" naturally in this answer."
+      },
+      {
+        "phrase": "it depends on",
+        "meaning_zh": "这取决于",
+        "band": 6,
+        "example": "I would use \"it depends on\" naturally in this answer."
+      },
+      {
+        "phrase": "I usually work through it by",
+        "meaning_zh": "我通常通过……来处理",
+        "band": 7,
+        "example": "I would use \"I usually work through it by\" naturally in this answer."
+      },
+      {
+        "phrase": "there is always a trade-off between",
+        "meaning_zh": "……之间总会有取舍",
+        "band": 7,
+        "example": "I would use \"there is always a trade-off between\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "the most workable option is",
+        "meaning_zh": "最可行的选项是",
+        "note": "Useful for practical conclusions.",
+        "example": "I would use \"the most workable option is\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I narrow it down by",
+        "meaning_zh": "我通过……来缩小范围",
+        "note": "Useful for choice-based answers.",
+        "example": "I would use \"I narrow it down by\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "the bigger priority is",
+        "meaning_zh": "更大的优先级是",
+        "note": "Good for ranking decisions.",
+        "example": "I would use \"the bigger priority is\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I try not to overcomplicate it",
+        "meaning_zh": "我尽量不把它弄复杂",
+        "note": "Natural for spoken process explanations.",
+        "example": "I would use \"I try not to overcomplicate it\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Explain a process or decision through steps, difficulty, and judgment.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Name the task, problem, or choice clearly.",
+          "Tell the listener what result you are trying to reach."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Walk through the main steps in order.",
+          "Add one challenge and how you handle it."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "State the trade-off or priority behind your decision.",
+          "Keep the ending practical rather than abstract."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "The way I usually handle it is ...",
+      "If something goes wrong, I ...",
+      "In the end, I care most about ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "The routine i rely on when i need to do focused work is something I can talk about quite naturally. My work and study process is fairly simple, but I try to protect it from too many distractions. I usually begin by deciding what absolutely needs to be finished that day, and then I block time for the most demanding task first. If I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again. Later in the day, I leave lighter tasks, such as admin work or revision, for the hours when my focus is weaker.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. The system is not perfect, but it helps me stay consistent even on busy days. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 解释你的工作或学习流程 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Simple step-by-step logic",
+        "opening": [
+          "The topic that comes to mind is the routine I rely on when I need to do focused work.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because The system is not perfect, but it helps me stay consistent even on busy days.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is the routine I rely on when I need to do focused work. My work and study process is fairly simple, but I try to protect it from too many distractions. I usually begin by deciding what absolutely needs to be finished that day, and then I block time for the most demanding task first. What stood out most was that if I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again.\n\nAfter that, later in the day, I leave lighter tasks, such as admin work or revision, for the hours when my focus is weaker. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. The system is not perfect, but it helps me stay consistent even on busy days. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 解释你的工作或学习流程 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Better sequencing and judgment",
+        "opening": [
+          "The topic that comes to mind is the routine I rely on when I need to do focused work.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because The system is not perfect, but it helps me stay consistent even on busy days.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with the routine I rely on when I need to do focused work. My work and study process is fairly simple, but I try to protect it from too many distractions. I usually begin by deciding what absolutely needs to be finished that day, and then I block time for the most demanding task first. The turning point, for me, was that if I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again.\n\nFrom there, later in the day, I leave lighter tasks, such as admin work or revision, for the hours when my focus is weaker. What matters now is not the surface event or statement alone, but the shift in perspective behind it. The system is not perfect, but it helps me stay consistent even on busy days. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 解释你的工作或学习流程 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Sharper trade-off and decision logic",
+        "opening": [
+          "The topic that comes to mind is the routine I rely on when I need to do focused work.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because The system is not perfect, but it helps me stay consistent even on busy days.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I try to multitask too much, I notice my quality drops, so I prefer to finish one meaningful chunk before checking messages again.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Explain how you usually work or study.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "State the goal before the steps.",
+      "Use a clear sequence instead of loose ideas.",
+      "End with the judgment or trade-off that guides you."
+    ],
+    "self_prompts": [
+      "What are the exact steps?",
+      "Where does the main difficulty appear?",
+      "How do you decide what matters most?",
+      "What would make you change your approach?"
+    ]
+  }
+}

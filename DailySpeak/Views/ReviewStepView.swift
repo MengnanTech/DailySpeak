@@ -11,7 +11,7 @@ struct ReviewStepView: View {
         VStack(alignment: .leading, spacing: 16) {
             if lesson != nil {
                 LessonStepHeader(
-                    label: "Stage 1 Lesson",
+                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "高分检查",
                     subtitle: "骨架搭好后，再查内容力度和语言自然度。",
                     accentColor: Color(hex: "F97316")

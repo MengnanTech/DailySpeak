@@ -1,0 +1,424 @@
+{
+  "id": "s08_q44",
+  "topic": {
+    "stage": 8,
+    "stage_label": "Stage 8",
+    "title_cn": "谈论自由、限制与责任",
+    "prompt_en": "Talk about freedom, limits, and responsibility.",
+    "learning_goal": "Learn to discuss freedom as something connected to limits and responsibility, not only preference.",
+    "category": "freedom-responsibility",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Define the idea",
+        "content": [
+          "Start by saying what the abstract idea means to you.",
+          "That keeps the answer personal instead of overly theoretical."
+        ]
+      },
+      {
+        "title": "Explain the tension",
+        "content": [
+          "Most abstract topics have a hidden trade-off or contradiction.",
+          "Show that tension clearly."
+        ]
+      },
+      {
+        "title": "Give a real example",
+        "content": [
+          "A small real example keeps the answer grounded.",
+          "Without one, abstract answers can sound empty."
+        ]
+      },
+      {
+        "title": "End with your judgment",
+        "content": [
+          "Finish with the value or principle you find most convincing.",
+          "That gives the answer a clear centre."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Definition",
+        "target": "State what the idea means to you in practical terms."
+      },
+      {
+        "phase": "Body",
+        "focus": "Tension and example",
+        "target": "Explain the trade-off and support it with a real example."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Judgment",
+        "target": "End with the value or conclusion you come back to."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Definition",
+        "value": "25%"
+      },
+      {
+        "label": "Tension + example",
+        "value": "50%"
+      },
+      {
+        "label": "Judgment",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Abstract topics become stronger when you translate them into daily life.",
+      "Show one trade-off instead of pretending the issue is simple.",
+      "Use calm, thoughtful wording rather than grand claims.",
+      "A concise real example can make an abstract answer much easier to trust."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Speaking too generally",
+          "why_it_hurts": "The answer feels empty if it never lands in a real example or lived situation.",
+          "fix": "Use one practical example from work, family, money, or habits."
+        },
+        {
+          "problem": "Ignoring the trade-off",
+          "why_it_hurts": "Abstract questions usually involve a tension, and skipping it makes the answer sound shallow.",
+          "fix": "State what the idea gives you and what it may cost."
+        },
+        {
+          "problem": "No personal judgment",
+          "why_it_hurts": "The answer needs a clear centre, even if it stays balanced.",
+          "fix": "End with the value you would protect most strongly."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using impact to",
+          "wrong_example": "Technology has a big impact to our lives.",
+          "better_example": "Technology has a big impact on our lives.",
+          "reason": "Impact normally takes on before the object."
+        },
+        {
+          "problem": "Using more happier",
+          "wrong_example": "People become more happier with more freedom.",
+          "better_example": "People may become happier with more freedom.",
+          "reason": "Happier already carries the comparative form."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "value",
+        "pos": "n.",
+        "meaning_zh": "价值",
+        "band": 6,
+        "example": "I would naturally use \"value\" when talking about this topic."
+      },
+      {
+        "item": "freedom",
+        "pos": "n.",
+        "meaning_zh": "自由",
+        "band": 6,
+        "example": "I would naturally use \"freedom\" when talking about this topic."
+      },
+      {
+        "item": "impact",
+        "pos": "n.",
+        "meaning_zh": "影响",
+        "band": 6,
+        "example": "I would naturally use \"impact\" when talking about this topic."
+      },
+      {
+        "item": "responsibility",
+        "pos": "n.",
+        "meaning_zh": "责任",
+        "band": 6,
+        "example": "I would naturally use \"responsibility\" when talking about this topic."
+      },
+      {
+        "item": "trade-off",
+        "pos": "n.",
+        "meaning_zh": "取舍",
+        "band": 6,
+        "example": "I would naturally use \"trade-off\" when talking about this topic."
+      },
+      {
+        "item": "example",
+        "pos": "n.",
+        "meaning_zh": "例子",
+        "band": 6,
+        "example": "I would naturally use \"example\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "long-term",
+        "pos": "adj.",
+        "meaning_zh": "长期的",
+        "note": "Useful when judging abstract ideas beyond the present moment."
+      },
+      {
+        "item": "fulfilment",
+        "pos": "n.",
+        "meaning_zh": "满足感",
+        "note": "Natural for happiness and purpose topics."
+      },
+      {
+        "item": "unintended consequence",
+        "pos": "n. phr.",
+        "meaning_zh": "意料之外的后果",
+        "note": "Good for trend and technology answers."
+      },
+      {
+        "item": "shift",
+        "pos": "n./v.",
+        "meaning_zh": "转变，变化",
+        "note": "Useful for broad social or personal change."
+      },
+      {
+        "item": "bigger issue",
+        "pos": "n. phr.",
+        "meaning_zh": "更大的问题",
+        "note": "Useful for deeper abstract reasoning."
+      },
+      {
+        "item": "practical example",
+        "pos": "n. phr.",
+        "meaning_zh": "现实例子",
+        "note": "Useful for grounding abstract points."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "in my view",
+        "meaning_zh": "在我看来",
+        "band": 6,
+        "example": "I would use \"in my view\" naturally in this answer."
+      },
+      {
+        "phrase": "it is not just about",
+        "meaning_zh": "这不仅仅关乎",
+        "band": 6,
+        "example": "I would use \"it is not just about\" naturally in this answer."
+      },
+      {
+        "phrase": "over time",
+        "meaning_zh": "随着时间推移",
+        "band": 6,
+        "example": "I would use \"over time\" naturally in this answer."
+      },
+      {
+        "phrase": "that comes with",
+        "meaning_zh": "那伴随着",
+        "band": 6,
+        "example": "I would use \"that comes with\" naturally in this answer."
+      },
+      {
+        "phrase": "there is always a cost to",
+        "meaning_zh": "……总会有代价",
+        "band": 7,
+        "example": "I would use \"there is always a cost to\" naturally in this answer."
+      },
+      {
+        "phrase": "the bigger issue is",
+        "meaning_zh": "更大的问题是",
+        "band": 7,
+        "example": "I would use \"the bigger issue is\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "if I had to choose, I would value",
+        "meaning_zh": "如果必须选，我会更看重……",
+        "note": "Useful for final judgments.",
+        "example": "I would use \"if I had to choose, I would value\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "the trade-off is that",
+        "meaning_zh": "取舍在于……",
+        "note": "Useful for balancing abstract ideas.",
+        "example": "I would use \"the trade-off is that\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "in practical life",
+        "meaning_zh": "在现实生活中",
+        "note": "Useful for grounding the topic.",
+        "example": "I would use \"in practical life\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I do not see it as purely good or bad",
+        "meaning_zh": "我不把它看成纯粹的好或坏",
+        "note": "Useful for nuanced conclusions.",
+        "example": "I would use \"I do not see it as purely good or bad\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Handle abstract ideas through definition, tension, example, and judgment.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Define the idea in practical terms.",
+          "Keep the definition personal and understandable."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Explain the trade-off and give a real example.",
+          "Use one contrast to add depth without becoming abstract for its own sake."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "End with the value or judgment you return to.",
+          "Keep the conclusion measured rather than absolute."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "To me, this really means ...",
+      "The trade-off is that ...",
+      "If I had to choose, I would value ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "My view on freedom as something that always comes with limits is something I can talk about quite naturally. I think freedom matters deeply, but I do not see it as the ability to do absolutely anything you want. In real life, freedom works best when it exists alongside responsibility, because our choices usually affect other people as well as ourselves. Some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order. For me, the real question is whether a limit is reasonable and whether people understand why it exists.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 谈论自由、限制与责任 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Simple definition with a real example",
+        "opening": [
+          "The topic that comes to mind is my view on freedom as something that always comes with limits.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is my view on freedom as something that always comes with limits. I think freedom matters deeply, but I do not see it as the ability to do absolutely anything you want. In real life, freedom works best when it exists alongside responsibility, because our choices usually affect other people as well as ourselves. What stood out most was that some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order.\n\nAfter that, for me, the real question is whether a limit is reasonable and whether people understand why it exists. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 谈论自由、限制与责任 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Grounded abstract reasoning",
+        "opening": [
+          "The topic that comes to mind is my view on freedom as something that always comes with limits.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with my view on freedom as something that always comes with limits. I think freedom matters deeply, but I do not see it as the ability to do absolutely anything you want. In real life, freedom works best when it exists alongside responsibility, because our choices usually affect other people as well as ourselves. The turning point, for me, was that some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order.\n\nFrom there, for me, the real question is whether a limit is reasonable and whether people understand why it exists. What matters now is not the surface event or statement alone, but the shift in perspective behind it. So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 谈论自由、限制与责任 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Abstract depth without sounding empty",
+        "opening": [
+          "The topic that comes to mind is my view on freedom as something that always comes with limits.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So I value freedom highly, but I think it becomes meaningful only when it is used with awareness of consequences.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "Some limits feel frustrating, but not every limit is unfair. Sometimes limits protect safety, trust, or social order.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Talk about freedom, limits, and responsibility.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Define the idea in your own words.",
+      "Name the main trade-off or tension.",
+      "Use one real example before giving your conclusion."
+    ],
+    "self_prompts": [
+      "What does this idea mean to you?",
+      "What is the main tension inside it?",
+      "What real example proves your point?",
+      "What value matters most to you here?"
+    ]
+  }
+}

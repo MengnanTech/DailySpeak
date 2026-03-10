@@ -3,44 +3,71 @@ set -euo pipefail
 
 ROOT="/Users/levi/project/IOS/DailySpeak/DailySpeak"
 RESOURCES="$ROOT/Resources"
-MANIFEST="$RESOURCES/stage1_manifest.json"
 OVERVIEW="$ROOT/Views/TaskOverviewView.swift"
 FLOW="$ROOT/Views/LearningFlowView.swift"
 REVIEW="$ROOT/Views/ReviewStepView.swift"
 COURSE_DATA="$ROOT/Models/CourseData.swift"
 LESSON_MODEL="$ROOT/Models/LessonRepository.swift"
 
-echo "Checking Stage 1 manifest..."
-jq -e '
-  .stage_id == 1
-  and .stage_label == "Stage 1"
-  and (.lessons | length == 8)
-' "$MANIFEST" >/dev/null
+expected_stage_count() {
+  case "$1" in
+    1|2) echo 8 ;;
+    3|4) echo 5 ;;
+    5) echo 6 ;;
+    6) echo 5 ;;
+    7) echo 4 ;;
+    8) echo 5 ;;
+    9) echo 6 ;;
+    *) return 1 ;;
+  esac
+}
 
-while IFS= read -r filename; do
-  lesson="$RESOURCES/$filename"
-  [ -f "$lesson" ]
-  jq -e '
-    has("id")
-    and has("topic")
-    and has("strategy")
-    and has("vocabulary")
-    and has("phrases")
-    and has("framework")
-    and has("samples")
-    and has("practice")
-    and (.samples | length == 3)
-  ' "$lesson" >/dev/null
-done < <(jq -r '.lessons[].filename' "$MANIFEST")
+for stage in 1 2 3 4 5 6 7 8 9; do
+  manifest="$RESOURCES/stage${stage}_manifest.json"
+  lesson_count="$(expected_stage_count "$stage")"
+  echo "Checking Stage ${stage} manifest..."
+  [ -f "$manifest" ]
+  jq -e \
+    --argjson stage "$stage" \
+    --arg stage_label "Stage $stage" \
+    --argjson lesson_count "$lesson_count" '
+      .stage_id == $stage
+      and .stage_label == $stage_label
+      and (.lessons | length == $lesson_count)
+    ' "$manifest" >/dev/null
 
-echo "Checking Stage 1 repository wiring..."
+  while IFS= read -r filename; do
+    lesson="$RESOURCES/$filename"
+    [ -f "$lesson" ]
+    jq -e \
+      --argjson stage "$stage" '
+      has("id")
+      and has("topic")
+      and has("strategy")
+      and has("vocabulary")
+      and has("phrases")
+      and has("framework")
+      and has("samples")
+      and has("practice")
+      and (.topic.stage == $stage)
+      and (.strategy.angles | length == 4)
+      and (.strategy.sequence | length == 3)
+      and (.strategy.content_ratio | length == 3)
+      and (.samples | length == 3)
+    ' "$lesson" >/dev/null
+  done < <(jq -r '.lessons[].filename' "$manifest")
+done
+
+echo "Checking structured lesson repository wiring..."
 rg -q 'struct LessonManifest' "$LESSON_MODEL"
 rg -q 'struct LessonContent' "$LESSON_MODEL"
 rg -q 'protocol LessonContentSource' "$LESSON_MODEL"
 rg -q 'struct BundleLessonContentSource' "$LESSON_MODEL"
 rg -q 'enum LessonRepository' "$LESSON_MODEL"
-rg -q 'loadStageOneTasks' "$LESSON_MODEL"
-rg -q 'LessonRepository\.loadStageOneTasks\(\)' "$COURSE_DATA"
+rg -q 'loadTasks\(forStage' "$LESSON_MODEL"
+! rg -q 'loadStageOneTasks' "$LESSON_MODEL"
+rg -q 'LessonRepository\.loadTasks\(forStage: 1\)' "$COURSE_DATA"
+rg -q 'LessonRepository\.loadTasks\(forStage: 9\)' "$COURSE_DATA"
 
 echo "Checking no preview naming remains..."
 ! rg -q 'LessonPreviewContent' "$ROOT"
@@ -60,5 +87,7 @@ rg -q 'Text\("Why it hurts"\)' "$REVIEW"
 rg -q 'Text\("Try this"\)' "$REVIEW"
 rg -q '"高分检查"' "$COURSE_DATA"
 rg -q 'LearningStep\(id: 1, type: \.review\)' "$LESSON_MODEL"
+! rg -q 'label: "Stage 1 Lesson"' "$FLOW"
+! rg -q 'label: "Stage 1 Lesson"' "$REVIEW"
 
-echo "PASS: Stage 1 lesson data assertions passed"
+echo "PASS: Multi-stage lesson data assertions passed"

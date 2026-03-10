@@ -1,0 +1,424 @@
+{
+  "id": "s09_q47",
+  "topic": {
+    "stage": 9,
+    "stage_label": "Stage 9",
+    "title_cn": "回顾一段时间的变化",
+    "prompt_en": "Review the changes that happened over a period of time.",
+    "learning_goal": "Learn to review change over time with clear contrast and one shaping force.",
+    "category": "review-change",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "State the time frame",
+        "content": [
+          "Tell the listener what period of life you are reflecting on.",
+          "That makes change and continuity easier to follow."
+        ]
+      },
+      {
+        "title": "Describe the change",
+        "content": [
+          "Say what has actually changed in habits, mindset, or priorities.",
+          "Use contrast to make the shift visible."
+        ]
+      },
+      {
+        "title": "Explain what shaped it",
+        "content": [
+          "Mention the experience, decision, or pressure that influenced the change.",
+          "That gives the reflection a real cause."
+        ]
+      },
+      {
+        "title": "End with your current direction",
+        "content": [
+          "Finish with who you are now or where you think you are heading.",
+          "Leave room for uncertainty when that sounds more honest."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Time frame and contrast",
+        "target": "State the period you are reflecting on and the biggest shift."
+      },
+      {
+        "phase": "Body",
+        "focus": "Cause and development",
+        "target": "Explain what drove the change and how it unfolded."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Current position",
+        "target": "End with your present priorities, identity, or future direction."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Time frame",
+        "value": "25%"
+      },
+      {
+        "label": "Change + cause",
+        "value": "50%"
+      },
+      {
+        "label": "Current direction",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Reflection sounds stronger when you compare then and now clearly.",
+      "Name one cause of change instead of using vague personal growth language.",
+      "A modest ending often sounds more mature than a perfectly confident future plan.",
+      "If the future is uncertain, say that directly and calmly."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Talking only in general growth language",
+          "why_it_hurts": "The answer feels vague if there is no visible contrast between the past and now.",
+          "fix": "Use one habit, decision, or value that changed clearly over time."
+        },
+        {
+          "problem": "No cause for the change",
+          "why_it_hurts": "Reflection is weaker when the listener cannot see what shaped it.",
+          "fix": "Mention the pressure, event, or realisation behind the shift."
+        },
+        {
+          "problem": "Forcing certainty about the future",
+          "why_it_hurts": "That can sound less honest than a realistic, open-ended answer.",
+          "fix": "Allow room for change if that matches your real situation."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using become more better",
+          "wrong_example": "I become more better at handling pressure.",
+          "better_example": "I have become better at handling pressure.",
+          "reason": "Use the present perfect for growth that continues until now, and do not double the comparative."
+        },
+        {
+          "problem": "Using in future without article",
+          "wrong_example": "In future I will focus more on balance.",
+          "better_example": "In the future, I will focus more on balance.",
+          "reason": "The article makes the phrase more natural in standard spoken English."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "change",
+        "pos": "n./v.",
+        "meaning_zh": "变化",
+        "band": 6,
+        "example": "I would naturally use \"change\" when talking about this topic."
+      },
+      {
+        "item": "growth",
+        "pos": "n.",
+        "meaning_zh": "成长",
+        "band": 6,
+        "example": "I would naturally use \"growth\" when talking about this topic."
+      },
+      {
+        "item": "priority",
+        "pos": "n.",
+        "meaning_zh": "优先事项",
+        "band": 6,
+        "example": "I would naturally use \"priority\" when talking about this topic."
+      },
+      {
+        "item": "direction",
+        "pos": "n.",
+        "meaning_zh": "方向",
+        "band": 6,
+        "example": "I would naturally use \"direction\" when talking about this topic."
+      },
+      {
+        "item": "reflection",
+        "pos": "n.",
+        "meaning_zh": "反思",
+        "band": 6,
+        "example": "I would naturally use \"reflection\" when talking about this topic."
+      },
+      {
+        "item": "identity",
+        "pos": "n.",
+        "meaning_zh": "身份，自我认知",
+        "band": 6,
+        "example": "I would naturally use \"identity\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "look back on",
+        "pos": "v. phr.",
+        "meaning_zh": "回顾",
+        "note": "Useful when reflecting on change over time."
+      },
+      {
+        "item": "still evolving",
+        "pos": "adj. phr.",
+        "meaning_zh": "仍在变化中",
+        "note": "Good for present identity and future answers."
+      },
+      {
+        "item": "turning point",
+        "pos": "n. phr.",
+        "meaning_zh": "转折点",
+        "note": "Useful for growth and long-term reflection."
+      },
+      {
+        "item": "better sense of",
+        "pos": "n. phr.",
+        "meaning_zh": "对……有了更清楚的认识",
+        "note": "Natural for self-positioning answers."
+      },
+      {
+        "item": "future direction",
+        "pos": "n. phr.",
+        "meaning_zh": "未来方向",
+        "note": "Useful for reflective endings."
+      },
+      {
+        "item": "work in progress",
+        "pos": "n. phr.",
+        "meaning_zh": "仍在成长中的状态",
+        "note": "Useful for modest self-description."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "over the past few years",
+        "meaning_zh": "过去几年里",
+        "band": 6,
+        "example": "I would use \"over the past few years\" naturally in this answer."
+      },
+      {
+        "phrase": "I have become more",
+        "meaning_zh": "我变得更……了",
+        "band": 6,
+        "example": "I would use \"I have become more\" naturally in this answer."
+      },
+      {
+        "phrase": "these days",
+        "meaning_zh": "最近这些年",
+        "band": 6,
+        "example": "I would use \"these days\" naturally in this answer."
+      },
+      {
+        "phrase": "I am still figuring out",
+        "meaning_zh": "我还在摸索",
+        "band": 6,
+        "example": "I would use \"I am still figuring out\" naturally in this answer."
+      },
+      {
+        "phrase": "looking back, I can see that",
+        "meaning_zh": "回头看，我能看出",
+        "band": 7,
+        "example": "I would use \"looking back, I can see that\" naturally in this answer."
+      },
+      {
+        "phrase": "what matters to me now is",
+        "meaning_zh": "现在对我重要的是",
+        "band": 7,
+        "example": "I would use \"what matters to me now is\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "the biggest shift has been",
+        "meaning_zh": "最大的变化是……",
+        "note": "Useful for strong reflection openings.",
+        "example": "I would use \"the biggest shift has been\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I no longer feel the need to",
+        "meaning_zh": "我不再觉得必须……",
+        "note": "Useful for growth and values.",
+        "example": "I would use \"I no longer feel the need to\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "at this point in my life",
+        "meaning_zh": "在我人生的这个阶段",
+        "note": "Useful for present self-positioning.",
+        "example": "I would use \"at this point in my life\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I want to leave room for change",
+        "meaning_zh": "我想为变化留空间",
+        "note": "Useful for future uncertainty.",
+        "example": "I would use \"I want to leave room for change\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Reflect on change through contrast, cause, and current direction.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "State the time frame and the main contrast.",
+          "Show the listener what has changed."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Explain the cause or turning point behind the change.",
+          "Use one example that shows the shift in a concrete way."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "End with your current priorities or future direction.",
+          "If needed, leave room for uncertainty."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "When I look back, ...",
+      "The biggest shift has been ...",
+      "At this point in my life, ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "A period of change that looks more visible in hindsight than it did at the time is something I can talk about quite naturally. If I look back on the past few years, I can see that my daily life has become much more intentional than it used to be. A few years ago, I reacted to whatever felt urgent, but now I spend more time deciding what is actually worth my energy. That change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention. From the outside, the difference may look small, but internally it changed how steady I feel from week to week.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. So when I review that period, I notice that real change often looks gradual while it is happening. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 回顾一段时间的变化 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear past-present contrast",
+        "opening": [
+          "The topic that comes to mind is a period of change that looks more visible in hindsight than it did at the time.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So when I review that period, I notice that real change often looks gradual while it is happening.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "That change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is a period of change that looks more visible in hindsight than it did at the time. If I look back on the past few years, I can see that my daily life has become much more intentional than it used to be. A few years ago, I reacted to whatever felt urgent, but now I spend more time deciding what is actually worth my energy. What stood out most was that that change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention.\n\nAfter that, from the outside, the difference may look small, but internally it changed how steady I feel from week to week. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. So when I review that period, I notice that real change often looks gradual while it is happening. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 回顾一段时间的变化 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Stronger reflection and clearer cause of change",
+        "opening": [
+          "The topic that comes to mind is a period of change that looks more visible in hindsight than it did at the time.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So when I review that period, I notice that real change often looks gradual while it is happening.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "That change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with a period of change that looks more visible in hindsight than it did at the time. If I look back on the past few years, I can see that my daily life has become much more intentional than it used to be. A few years ago, I reacted to whatever felt urgent, but now I spend more time deciding what is actually worth my energy. The turning point, for me, was that that change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention.\n\nFrom there, from the outside, the difference may look small, but internally it changed how steady I feel from week to week. What matters now is not the surface event or statement alone, but the shift in perspective behind it. So when I review that period, I notice that real change often looks gradual while it is happening. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 回顾一段时间的变化 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Integrated self-reflection with honest uncertainty",
+        "opening": [
+          "The topic that comes to mind is a period of change that looks more visible in hindsight than it did at the time.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because So when I review that period, I notice that real change often looks gradual while it is happening.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "That change did not happen overnight. It came from repeated periods of stress that forced me to rethink how I used time and attention.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Review the changes that happened over a period of time.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Compare the past and present clearly.",
+      "Explain what caused the change.",
+      "End with your current position or a realistic future direction."
+    ],
+    "self_prompts": [
+      "What has changed most clearly?",
+      "What caused that shift?",
+      "What matters to you now?",
+      "How certain are you about the future?"
+    ]
+  }
+}

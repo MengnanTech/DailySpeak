@@ -1,0 +1,60 @@
+{
+  "stage_id": 9,
+  "stage_label": "Stage 9",
+  "lessons": [
+    {
+      "id": 47,
+      "stage": 9,
+      "title_cn": "回顾一段时间的变化",
+      "title_en": "Review Changes Over A Period Of Time",
+      "prompt": "Review the changes that happened over a period of time.",
+      "filename": "s09_q47_review_changes_over_a_period_of_time.json",
+      "structured_content": true
+    },
+    {
+      "id": 48,
+      "stage": 9,
+      "title_cn": "描述个人成长与转变",
+      "title_en": "Describe Personal Growth And Transformation",
+      "prompt": "Describe your personal growth and transformation.",
+      "filename": "s09_q48_describe_personal_growth_and_transformation.json",
+      "structured_content": true
+    },
+    {
+      "id": 49,
+      "stage": 9,
+      "title_cn": "反思重要选择的长期影响",
+      "title_en": "Reflect On The Long Term Impact Of A Choice",
+      "prompt": "Reflect on the long-term impact of an important choice.",
+      "filename": "s09_q49_reflect_on_the_long_term_impact_of_a_choice.json",
+      "structured_content": true
+    },
+    {
+      "id": 50,
+      "stage": 9,
+      "title_cn": "总结你当前的价值与优先级",
+      "title_en": "Summarize Your Current Values And Priorities",
+      "prompt": "Summarize your current values and priorities.",
+      "filename": "s09_q50_summarize_your_current_values_and_priorities.json",
+      "structured_content": true
+    },
+    {
+      "id": 51,
+      "stage": 9,
+      "title_cn": "描述现在的自己",
+      "title_en": "Describe Who You Are Now",
+      "prompt": "Describe who you are now.",
+      "filename": "s09_q51_describe_who_you_are_now.json",
+      "structured_content": true
+    },
+    {
+      "id": 52,
+      "stage": 9,
+      "title_cn": "展望未来但保留不确定性",
+      "title_en": "Talk About The Future But Leave Room For Uncertainty",
+      "prompt": "Talk about the future while leaving room for uncertainty.",
+      "filename": "s09_q52_talk_about_the_future_but_leave_room_for_uncertainty.json",
+      "structured_content": true
+    }
+  ]
+}

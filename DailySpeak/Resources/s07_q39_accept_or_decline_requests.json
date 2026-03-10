@@ -1,0 +1,424 @@
+{
+  "id": "s07_q39",
+  "topic": {
+    "stage": 7,
+    "stage_label": "Stage 7",
+    "title_cn": "接受或拒绝他人的请求",
+    "prompt_en": "Describe how you accept or decline someone’s request.",
+    "learning_goal": "Learn to handle requests with honesty, tone control, and clear boundaries.",
+    "category": "requests",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Name the relationship",
+        "content": [
+          "Say who the other person is and what the relationship feels like.",
+          "That affects the tone of the conversation."
+        ]
+      },
+      {
+        "title": "Say what happened",
+        "content": [
+          "Describe the request, mistake, worry, or emotional moment clearly.",
+          "Keep it grounded in one real interaction."
+        ]
+      },
+      {
+        "title": "Show emotional tone",
+        "content": [
+          "Explain what you wanted the other person to feel or understand.",
+          "Tone matters as much as content in these answers."
+        ]
+      },
+      {
+        "title": "End with repair or boundary",
+        "content": [
+          "Finish with the support, decision, or repair that followed.",
+          "That gives the answer emotional closure."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Relationship",
+        "target": "Explain who was involved and why the conversation mattered."
+      },
+      {
+        "phase": "Body",
+        "focus": "Moment and tone",
+        "target": "Describe what happened and how you tried to communicate it."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Repair or boundary",
+        "target": "End with the outcome, lesson, or boundary you kept."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Relationship",
+        "value": "25%"
+      },
+      {
+        "label": "Moment + tone",
+        "value": "50%"
+      },
+      {
+        "label": "Repair",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Emotional answers sound stronger when they stay specific and controlled.",
+      "Show how you said something, not only what you said.",
+      "A small but real example often sounds more believable than dramatic storytelling.",
+      "End with repair, support, or a boundary so the answer feels emotionally complete."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Only naming feelings",
+          "why_it_hurts": "The answer sounds abstract if the listener never sees the interaction behind the feeling.",
+          "fix": "Use one concrete moment to show the emotional tone."
+        },
+        {
+          "problem": "Over-dramatising the conflict",
+          "why_it_hurts": "That can make the answer sound performative instead of honest.",
+          "fix": "Keep the tone measured and let the situation speak for itself."
+        },
+        {
+          "problem": "No closure",
+          "why_it_hurts": "Emotional topics need some kind of outcome, even if it is small.",
+          "fix": "End with support, repair, acceptance, or a clear boundary."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using sorry for do",
+          "wrong_example": "I am sorry for hurt you.",
+          "better_example": "I am sorry for hurting you.",
+          "reason": "For should be followed by a gerund in this pattern."
+        },
+        {
+          "problem": "Using understand to someone",
+          "wrong_example": "I understand to her pressure.",
+          "better_example": "I understand her pressure.",
+          "reason": "Understand takes the object directly."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "support",
+        "pos": "n./v.",
+        "meaning_zh": "支持",
+        "band": 6,
+        "example": "I would naturally use \"support\" when talking about this topic."
+      },
+      {
+        "item": "request",
+        "pos": "n.",
+        "meaning_zh": "请求",
+        "band": 6,
+        "example": "I would naturally use \"request\" when talking about this topic."
+      },
+      {
+        "item": "apology",
+        "pos": "n.",
+        "meaning_zh": "道歉",
+        "band": 6,
+        "example": "I would naturally use \"apology\" when talking about this topic."
+      },
+      {
+        "item": "worry",
+        "pos": "n./v.",
+        "meaning_zh": "担忧",
+        "band": 6,
+        "example": "I would naturally use \"worry\" when talking about this topic."
+      },
+      {
+        "item": "tone",
+        "pos": "n.",
+        "meaning_zh": "语气",
+        "band": 6,
+        "example": "I would naturally use \"tone\" when talking about this topic."
+      },
+      {
+        "item": "boundary",
+        "pos": "n.",
+        "meaning_zh": "边界",
+        "band": 6,
+        "example": "I would naturally use \"boundary\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "be there for someone",
+        "pos": "v. phr.",
+        "meaning_zh": "在别人需要时支持对方",
+        "note": "Useful for support and emotional presence."
+      },
+      {
+        "item": "set a boundary",
+        "pos": "v. phr.",
+        "meaning_zh": "设定边界",
+        "note": "Important for refusals and self-protection."
+      },
+      {
+        "item": "make it up to someone",
+        "pos": "v. phr.",
+        "meaning_zh": "弥补某人",
+        "note": "Natural for repair after a mistake."
+      },
+      {
+        "item": "come across",
+        "pos": "v. phr.",
+        "meaning_zh": "给人某种感觉",
+        "note": "Useful when talking about tone and emotional impact."
+      },
+      {
+        "item": "emotional closure",
+        "pos": "n. phr.",
+        "meaning_zh": "情绪上的收束",
+        "note": "Useful for the ending of relationship answers."
+      },
+      {
+        "item": "honest tone",
+        "pos": "n. phr.",
+        "meaning_zh": "真诚语气",
+        "note": "Useful when the answer is sensitive but controlled."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "I understand how you feel",
+        "meaning_zh": "我理解你的感受",
+        "band": 6,
+        "example": "I would use \"I understand how you feel\" naturally in this answer."
+      },
+      {
+        "phrase": "to be honest",
+        "meaning_zh": "说实话",
+        "band": 6,
+        "example": "I would use \"to be honest\" naturally in this answer."
+      },
+      {
+        "phrase": "I did not mean to",
+        "meaning_zh": "我不是故意要……",
+        "band": 6,
+        "example": "I would use \"I did not mean to\" naturally in this answer."
+      },
+      {
+        "phrase": "I was worried that",
+        "meaning_zh": "我担心……",
+        "band": 6,
+        "example": "I would use \"I was worried that\" naturally in this answer."
+      },
+      {
+        "phrase": "I wanted to be honest without being harsh",
+        "meaning_zh": "我想诚实但不想太伤人",
+        "band": 7,
+        "example": "I would use \"I wanted to be honest without being harsh\" naturally in this answer."
+      },
+      {
+        "phrase": "I tried to make things right by",
+        "meaning_zh": "我试着通过……去修复",
+        "band": 7,
+        "example": "I would use \"I tried to make things right by\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "what mattered to me was",
+        "meaning_zh": "对我最重要的是……",
+        "note": "Useful for emotional focus.",
+        "example": "I would use \"what mattered to me was\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I did not want it to sound cold",
+        "meaning_zh": "我不想让它听起来很冷淡",
+        "note": "Useful for tone awareness.",
+        "example": "I would use \"I did not want it to sound cold\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I wanted the other person to feel",
+        "meaning_zh": "我希望对方感受到……",
+        "note": "Useful for emotional intention.",
+        "example": "I would use \"I wanted the other person to feel\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "we needed some closure",
+        "meaning_zh": "我们需要某种收束",
+        "note": "Useful for repair and apology endings.",
+        "example": "I would use \"we needed some closure\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Handle relationship topics through context, tone, emotional choice, and closure.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Name the person and the emotional context.",
+          "Show why the interaction mattered."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe what was said or done and how you managed the tone.",
+          "Use one real detail to keep it grounded."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "End with support, apology, refusal, or repair.",
+          "Keep the closure realistic and calm."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "What mattered to me was ...",
+      "I tried to say it in a way that ...",
+      "In the end, I realised ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "The way i respond to a request when i need to balance kindness and realism is something I can talk about quite naturally. When someone asks me for help, I first decide whether I can do it properly rather than replying too quickly out of politeness. If I can help, I try to confirm what they actually need so I do not promise something vague. If I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later. The tone matters a lot, because the same answer can sound caring or dismissive depending on how it is phrased.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. For me, a good response is clear, realistic, and respectful of both sides. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 接受或拒绝他人的请求 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Honest tone and emotional clarity",
+        "opening": [
+          "The topic that comes to mind is the way I respond to a request when I need to balance kindness and realism.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, a good response is clear, realistic, and respectful of both sides.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is the way I respond to a request when I need to balance kindness and realism. When someone asks me for help, I first decide whether I can do it properly rather than replying too quickly out of politeness. If I can help, I try to confirm what they actually need so I do not promise something vague. What stood out most was that if I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later.\n\nAfter that, the tone matters a lot, because the same answer can sound caring or dismissive depending on how it is phrased. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. For me, a good response is clear, realistic, and respectful of both sides. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 接受或拒绝他人的请求 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Better tone control and relationship awareness",
+        "opening": [
+          "The topic that comes to mind is the way I respond to a request when I need to balance kindness and realism.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, a good response is clear, realistic, and respectful of both sides.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with the way I respond to a request when I need to balance kindness and realism. When someone asks me for help, I first decide whether I can do it properly rather than replying too quickly out of politeness. If I can help, I try to confirm what they actually need so I do not promise something vague. The turning point, for me, was that if I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later.\n\nFrom there, the tone matters a lot, because the same answer can sound caring or dismissive depending on how it is phrased. What matters now is not the surface event or statement alone, but the shift in perspective behind it. For me, a good response is clear, realistic, and respectful of both sides. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 接受或拒绝他人的请求 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Subtle emotional control and closure",
+        "opening": [
+          "The topic that comes to mind is the way I respond to a request when I need to balance kindness and realism.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because For me, a good response is clear, realistic, and respectful of both sides.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If I cannot help, I would rather say no honestly and respectfully than agree in a weak way and disappoint them later.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe how you accept or decline someone’s request.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Explain who the other person was.",
+      "Show the tone of the interaction, not just the topic.",
+      "End with closure, support, or a boundary."
+    ],
+    "self_prompts": [
+      "Who was involved?",
+      "What exactly happened?",
+      "How did you manage the tone?",
+      "What was the outcome between you?"
+    ]
+  }
+}

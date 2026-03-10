@@ -1,0 +1,51 @@
+{
+  "stage_id": 3,
+  "stage_label": "Stage 3",
+  "lessons": [
+    {
+      "id": 17,
+      "stage": 3,
+      "title_cn": "解释一个过程或流程",
+      "title_en": "Explain A Process Or Flow",
+      "prompt": "Explain a process you know well.",
+      "filename": "s03_q17_explain_a_process_or_flow.json",
+      "structured_content": true
+    },
+    {
+      "id": 18,
+      "stage": 3,
+      "title_cn": "解释如何解决一个问题",
+      "title_en": "Explain How You Solve A Problem",
+      "prompt": "Explain how you usually solve a problem.",
+      "filename": "s03_q18_explain_how_you_solve_a_problem.json",
+      "structured_content": true
+    },
+    {
+      "id": 19,
+      "stage": 3,
+      "title_cn": "解释你的工作或学习流程",
+      "title_en": "Explain Your Work Or Study Process",
+      "prompt": "Explain how you usually work or study.",
+      "filename": "s03_q19_explain_your_work_or_study_process.json",
+      "structured_content": true
+    },
+    {
+      "id": 20,
+      "stage": 3,
+      "title_cn": "解释你如何做选择（权衡利弊）",
+      "title_en": "Explain How You Make Choices",
+      "prompt": "Explain how you usually make choices by weighing pros and cons.",
+      "filename": "s03_q20_explain_how_you_make_choices.json",
+      "structured_content": true
+    },
+    {
+      "id": 21,
+      "stage": 3,
+      "title_cn": "解释你如何判断优先级或取舍",
+      "title_en": "Explain How You Judge Priorities Or Tradeoffs",
+      "prompt": "Explain how you decide priorities or trade-offs.",
+      "filename": "s03_q21_explain_how_you_judge_priorities_or_tradeoffs.json",
+      "structured_content": true
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "stage_id": 4,
+  "stage_label": "Stage 4",
+  "lessons": [
+    {
+      "id": 22,
+      "stage": 4,
+      "title_cn": "表达你的观点与立场",
+      "title_en": "Express Your Viewpoint Or Position",
+      "prompt": "Express your viewpoint or position on an everyday issue.",
+      "filename": "s04_q22_express_your_viewpoint_or_position.json",
+      "structured_content": true
+    },
+    {
+      "id": 23,
+      "stage": 4,
+      "title_cn": "同意、反对或部分同意",
+      "title_en": "Agree Disagree Or Partly Agree",
+      "prompt": "Explain whether you agree, disagree, or partly agree with an idea.",
+      "filename": "s04_q23_agree_disagree_or_partly_agree.json",
+      "structured_content": true
+    },
+    {
+      "id": 24,
+      "stage": 4,
+      "title_cn": "比较两个选择并说明原因",
+      "title_en": "Compare Two Choices And Give Reasons",
+      "prompt": "Compare two choices and explain which one you prefer.",
+      "filename": "s04_q24_compare_two_choices_and_give_reasons.json",
+      "structured_content": true
+    },
+    {
+      "id": 25,
+      "stage": 4,
+      "title_cn": "比较过去与现在",
+      "title_en": "Compare Past And Present",
+      "prompt": "Compare the past and present in an area of life you know.",
+      "filename": "s04_q25_compare_past_and_present.json",
+      "structured_content": true
+    },
+    {
+      "id": 26,
+      "stage": 4,
+      "title_cn": "表达不确定性与条件限制",
+      "title_en": "Express Uncertainty And Conditions",
+      "prompt": "Explain a view while showing uncertainty or conditions.",
+      "filename": "s04_q26_express_uncertainty_and_conditions.json",
+      "structured_content": true
+    }
+  ]
+}

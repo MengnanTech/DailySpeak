@@ -1,0 +1,424 @@
+{
+  "id": "s02_q10",
+  "topic": {
+    "stage": 2,
+    "stage_label": "Stage 2",
+    "title_cn": "描述一次难忘经历",
+    "prompt_en": "Describe an experience you still remember clearly.",
+    "learning_goal": "Learn to make a memorable experience vivid without becoming dramatic or essay-like.",
+    "category": "memorable-experience",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Set the scene",
+        "content": [
+          "Say when it happened and why it mattered at the time.",
+          "Keep the background short so you can move into the event quickly."
+        ]
+      },
+      {
+        "title": "Explain what happened",
+        "content": [
+          "Describe the main action in a clear time order.",
+          "Choose one or two details that make the event believable."
+        ]
+      },
+      {
+        "title": "Show the turning point",
+        "content": [
+          "Include the moment when the situation changed or became clear.",
+          "That moment usually carries the emotional weight of the answer."
+        ]
+      },
+      {
+        "title": "End with meaning",
+        "content": [
+          "Finish with the lesson, result, or lasting impression.",
+          "A short reflection gives the story a real ending."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Background",
+        "target": "State the situation, time, and why this event belongs in your answer."
+      },
+      {
+        "phase": "Body",
+        "focus": "Action and change",
+        "target": "Describe what happened and where the key shift came."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Result and reflection",
+        "target": "End with the effect, lesson, or memory that stayed with you."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Background",
+        "value": "25%"
+      },
+      {
+        "label": "What happened",
+        "value": "50%"
+      },
+      {
+        "label": "Reflection",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Keep the event focused on one clear thread instead of listing everything that happened.",
+      "Use one turning point so the answer has shape and forward movement.",
+      "A calm reflection usually sounds stronger than exaggerated emotion.",
+      "Let the ending show why the event still matters to you now."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Too many disconnected details",
+          "why_it_hurts": "The listener loses the main story if every small detail gets equal time.",
+          "fix": "Keep only the details that change the meaning or the outcome."
+        },
+        {
+          "problem": "No turning point",
+          "why_it_hurts": "Without a shift, the answer sounds like a flat report instead of a real experience.",
+          "fix": "Identify the exact moment when something became easier, harder, clearer, or more memorable."
+        },
+        {
+          "problem": "Ending too suddenly",
+          "why_it_hurts": "The story feels unfinished if you stop right after the event ends.",
+          "fix": "Add one sentence about what you learned or how you see it now."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Mixing past and present randomly",
+          "wrong_example": "I go there last week and everyone is waiting for me.",
+          "better_example": "I went there last week and everyone was waiting for me.",
+          "reason": "When you tell a finished event, simple past should carry the main timeline."
+        },
+        {
+          "problem": "Using too much very",
+          "wrong_example": "It was very memorable and very special.",
+          "better_example": "It was memorable because it changed how I handled similar situations later.",
+          "reason": "Specific explanation is stronger than repeating very."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "incident",
+        "pos": "n.",
+        "meaning_zh": "事情，事件",
+        "band": 6,
+        "example": "I would naturally use \"incident\" when talking about this topic."
+      },
+      {
+        "item": "outcome",
+        "pos": "n.",
+        "meaning_zh": "结果",
+        "band": 6,
+        "example": "I would naturally use \"outcome\" when talking about this topic."
+      },
+      {
+        "item": "detail",
+        "pos": "n.",
+        "meaning_zh": "细节",
+        "band": 6,
+        "example": "I would naturally use \"detail\" when talking about this topic."
+      },
+      {
+        "item": "reaction",
+        "pos": "n.",
+        "meaning_zh": "反应",
+        "band": 6,
+        "example": "I would naturally use \"reaction\" when talking about this topic."
+      },
+      {
+        "item": "volunteer",
+        "pos": "n./v.",
+        "meaning_zh": "志愿者；做志愿服务",
+        "band": 6,
+        "example": "I would naturally use \"volunteer\" when talking about this topic."
+      },
+      {
+        "item": "hospitality",
+        "pos": "n.",
+        "meaning_zh": "热情待客",
+        "band": 6,
+        "example": "I would naturally use \"hospitality\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "turning point",
+        "pos": "n. phr.",
+        "meaning_zh": "转折点",
+        "note": "Useful when the story changes direction."
+      },
+      {
+        "item": "in hindsight",
+        "pos": "adv. phr.",
+        "meaning_zh": "事后看来",
+        "note": "Useful for reflective endings."
+      },
+      {
+        "item": "not go as planned",
+        "pos": "v. phr.",
+        "meaning_zh": "没有按计划进行",
+        "note": "Natural for everyday setbacks."
+      },
+      {
+        "item": "clear something up",
+        "pos": "v. phr.",
+        "meaning_zh": "把事情解释清楚",
+        "note": "Useful for misunderstandings and corrections."
+      },
+      {
+        "item": "stay with me",
+        "pos": "v. phr.",
+        "meaning_zh": "一直留在我心里",
+        "note": "Useful for memorable experiences."
+      },
+      {
+        "item": "quietly meaningful",
+        "pos": "adj. phr.",
+        "meaning_zh": "安静但很有意义的",
+        "note": "Natural for reflective endings."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "what happened was",
+        "meaning_zh": "事情是这样的",
+        "band": 6,
+        "example": "I would use \"what happened was\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "at first",
+        "meaning_zh": "起初",
+        "band": 6,
+        "example": "I would use \"at first\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "in the end",
+        "meaning_zh": "最后",
+        "band": 6,
+        "example": "I would use \"in the end\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "it taught me that",
+        "meaning_zh": "它让我意识到",
+        "band": 6,
+        "example": "I would use \"it taught me that\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "stick in my mind",
+        "meaning_zh": "留在脑海里",
+        "band": 6,
+        "example": "I would use \"stick in my mind\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "be struck by",
+        "meaning_zh": "被……打动",
+        "band": 7,
+        "example": "I would use \"be struck by\" when describing an experience that stayed with me for years."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "one thing that stood out was",
+        "meaning_zh": "最突出的一个点是",
+        "note": "Good for the moment you want to emphasize.",
+        "example": "I would use \"one thing that stood out was\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "from that point on",
+        "meaning_zh": "从那之后",
+        "note": "Useful when the event caused a later change.",
+        "example": "I would use \"from that point on\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "not flashy at all",
+        "meaning_zh": "一点也不张扬",
+        "note": "Good for realistic memorable moments.",
+        "example": "I would use \"not flashy at all\" when describing an experience that stayed with me for years."
+      },
+      {
+        "phrase": "leave a lasting impression",
+        "meaning_zh": "留下持久印象",
+        "note": "Natural for experience summaries.",
+        "example": "I would use \"leave a lasting impression\" when describing an experience that stayed with me for years."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Tell one event clearly through context, turning point, result, and reflection.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Set the time and situation in one or two sentences.",
+          "Show why this event was worth talking about."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe the event in order.",
+          "Make the turning point obvious and easy to follow."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "State the outcome and what stayed with you.",
+          "Keep the reflection grounded and realistic."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "The moment that really stood out was ...",
+      "At first, I thought ... but then ...",
+      "Looking back, it taught me ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "An experience that stayed with me for years is something I can talk about quite naturally. A few years ago, I joined a small volunteer trip to a mountain village during my university summer break. The work itself was simple, but the pace of life there was completely different from what I was used to. The moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone. I came back physically tired but mentally much lighter, and I kept thinking about that trip for weeks.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 描述一次难忘经历 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear timeline and one lesson",
+        "opening": [
+          "The topic that comes to mind is an experience that stayed with me for years.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is an experience that stayed with me for years. A few years ago, I joined a small volunteer trip to a mountain village during my university summer break. The work itself was simple, but the pace of life there was completely different from what I was used to. What stood out most was that the moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone.\n\nAfter that, i came back physically tired but mentally much lighter, and I kept thinking about that trip for weeks. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 描述一次难忘经历 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "More detail and stronger turning point",
+        "opening": [
+          "The topic that comes to mind is an experience that stayed with me for years.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with an experience that stayed with me for years. A few years ago, I joined a small volunteer trip to a mountain village during my university summer break. The work itself was simple, but the pace of life there was completely different from what I was used to. The turning point, for me, was that the moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone.\n\nFrom there, i came back physically tired but mentally much lighter, and I kept thinking about that trip for weeks. What matters now is not the surface event or statement alone, but the shift in perspective behind it. It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 描述一次难忘经历 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Precise reflection and controlled rhythm",
+        "opening": [
+          "The topic that comes to mind is an experience that stayed with me for years.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because It reminded me that meaningful experiences are often quiet and ordinary rather than exciting on the surface.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The moment that stayed with me was having dinner with a local family and realising how warm people can be without trying to impress anyone.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe an experience you still remember clearly.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Set the scene briefly before the main event.",
+      "Describe the turning point clearly.",
+      "End with the result or lesson, not just the action."
+    ],
+    "self_prompts": [
+      "When exactly did it happen?",
+      "What changed in the middle of the story?",
+      "Why do you still remember it now?",
+      "What did you learn from it?"
+    ]
+  }
+}

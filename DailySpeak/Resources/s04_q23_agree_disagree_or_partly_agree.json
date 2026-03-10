@@ -1,0 +1,424 @@
+{
+  "id": "s04_q23",
+  "topic": {
+    "stage": 4,
+    "stage_label": "Stage 4",
+    "title_cn": "同意、反对或部分同意",
+    "prompt_en": "Explain whether you agree, disagree, or partly agree with an idea.",
+    "learning_goal": "Learn to handle agreement questions with a clear position and visible nuance.",
+    "category": "agreement",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "State your position",
+        "content": [
+          "Answer the question directly at the start.",
+          "A clear position gives the rest of the answer direction."
+        ]
+      },
+      {
+        "title": "Give the main reason",
+        "content": [
+          "Choose one or two reasons that carry the answer.",
+          "Do not pile up weak points just to sound complete."
+        ]
+      },
+      {
+        "title": "Acknowledge the other side",
+        "content": [
+          "Show what the alternative can offer.",
+          "This makes the answer sound more mature and realistic."
+        ]
+      },
+      {
+        "title": "End with a balanced conclusion",
+        "content": [
+          "Finish with the condition, limit, or context that matters.",
+          "That keeps the answer flexible rather than extreme."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Position",
+        "target": "State your main view, preference, or comparison clearly."
+      },
+      {
+        "phase": "Body",
+        "focus": "Reasons and contrast",
+        "target": "Support your point and mention the alternative side."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Condition and flexibility",
+        "target": "End with the context where your view may change."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Position",
+        "value": "25%"
+      },
+      {
+        "label": "Reasons + contrast",
+        "value": "50%"
+      },
+      {
+        "label": "Condition",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "A balanced opinion sounds stronger than a dramatic or rigid statement.",
+      "Give one concrete example if the topic risks becoming too abstract.",
+      "Use flexible language like generally, in my experience, or in some cases.",
+      "Your closing sentence should show when your opinion applies and when it might not."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Taking an extreme position too quickly",
+          "why_it_hurts": "The answer sounds less thoughtful if there is no room for context or exceptions.",
+          "fix": "Keep your main view clear, but acknowledge the conditions around it."
+        },
+        {
+          "problem": "Comparing without criteria",
+          "why_it_hurts": "A comparison is weak if the listener does not know what standard you are using.",
+          "fix": "Compare cost, time, comfort, freedom, or long-term effect explicitly."
+        },
+        {
+          "problem": "No uncertainty language",
+          "why_it_hurts": "Some topics need nuance, and a fully certain answer can sound unrealistic.",
+          "fix": "Use phrases like to some extent, in most cases, or it depends on."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using I am agree",
+          "wrong_example": "I am agree with this idea.",
+          "better_example": "I agree with this idea.",
+          "reason": "Agree is a verb, so it does not take am."
+        },
+        {
+          "problem": "Using more better",
+          "wrong_example": "This option is more better for me.",
+          "better_example": "This option is better for me.",
+          "reason": "Better already carries the comparative meaning."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "viewpoint",
+        "pos": "n.",
+        "meaning_zh": "观点",
+        "band": 6,
+        "example": "I would naturally use \"viewpoint\" when talking about this topic."
+      },
+      {
+        "item": "comparison",
+        "pos": "n.",
+        "meaning_zh": "比较",
+        "band": 6,
+        "example": "I would naturally use \"comparison\" when talking about this topic."
+      },
+      {
+        "item": "difference",
+        "pos": "n.",
+        "meaning_zh": "差异",
+        "band": 6,
+        "example": "I would naturally use \"difference\" when talking about this topic."
+      },
+      {
+        "item": "condition",
+        "pos": "n.",
+        "meaning_zh": "条件",
+        "band": 6,
+        "example": "I would naturally use \"condition\" when talking about this topic."
+      },
+      {
+        "item": "reason",
+        "pos": "n.",
+        "meaning_zh": "理由",
+        "band": 6,
+        "example": "I would naturally use \"reason\" when talking about this topic."
+      },
+      {
+        "item": "context",
+        "pos": "n.",
+        "meaning_zh": "语境，情境",
+        "band": 6,
+        "example": "I would naturally use \"context\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "on balance",
+        "pos": "adv. phr.",
+        "meaning_zh": "总体来看",
+        "note": "Useful for balanced conclusions."
+      },
+      {
+        "item": "to some extent",
+        "pos": "adv. phr.",
+        "meaning_zh": "在某种程度上",
+        "note": "Good for partial agreement."
+      },
+      {
+        "item": "context matters",
+        "pos": "sent. phr.",
+        "meaning_zh": "情境很重要",
+        "note": "Useful when your answer depends on conditions."
+      },
+      {
+        "item": "drawback",
+        "pos": "n.",
+        "meaning_zh": "缺点，弊端",
+        "note": "Natural when comparing options."
+      },
+      {
+        "item": "upside",
+        "pos": "n.",
+        "meaning_zh": "好处，优势面",
+        "note": "Useful when comparing alternatives."
+      },
+      {
+        "item": "absolute position",
+        "pos": "n. phr.",
+        "meaning_zh": "绝对化立场",
+        "note": "Useful when you want to avoid sounding rigid."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "from my point of view",
+        "meaning_zh": "在我看来",
+        "band": 6,
+        "example": "I would use \"from my point of view\" naturally in this answer."
+      },
+      {
+        "phrase": "it depends on",
+        "meaning_zh": "这取决于",
+        "band": 6,
+        "example": "I would use \"it depends on\" naturally in this answer."
+      },
+      {
+        "phrase": "on the one hand",
+        "meaning_zh": "一方面",
+        "band": 6,
+        "example": "I would use \"on the one hand\" naturally in this answer."
+      },
+      {
+        "phrase": "on the other hand",
+        "meaning_zh": "另一方面",
+        "band": 6,
+        "example": "I would use \"on the other hand\" naturally in this answer."
+      },
+      {
+        "phrase": "I partly agree because",
+        "meaning_zh": "我部分同意，因为",
+        "band": 7,
+        "example": "I would use \"I partly agree because\" naturally in this answer."
+      },
+      {
+        "phrase": "the main difference is that",
+        "meaning_zh": "主要区别在于",
+        "band": 7,
+        "example": "I would use \"the main difference is that\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "I would not make it absolute",
+        "meaning_zh": "我不会把它说成绝对的",
+        "note": "Useful for nuance.",
+        "example": "I would use \"I would not make it absolute\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "it works better in some cases than others",
+        "meaning_zh": "它在某些情况下更有效",
+        "note": "Useful for condition-based answers.",
+        "example": "I would use \"it works better in some cases than others\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "the stronger point for me is",
+        "meaning_zh": "对我来说更有力的一点是",
+        "note": "Good for preference answers.",
+        "example": "I would use \"the stronger point for me is\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I can still see the other side",
+        "meaning_zh": "我仍然能理解另一方",
+        "note": "Natural for balanced viewpoints.",
+        "example": "I would use \"I can still see the other side\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Express a view through position, reason, contrast, and condition.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "State your view or preference directly.",
+          "Add one quick sentence to frame the topic."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Explain your main reason and compare it with the other side.",
+          "Use one clear criterion to keep the answer organised."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "End with a condition, limit, or flexible conclusion.",
+          "Avoid sounding absolute if the topic is context-dependent."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "From my point of view, ...",
+      "That said, I can see why ...",
+      "On balance, I would say ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "My response to an idea that is partly right but not complete is something I can talk about quite naturally. If someone says that people are more productive only when they are under pressure, I would say I partly agree rather than fully accept that idea. A small amount of pressure can help people focus, especially when a deadline creates urgency, but too much pressure usually reduces quality and clear thinking. I have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes. That is why I would not reject the idea completely, but I would definitely limit it.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. To me, the effect of pressure depends on the amount, the person, and how long it lasts. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 同意、反对或部分同意 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Direct position with one reason",
+        "opening": [
+          "The topic that comes to mind is my response to an idea that is partly right but not complete.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because To me, the effect of pressure depends on the amount, the person, and how long it lasts.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "I have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is my response to an idea that is partly right but not complete. If someone says that people are more productive only when they are under pressure, I would say I partly agree rather than fully accept that idea. A small amount of pressure can help people focus, especially when a deadline creates urgency, but too much pressure usually reduces quality and clear thinking. What stood out most was that i have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes.\n\nAfter that, that is why I would not reject the idea completely, but I would definitely limit it. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. To me, the effect of pressure depends on the amount, the person, and how long it lasts. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 同意、反对或部分同意 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Balanced comparison with nuance",
+        "opening": [
+          "The topic that comes to mind is my response to an idea that is partly right but not complete.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because To me, the effect of pressure depends on the amount, the person, and how long it lasts.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "I have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with my response to an idea that is partly right but not complete. If someone says that people are more productive only when they are under pressure, I would say I partly agree rather than fully accept that idea. A small amount of pressure can help people focus, especially when a deadline creates urgency, but too much pressure usually reduces quality and clear thinking. The turning point, for me, was that i have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes.\n\nFrom there, that is why I would not reject the idea completely, but I would definitely limit it. What matters now is not the surface event or statement alone, but the shift in perspective behind it. To me, the effect of pressure depends on the amount, the person, and how long it lasts. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 同意、反对或部分同意 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Flexible judgment with confidence",
+        "opening": [
+          "The topic that comes to mind is my response to an idea that is partly right but not complete.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because To me, the effect of pressure depends on the amount, the person, and how long it lasts.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "I have seen people work efficiently under short-term pressure, but I have also seen the same pressure lead to rushed decisions and avoidable mistakes.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Explain whether you agree, disagree, or partly agree with an idea.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Open with a direct position.",
+      "Compare with at least one clear criterion.",
+      "Use a flexible ending if the topic depends on context."
+    ],
+    "self_prompts": [
+      "What is your actual position?",
+      "What is the strongest reason?",
+      "What can the other side offer?",
+      "When might your answer change?"
+    ]
+  }
+}

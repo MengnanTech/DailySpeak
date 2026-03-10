@@ -1,0 +1,424 @@
+{
+  "id": "s02_q14",
+  "topic": {
+    "stage": 2,
+    "stage_label": "Stage 2",
+    "title_cn": "描述一次误会与澄清",
+    "prompt_en": "Describe a misunderstanding and explain how it was cleared up.",
+    "learning_goal": "Learn to tell a misunderstanding with cause, clarification, and a calmer ending.",
+    "category": "misunderstanding",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "Set the scene",
+        "content": [
+          "Say when it happened and why it mattered at the time.",
+          "Keep the background short so you can move into the event quickly."
+        ]
+      },
+      {
+        "title": "Explain what happened",
+        "content": [
+          "Describe the main action in a clear time order.",
+          "Choose one or two details that make the event believable."
+        ]
+      },
+      {
+        "title": "Show the turning point",
+        "content": [
+          "Include the moment when the situation changed or became clear.",
+          "That moment usually carries the emotional weight of the answer."
+        ]
+      },
+      {
+        "title": "End with meaning",
+        "content": [
+          "Finish with the lesson, result, or lasting impression.",
+          "A short reflection gives the story a real ending."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Background",
+        "target": "State the situation, time, and why this event belongs in your answer."
+      },
+      {
+        "phase": "Body",
+        "focus": "Action and change",
+        "target": "Describe what happened and where the key shift came."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Result and reflection",
+        "target": "End with the effect, lesson, or memory that stayed with you."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Background",
+        "value": "25%"
+      },
+      {
+        "label": "What happened",
+        "value": "50%"
+      },
+      {
+        "label": "Reflection",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Keep the event focused on one clear thread instead of listing everything that happened.",
+      "Use one turning point so the answer has shape and forward movement.",
+      "A calm reflection usually sounds stronger than exaggerated emotion.",
+      "Let the ending show why the event still matters to you now."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Too many disconnected details",
+          "why_it_hurts": "The listener loses the main story if every small detail gets equal time.",
+          "fix": "Keep only the details that change the meaning or the outcome."
+        },
+        {
+          "problem": "No turning point",
+          "why_it_hurts": "Without a shift, the answer sounds like a flat report instead of a real experience.",
+          "fix": "Identify the exact moment when something became easier, harder, clearer, or more memorable."
+        },
+        {
+          "problem": "Ending too suddenly",
+          "why_it_hurts": "The story feels unfinished if you stop right after the event ends.",
+          "fix": "Add one sentence about what you learned or how you see it now."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Mixing past and present randomly",
+          "wrong_example": "I go there last week and everyone is waiting for me.",
+          "better_example": "I went there last week and everyone was waiting for me.",
+          "reason": "When you tell a finished event, simple past should carry the main timeline."
+        },
+        {
+          "problem": "Using too much very",
+          "wrong_example": "It was very memorable and very special.",
+          "better_example": "It was memorable because it changed how I handled similar situations later.",
+          "reason": "Specific explanation is stronger than repeating very."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "incident",
+        "pos": "n.",
+        "meaning_zh": "事情，事件",
+        "band": 6,
+        "example": "I would naturally use \"incident\" when talking about this topic."
+      },
+      {
+        "item": "outcome",
+        "pos": "n.",
+        "meaning_zh": "结果",
+        "band": 6,
+        "example": "I would naturally use \"outcome\" when talking about this topic."
+      },
+      {
+        "item": "detail",
+        "pos": "n.",
+        "meaning_zh": "细节",
+        "band": 6,
+        "example": "I would naturally use \"detail\" when talking about this topic."
+      },
+      {
+        "item": "reaction",
+        "pos": "n.",
+        "meaning_zh": "反应",
+        "band": 6,
+        "example": "I would naturally use \"reaction\" when talking about this topic."
+      },
+      {
+        "item": "timeline",
+        "pos": "n.",
+        "meaning_zh": "时间线",
+        "band": 6,
+        "example": "I would naturally use \"timeline\" when talking about this topic."
+      },
+      {
+        "item": "reflection",
+        "pos": "n.",
+        "meaning_zh": "反思",
+        "band": 6,
+        "example": "I would naturally use \"reflection\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "turning point",
+        "pos": "n. phr.",
+        "meaning_zh": "转折点",
+        "note": "Useful when the story changes direction."
+      },
+      {
+        "item": "in hindsight",
+        "pos": "adv. phr.",
+        "meaning_zh": "事后看来",
+        "note": "Useful for reflective endings."
+      },
+      {
+        "item": "not go as planned",
+        "pos": "v. phr.",
+        "meaning_zh": "没有按计划进行",
+        "note": "Natural for everyday setbacks."
+      },
+      {
+        "item": "clear something up",
+        "pos": "v. phr.",
+        "meaning_zh": "把事情解释清楚",
+        "note": "Useful for misunderstandings and corrections."
+      },
+      {
+        "item": "stay with me",
+        "pos": "v. phr.",
+        "meaning_zh": "一直留在我心里",
+        "note": "Useful when a memory still feels vivid."
+      },
+      {
+        "item": "under pressure",
+        "pos": "adj. phr.",
+        "meaning_zh": "在压力之下",
+        "note": "Good for recent-event answers with urgency."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "what happened was",
+        "meaning_zh": "事情是这样的",
+        "band": 6,
+        "example": "I would use \"what happened was\" naturally in this answer."
+      },
+      {
+        "phrase": "at first",
+        "meaning_zh": "起初",
+        "band": 6,
+        "example": "I would use \"at first\" naturally in this answer."
+      },
+      {
+        "phrase": "in the end",
+        "meaning_zh": "最后",
+        "band": 6,
+        "example": "I would use \"in the end\" naturally in this answer."
+      },
+      {
+        "phrase": "it taught me that",
+        "meaning_zh": "它让我意识到",
+        "band": 6,
+        "example": "I would use \"it taught me that\" naturally in this answer."
+      },
+      {
+        "phrase": "one thing that stood out was",
+        "meaning_zh": "最突出的一个点是",
+        "band": 7,
+        "example": "I would use \"one thing that stood out was\" naturally in this answer."
+      },
+      {
+        "phrase": "from that point on",
+        "meaning_zh": "从那之后",
+        "band": 7,
+        "example": "I would use \"from that point on\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "looking back now",
+        "meaning_zh": "现在回头看",
+        "note": "Good for reflective story endings.",
+        "example": "I would use \"looking back now\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "it stayed with me because",
+        "meaning_zh": "它之所以留在我心里，是因为",
+        "note": "Useful for explaining why the event mattered.",
+        "example": "I would use \"it stayed with me because\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "the turning point came when",
+        "meaning_zh": "转折点出现在……的时候",
+        "note": "Useful for shaping the middle of the answer.",
+        "example": "I would use \"the turning point came when\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "it was more meaningful than it looked",
+        "meaning_zh": "它比表面看起来更有意义",
+        "note": "Good for realistic reflections.",
+        "example": "I would use \"it was more meaningful than it looked\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Tell one event clearly through context, turning point, result, and reflection.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Set the time and situation in one or two sentences.",
+          "Show why this event was worth talking about."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "Describe the event in order.",
+          "Make the turning point obvious and easy to follow."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "State the outcome and what stayed with you.",
+          "Keep the reflection grounded and realistic."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "The moment that really stood out was ...",
+      "At first, I thought ... but then ...",
+      "Looking back, it taught me ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "A misunderstanding that grew because both sides made quick assumptions is something I can talk about quite naturally. Once, a friend thought I was ignoring her messages when I was actually travelling and barely checking my phone. By the time I replied, she sounded colder than usual, and I could tell something felt off. The real turning point came when we spoke properly instead of sending short texts back and forth. As soon as I explained the situation, the tension disappeared and we both realised the problem had grown because of assumptions.\n\nWhat made it worth talking about was not only the event itself, but also the effect it had on the way I communicate now. That experience made me more careful about replying briefly when timing might affect how my tone is understood. Overall, it is a topic that feels real to me because misunderstandings often come from small habits rather than big conflicts.",
+      "highlights": [
+        "Band 6 answer matched to the 描述一次误会与澄清 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear timeline and one lesson",
+        "opening": [
+          "The topic that comes to mind is a misunderstanding that grew because both sides made quick assumptions.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because That experience made me more careful about replying briefly when timing might affect how my tone is understood.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The real turning point came when we spoke properly instead of sending short texts back and forth.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is a misunderstanding that grew because both sides made quick assumptions. Once, a friend thought I was ignoring her messages when I was actually travelling and barely checking my phone. By the time I replied, she sounded colder than usual, and I could tell something felt off. What stood out most was that the real turning point came when we spoke properly instead of sending short texts back and forth.\n\nAfter that, as soon as I explained the situation, the tension disappeared and we both realised the problem had grown because of assumptions. What I find interesting about it now is that the situation seemed quite minor at first, but it revealed how easily short messages can create the wrong impression. That experience made me more careful about replying briefly when timing might affect how my tone is understood. So in a speaking test, I would focus less on drama and more on how the misunderstanding was cleared up.",
+      "highlights": [
+        "Band 7 answer matched to the 描述一次误会与澄清 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "More detail and stronger turning point",
+        "opening": [
+          "The topic that comes to mind is a misunderstanding that grew because both sides made quick assumptions.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because That experience made me more careful about replying briefly when timing might affect how my tone is understood.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The real turning point came when we spoke properly instead of sending short texts back and forth.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with a misunderstanding that grew because both sides made quick assumptions. Once, a friend thought I was ignoring her messages when I was actually travelling and barely checking my phone. By the time I replied, she sounded colder than usual, and I could tell something felt off. The turning point, for me, was that the real turning point came when we spoke properly instead of sending short texts back and forth.\n\nFrom there, as soon as I explained the situation, the tension disappeared and we both realised the problem had grown because of assumptions. What matters now is not the small conflict itself, but the way it changed my awareness of tone, timing, and assumption. That experience made me more careful about replying briefly when timing might affect how my tone is understood. In that sense, the topic is useful because it shows not only what happened, but also how my judgment became a little more careful afterward.",
+      "highlights": [
+        "Band 8 answer matched to the 描述一次误会与澄清 topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Precise reflection and controlled rhythm",
+        "opening": [
+          "The topic that comes to mind is a misunderstanding that grew because both sides made quick assumptions.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because That experience made me more careful about replying briefly when timing might affect how my tone is understood.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "The real turning point came when we spoke properly instead of sending short texts back and forth.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe a misunderstanding and explain how it was cleared up.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Set the scene briefly before the main event.",
+      "Describe the turning point clearly.",
+      "End with the result or lesson, not just the action."
+    ],
+    "self_prompts": [
+      "When exactly did it happen?",
+      "What changed in the middle of the story?",
+      "Why do you still remember it now?",
+      "What did you learn from it?"
+    ]
+  }
+}

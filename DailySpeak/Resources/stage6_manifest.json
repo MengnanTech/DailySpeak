@@ -1,0 +1,51 @@
+{
+  "stage_id": 6,
+  "stage_label": "Stage 6",
+  "lessons": [
+    {
+      "id": 33,
+      "stage": 6,
+      "title_cn": "职场自我介绍与角色说明",
+      "title_en": "Workplace Self Intro And Role",
+      "prompt": "Describe how you would introduce yourself and your role at work.",
+      "filename": "s06_q33_workplace_self_intro_and_role.json",
+      "structured_content": true
+    },
+    {
+      "id": 34,
+      "stage": 6,
+      "title_cn": "解释一个问题或 Bug（含责任归因）",
+      "title_en": "Explain A Problem Or Bug And Responsibility",
+      "prompt": "Describe how you would explain a problem or bug, including responsibility.",
+      "filename": "s06_q34_explain_a_problem_or_bug_and_responsibility.json",
+      "structured_content": true
+    },
+    {
+      "id": 35,
+      "stage": 6,
+      "title_cn": "汇报进度与延误原因",
+      "title_en": "Report Progress And Delay Reasons",
+      "prompt": "Describe how you would report progress and explain a delay.",
+      "filename": "s06_q35_report_progress_and_delay_reasons.json",
+      "structured_content": true
+    },
+    {
+      "id": 36,
+      "stage": 6,
+      "title_cn": "向非专业人士解释复杂概念",
+      "title_en": "Explain A Complex Concept To Non Specialists",
+      "prompt": "Describe how you explain a complex concept to someone without technical knowledge.",
+      "filename": "s06_q36_explain_a_complex_concept_to_non_specialists.json",
+      "structured_content": true
+    },
+    {
+      "id": 37,
+      "stage": 6,
+      "title_cn": "处理职场分歧与低冲突沟通",
+      "title_en": "Handle Workplace Disagreement With Low Conflict",
+      "prompt": "Describe how you handle disagreement at work while keeping conflict low.",
+      "filename": "s06_q37_handle_workplace_disagreement_with_low_conflict.json",
+      "structured_content": true
+    }
+  ]
+}

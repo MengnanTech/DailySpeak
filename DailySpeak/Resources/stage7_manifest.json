@@ -1,0 +1,42 @@
+{
+  "stage_id": 7,
+  "stage_label": "Stage 7",
+  "lessons": [
+    {
+      "id": 38,
+      "stage": 7,
+      "title_cn": "安慰和支持他人",
+      "title_en": "Comfort And Support Others",
+      "prompt": "Describe how you comfort and support someone.",
+      "filename": "s07_q38_comfort_and_support_others.json",
+      "structured_content": true
+    },
+    {
+      "id": 39,
+      "stage": 7,
+      "title_cn": "接受或拒绝他人的请求",
+      "title_en": "Accept Or Decline Requests",
+      "prompt": "Describe how you accept or decline someone’s request.",
+      "filename": "s07_q39_accept_or_decline_requests.json",
+      "structured_content": true
+    },
+    {
+      "id": 40,
+      "stage": 7,
+      "title_cn": "道歉、解释与修复关系",
+      "title_en": "Apologize Explain And Repair Relationship",
+      "prompt": "Describe how you apologize, explain yourself, and repair a relationship.",
+      "filename": "s07_q40_apologize_explain_and_repair_relationship.json",
+      "structured_content": true
+    },
+    {
+      "id": 41,
+      "stage": 7,
+      "title_cn": "表达失望、压力或担忧",
+      "title_en": "Express Disappointment Pressure Or Worry",
+      "prompt": "Describe how you express disappointment, pressure, or worry.",
+      "filename": "s07_q41_express_disappointment_pressure_or_worry.json",
+      "structured_content": true
+    }
+  ]
+}

@@ -1,0 +1,424 @@
+{
+  "id": "s05_q27",
+  "topic": {
+    "stage": 5,
+    "stage_label": "Stage 5",
+    "title_cn": "餐厅或咖啡馆交流（含需求与拒绝）",
+    "prompt_en": "Describe how you would handle a restaurant or cafe interaction, including a request or polite refusal.",
+    "learning_goal": "Learn to handle everyday service interactions with clear needs and a controlled tone.",
+    "category": "restaurant",
+    "target": "IELTS Speaking",
+    "recommended_length": "1-2 minutes"
+  },
+  "strategy": {
+    "angles": [
+      {
+        "title": "State the situation",
+        "content": [
+          "Give the practical context first so the request makes sense.",
+          "Stay factual before you move into emotion."
+        ]
+      },
+      {
+        "title": "Express the need politely",
+        "content": [
+          "Say clearly what you need, change, or do not want.",
+          "Polite wording works best when the message stays specific."
+        ]
+      },
+      {
+        "title": "Respond or negotiate",
+        "content": [
+          "Show how you handle questions, refusals, or compromises.",
+          "That is where communication skill becomes visible."
+        ]
+      },
+      {
+        "title": "End clearly and calmly",
+        "content": [
+          "Close with the outcome, agreement, or boundary.",
+          "A calm ending sounds more effective than an emotional one."
+        ]
+      }
+    ],
+    "sequence": [
+      {
+        "phase": "Opening",
+        "focus": "Situation",
+        "target": "Explain the real-life setting and what triggered the exchange."
+      },
+      {
+        "phase": "Body",
+        "focus": "Request or response",
+        "target": "State the need, complaint, refusal, or negotiation clearly."
+      },
+      {
+        "phase": "Closing",
+        "focus": "Resolution",
+        "target": "End with the result, agreement, or personal boundary."
+      }
+    ],
+    "content_ratio": [
+      {
+        "label": "Situation",
+        "value": "25%"
+      },
+      {
+        "label": "Request + response",
+        "value": "50%"
+      },
+      {
+        "label": "Resolution",
+        "value": "25%"
+      }
+    ],
+    "high_score_tips": [
+      "Polite communication sounds strongest when the wording is calm and specific.",
+      "One clear request is better than too many soft hints.",
+      "If you mention a problem, also show what outcome you were hoping for.",
+      "A controlled tone makes the answer feel realistic and mature."
+    ],
+    "common_mistakes": {
+      "content": [
+        {
+          "problem": "Being too vague",
+          "why_it_hurts": "The listener cannot follow the situation if the request or complaint is not specific.",
+          "fix": "Name the exact problem and the exact change you wanted."
+        },
+        {
+          "problem": "Sounding too aggressive",
+          "why_it_hurts": "Service or boundary answers lose credibility if the tone is more dramatic than the situation.",
+          "fix": "Use calm language and let the facts create the pressure."
+        },
+        {
+          "problem": "No resolution",
+          "why_it_hurts": "The answer feels incomplete if the exchange has no ending or next step.",
+          "fix": "Finish with what was agreed, what you decided, or what boundary you kept."
+        }
+      ],
+      "language": [
+        {
+          "problem": "Using I want you to too bluntly",
+          "wrong_example": "I want you to fix this now.",
+          "better_example": "Could you help me fix this, please?",
+          "reason": "A softer request is more natural in service situations."
+        },
+        {
+          "problem": "Using discuss about",
+          "wrong_example": "I discussed about the issue with the staff.",
+          "better_example": "I discussed the issue with the staff.",
+          "reason": "Discuss does not take about before the object."
+        }
+      ]
+    }
+  },
+  "vocabulary": {
+    "core": [
+      {
+        "item": "request",
+        "pos": "n.",
+        "meaning_zh": "请求",
+        "band": 6,
+        "example": "I would naturally use \"request\" when talking about this topic."
+      },
+      {
+        "item": "issue",
+        "pos": "n.",
+        "meaning_zh": "问题",
+        "band": 6,
+        "example": "I would naturally use \"issue\" when talking about this topic."
+      },
+      {
+        "item": "clarify",
+        "pos": "v.",
+        "meaning_zh": "澄清",
+        "band": 6,
+        "example": "I would naturally use \"clarify\" when talking about this topic."
+      },
+      {
+        "item": "polite",
+        "pos": "adj.",
+        "meaning_zh": "礼貌的",
+        "band": 6,
+        "example": "I would naturally use \"polite\" when talking about this topic."
+      },
+      {
+        "item": "solution",
+        "pos": "n.",
+        "meaning_zh": "解决方案",
+        "band": 6,
+        "example": "I would naturally use \"solution\" when talking about this topic."
+      },
+      {
+        "item": "response",
+        "pos": "n.",
+        "meaning_zh": "回应",
+        "band": 6,
+        "example": "I would naturally use \"response\" when talking about this topic."
+      }
+    ],
+    "extended": [
+      {
+        "item": "sort something out",
+        "pos": "v. phr.",
+        "meaning_zh": "把问题处理好",
+        "note": "Useful when a practical issue needs a calm solution."
+      },
+      {
+        "item": "be on the same page",
+        "pos": "v. phr.",
+        "meaning_zh": "达成一致理解",
+        "note": "Good for coordination and clarification."
+      },
+      {
+        "item": "reasonable",
+        "pos": "adj.",
+        "meaning_zh": "合理的",
+        "note": "Useful when negotiating or setting expectations."
+      },
+      {
+        "item": "boundary",
+        "pos": "n.",
+        "meaning_zh": "边界",
+        "note": "Important for refusals and personal limits."
+      },
+      {
+        "item": "workable solution",
+        "pos": "n. phr.",
+        "meaning_zh": "可行的解决方案",
+        "note": "Useful when you need a practical result."
+      },
+      {
+        "item": "tone",
+        "pos": "n.",
+        "meaning_zh": "语气",
+        "note": "Useful because service situations depend heavily on tone."
+      }
+    ]
+  },
+  "phrases": {
+    "core": [
+      {
+        "phrase": "could you",
+        "meaning_zh": "你可以……吗",
+        "band": 6,
+        "example": "I would use \"could you\" naturally in this answer."
+      },
+      {
+        "phrase": "would it be possible to",
+        "meaning_zh": "是否可以……",
+        "band": 6,
+        "example": "I would use \"would it be possible to\" naturally in this answer."
+      },
+      {
+        "phrase": "I just wanted to check",
+        "meaning_zh": "我只是想确认一下",
+        "band": 6,
+        "example": "I would use \"I just wanted to check\" naturally in this answer."
+      },
+      {
+        "phrase": "thank you for understanding",
+        "meaning_zh": "感谢你的理解",
+        "band": 6,
+        "example": "I would use \"thank you for understanding\" naturally in this answer."
+      },
+      {
+        "phrase": "I would appreciate it if",
+        "meaning_zh": "如果……我会很感激",
+        "band": 7,
+        "example": "I would use \"I would appreciate it if\" naturally in this answer."
+      },
+      {
+        "phrase": "I am not trying to be difficult, but",
+        "meaning_zh": "我不是想为难你，但……",
+        "band": 7,
+        "example": "I would use \"I am not trying to be difficult, but\" naturally in this answer."
+      }
+    ],
+    "extended": [
+      {
+        "phrase": "what I need is",
+        "meaning_zh": "我需要的是……",
+        "note": "Useful for direct but polite requests.",
+        "example": "I would use \"what I need is\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I want to keep this calm and clear",
+        "meaning_zh": "我想把这件事说得平静且清楚",
+        "note": "Useful for complaints or negotiation.",
+        "example": "I would use \"I want to keep this calm and clear\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "if that is not possible, could we",
+        "meaning_zh": "如果那样不行，我们能不能……",
+        "note": "Good for alternatives.",
+        "example": "I would use \"if that is not possible, could we\" when making the answer sound more natural."
+      },
+      {
+        "phrase": "I would rather be honest early",
+        "meaning_zh": "我宁愿早点说清楚",
+        "note": "Useful for refusals and boundaries.",
+        "example": "I would use \"I would rather be honest early\" when making the answer sound more natural."
+      }
+    ]
+  },
+  "framework": {
+    "goal": "Handle a real-life conversation through context, clear need, response, and resolution.",
+    "default_structure": [
+      {
+        "section": "Opening",
+        "moves": [
+          "Explain the setting and what caused the conversation.",
+          "Make the practical need easy to understand."
+        ]
+      },
+      {
+        "section": "Body",
+        "moves": [
+          "State the request, refusal, complaint, or negotiation clearly.",
+          "Show how the other side responded."
+        ]
+      },
+      {
+        "section": "Closing",
+        "moves": [
+          "End with the final outcome or boundary.",
+          "Keep the ending calm and realistic."
+        ]
+      }
+    ],
+    "delivery_markers": [
+      "What I said was ...",
+      "I tried to keep it polite by ...",
+      "In the end, we agreed that ..."
+    ]
+  },
+  "samples": [
+    {
+      "band": 6,
+      "answer": "A restaurant interaction where i had to ask for something clearly but politely is something I can talk about quite naturally. A common situation I can imagine is being in a cafe, ordering something simple, and then realising the drink is different from what I asked for. In that case, I would not complain dramatically. I would first check the order, explain the mismatch clearly, and ask whether it could be changed. If the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated. What matters in that kind of situation is being clear without sounding rude or entitled.\n\nWhat made it worth talking about was not only the event or idea itself, but also the effect it had on the way I think or act. A calm request usually gets a faster and better response than frustration. Overall, it is a topic that feels real to me because it connects to ordinary life rather than a perfect story.",
+      "highlights": [
+        "Band 6 answer matched to the 餐厅或咖啡馆交流（含需求与拒绝） topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 6,
+        "focus": "Clear situation and polite wording",
+        "opening": [
+          "The topic that comes to mind is a restaurant interaction where I had to ask for something clearly but politely.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because A calm request usually gets a faster and better response than frustration.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 7,
+      "answer": "The topic that comes to mind for me is a restaurant interaction where I had to ask for something clearly but politely. A common situation I can imagine is being in a cafe, ordering something simple, and then realising the drink is different from what I asked for. In that case, I would not complain dramatically. I would first check the order, explain the mismatch clearly, and ask whether it could be changed. What stood out most was that if the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated.\n\nAfter that, what matters in that kind of situation is being clear without sounding rude or entitled. What I find interesting about it now is that the situation seemed fairly ordinary at the time, but it revealed something more lasting about how I handle pressure, choices, or relationships. A calm request usually gets a faster and better response than frustration. So if I were explaining this in a speaking test, I would focus less on sounding dramatic and more on why the experience or idea genuinely stayed with me.",
+      "highlights": [
+        "Band 7 answer matched to the 餐厅或咖啡馆交流（含需求与拒绝） topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 7,
+        "focus": "Specific request plus realistic resolution",
+        "opening": [
+          "The topic that comes to mind is a restaurant interaction where I had to ask for something clearly but politely.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because A calm request usually gets a faster and better response than frustration.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    },
+    {
+      "band": 8,
+      "answer": "If I had to answer this topic in a more reflective way, I would still begin with a restaurant interaction where I had to ask for something clearly but politely. A common situation I can imagine is being in a cafe, ordering something simple, and then realising the drink is different from what I asked for. In that case, I would not complain dramatically. I would first check the order, explain the mismatch clearly, and ask whether it could be changed. The turning point, for me, was that if the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated.\n\nFrom there, what matters in that kind of situation is being clear without sounding rude or entitled. What matters now is not the surface event or statement alone, but the shift in perspective behind it. A calm request usually gets a faster and better response than frustration. In that sense, the topic feels useful because it shows not only what happened or what I think, but also how my judgment has become a little more precise over time.",
+      "highlights": [
+        "Band 8 answer matched to the 餐厅或咖啡馆交流（含需求与拒绝） topic",
+        "Keeps spoken rhythm while staying specific and teachable"
+      ],
+      "band_guide": {
+        "band": 8,
+        "focus": "Measured communication under tension",
+        "opening": [
+          "The topic that comes to mind is a restaurant interaction where I had to ask for something clearly but politely.",
+          "I would first explain the background clearly."
+        ],
+        "body": [
+          "Then I would add the central detail or turning point.",
+          "After that, I would show the result or practical effect."
+        ],
+        "closing": [
+          "Finally, I would end with the takeaway or present view."
+        ]
+      },
+      "upgrades": [
+        {
+          "original": "It was important to me.",
+          "improved": "It mattered because A calm request usually gets a faster and better response than frustration.",
+          "why": "A specific reason sounds much more natural than a general claim.",
+          "note": "Use the personal effect to close the answer."
+        },
+        {
+          "original": "Then something changed.",
+          "improved": "If the staff offered an alternative that worked for me, I would probably accept it rather than insist on making the exchange more complicated.",
+          "why": "A clear turning point gives the answer shape and movement.",
+          "note": "This is especially useful in spoken storytelling and reflective answers."
+        }
+      ]
+    }
+  ],
+  "practice": {
+    "task": "Describe how you would handle a restaurant or cafe interaction, including a request or polite refusal.",
+    "target_length": "1-2 minutes",
+    "checklist": [
+      "Explain the setting before the request or refusal.",
+      "Use polite but direct wording.",
+      "End with the outcome or the boundary you kept."
+    ],
+    "self_prompts": [
+      "What exactly did you need?",
+      "How did you phrase it politely?",
+      "How did the other person respond?",
+      "What was the final result?"
+    ]
+  }
+}
