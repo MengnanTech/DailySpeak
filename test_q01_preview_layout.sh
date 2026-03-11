@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="/Users/levi/project/IOS/DailySpeak/DailySpeak"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$SCRIPT_DIR/DailySpeak"
 RESOURCES="$ROOT/Resources"
 OVERVIEW="$ROOT/Views/TaskOverviewView.swift"
 FLOW="$ROOT/Views/LearningFlowView.swift"
 REVIEW="$ROOT/Views/ReviewStepView.swift"
 COURSE_DATA="$ROOT/Models/CourseData.swift"
 LESSON_MODEL="$ROOT/Models/LessonRepository.swift"
+CONTENT_VIEW="$ROOT/ContentView.swift"
+APP_STATE="$ROOT/App/AppState.swift"
+APP_AUTH="$ROOT/App/AppState+Auth.swift"
+API_CLIENT="$ROOT/Services/APIClient.swift"
+AUTH_SERVICE="$ROOT/Services/AuthService.swift"
+SETTINGS_VIEW="$ROOT/Views/SettingsView.swift"
+ONBOARDING_VIEW="$ROOT/Views/OnboardingView.swift"
+AUTH_CHOICE_VIEW="$ROOT/Views/AuthChoiceView.swift"
+AUTH_LOGIN_VIEW="$ROOT/Views/AuthLoginRegisterView.swift"
+NOTIFICATION_SERVICE="$ROOT/Services/NotificationService.swift"
+NOTIFICATION_SETTINGS="$ROOT/Views/NotificationSettingsView.swift"
+DAILYSPEAK_API="$ROOT/Services/DailySpeakAPIService.swift"
+PRACTICE_AI="$ROOT/Models/PracticeAIService.swift"
+PRACTICE_VIEW="$ROOT/Views/PracticeView.swift"
 
 expected_stage_count() {
   case "$1" in
@@ -89,5 +104,27 @@ rg -q '"高分检查"' "$COURSE_DATA"
 rg -q 'LearningStep\(id: 1, type: \.review\)' "$LESSON_MODEL"
 ! rg -q 'label: "Stage 1 Lesson"' "$FLOW"
 ! rg -q 'label: "Stage 1 Lesson"' "$REVIEW"
+
+echo "Checking production app shell structure..."
+[ -f "$APP_STATE" ]
+[ -f "$APP_AUTH" ]
+[ -f "$API_CLIENT" ]
+[ -f "$AUTH_SERVICE" ]
+[ -f "$SETTINGS_VIEW" ]
+[ -f "$ONBOARDING_VIEW" ]
+[ -f "$AUTH_CHOICE_VIEW" ]
+[ -f "$AUTH_LOGIN_VIEW" ]
+[ -f "$NOTIFICATION_SERVICE" ]
+[ -f "$NOTIFICATION_SETTINGS" ]
+[ -f "$DAILYSPEAK_API" ]
+rg -q 'AppState' "$CONTENT_VIEW"
+rg -q 'SettingsView' "$SETTINGS_VIEW"
+rg -q 'NotificationSettingsView' "$NOTIFICATION_SETTINGS"
+
+echo "Checking server-backed AI path..."
+! rg -q 'api\\.openai\\.com' "$PRACTICE_AI"
+! rg -q 'OPENAI_API_KEY' "$PRACTICE_AI"
+rg -q 'translate/text' "$DAILYSPEAK_API"
+! rg -q 'AVSpeechSynthesizer' "$PRACTICE_VIEW"
 
 echo "PASS: Multi-stage lesson data assertions passed"

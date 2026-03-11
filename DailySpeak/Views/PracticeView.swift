@@ -1,5 +1,4 @@
 import SwiftUI
-import AVFoundation
 
 struct PracticeView: View {
     @Environment(ProgressManager.self) private var progress
@@ -15,7 +14,6 @@ struct PracticeView: View {
     @State private var isSpeaking = false
     @FocusState private var isFocused: Bool
 
-    private let synthesizer = AVSpeechSynthesizer()
     private var theme: StageTheme { stage.theme }
 
     var body: some View {
@@ -285,17 +283,16 @@ struct PracticeView: View {
 
     // MARK: - Text-to-Speech
     private func speakTranslation() {
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-            isSpeaking = false
-            return
+        Task {
+            do {
+                let playing = try await RemoteSpeechPlayer.shared.togglePlayback(text: translatedText, locale: "en-US")
+                isSpeaking = playing
+            } catch {
+                isSpeaking = false
+                withAnimation {
+                    errorMessage = error.localizedDescription
+                }
+            }
         }
-
-        let utterance = AVSpeechUtterance(string: translatedText)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
-        utterance.pitchMultiplier = 1.0
-        synthesizer.speak(utterance)
-        isSpeaking = true
     }
 }

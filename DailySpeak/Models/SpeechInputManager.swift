@@ -8,9 +8,13 @@ final class SpeechInputManager: ObservableObject {
     @Published var transcript = ""
     @Published var isRecording = false
     @Published var lastError: String?
+    @Published var isUploadingAudio = false
+    @Published var uploadedAudioURL: String?
 
     private var audioEngine: AVAudioEngine?
     private let speechRecognizer: SFSpeechRecognizer?
+    private var recordingFileURL: URL?
+    private var uploadTask: Task<Void, Never>?
 
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
@@ -57,6 +61,16 @@ final class SpeechInputManager: ObservableObject {
         recognitionTask = nil
 
         isRecording = false
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        } catch {
+            lastError = "关闭录音会话失败：\(error.localizedDescription)"
+        }
+
+        if let recordedFileURL = recordingFileURL {
+            recordingFileURL = nil
+            enqueueUpload(for: recordedFileURL)
+        }
     }
 
     // MARK: - Authorization
@@ -98,6 +112,7 @@ final class SpeechInputManager: ObservableObject {
 
         let engine = AVAudioEngine()
         self.audioEngine = engine
+        uploadedAudioURL = nil
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
@@ -113,8 +128,14 @@ final class SpeechInputManager: ObservableObject {
         // Install audio tap — runs on audio thread, only touches `request`
         let inputNode = engine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
+        let recordingURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("dailyspeak-\(UUID().uuidString)")
+            .appendingPathExtension("caf")
+        recordingFileURL = recordingURL
+        let audioFile = try AVAudioFile(forWriting: recordingURL, settings: format.settings)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             request.append(buffer)
+            try? audioFile.write(from: buffer)
         }
 
         engine.prepare()
@@ -141,6 +162,32 @@ final class SpeechInputManager: ObservableObject {
                 if isFinal || error != nil {
                     self.stopRecording()
                 }
+            }
+        }
+    }
+
+    private func enqueueUpload(for fileURL: URL) {
+        let token = APIClient.shared.accessToken?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !token.isEmpty else {
+            try? FileManager.default.removeItem(at: fileURL)
+            return
+        }
+
+        uploadTask?.cancel()
+        isUploadingAudio = true
+        uploadTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer {
+                isUploadingAudio = false
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+            do {
+                let uploadedURL = try await DailySpeakAPIService.shared.uploadAudio(fileURL: fileURL)
+                uploadedAudioURL = uploadedURL
+                AppEventReporter.shared.report(.audioUploadCompleted, properties: ["url_host": URL(string: uploadedURL)?.host ?? "unknown"])
+            } catch {
+                lastError = "录音上传失败：\(error.localizedDescription)"
+                AppEventReporter.shared.report(.audioUploadFailed, properties: ["message": error.localizedDescription])
             }
         }
     }
