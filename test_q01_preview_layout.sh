@@ -8,6 +8,20 @@ FLOW="$ROOT/Views/LearningFlowView.swift"
 REVIEW="$ROOT/Views/ReviewStepView.swift"
 COURSE_DATA="$ROOT/Models/CourseData.swift"
 LESSON_MODEL="$ROOT/Models/LessonRepository.swift"
+CONTENT_VIEW="$ROOT/ContentView.swift"
+PRACTICE_AI="$ROOT/Models/PracticeAIService.swift"
+API_SERVICE="$ROOT/Services/DailySpeakAPIService.swift"
+INBOX_SERVICE="$ROOT/Services/InAppInboxService.swift"
+PUSH_SERVICE="$ROOT/Services/PushNotificationService.swift"
+WS_SERVICE="$ROOT/Services/WebSocketInboxClient.swift"
+PERSONAL_CENTER="$ROOT/Views/Screens/PersonalCenterView.swift"
+NOTIFICATIONS="$ROOT/Views/Screens/NotificationsView.swift"
+AUTH_VIEW="$ROOT/Views/Screens/AuthLoginRegisterView.swift"
+INITIAL_AUTH_VIEW="$ROOT/Views/Screens/InitialAuthChoiceView.swift"
+APP_AUTH="$ROOT/App/AppState+Auth.swift"
+PBXPROJ="/Users/levi/project/IOS/DailySpeak/DailySpeak.xcodeproj/project.pbxproj"
+DEBUG_ENTITLEMENTS="$ROOT/DailySpeak.entitlements"
+RELEASE_ENTITLEMENTS="$ROOT/DailySpeak.Release.entitlements"
 
 expected_stage_count() {
   case "$1" in
@@ -57,6 +71,91 @@ for stage in 1 2 3 4 5 6 7 8 9; do
     ' "$lesson" >/dev/null
   done < <(jq -r '.lessons[].filename' "$manifest")
 done
+
+echo "Checking production shell files..."
+[ -f "$ROOT/App/AppState.swift" ]
+[ -f "$ROOT/App/AppState+Auth.swift" ]
+[ -f "$ROOT/App/AppState+Inbox.swift" ]
+[ -f "$ROOT/App/AppDelegate.swift" ]
+[ -f "$ROOT/Services/APIClient.swift" ]
+[ -f "$ROOT/Services/AuthService.swift" ]
+[ -f "$ROOT/Services/DailySpeakAPIService.swift" ]
+[ -f "$ROOT/Services/NotificationService.swift" ]
+[ -f "$ROOT/Services/PushNotificationService.swift" ]
+[ -f "$ROOT/Views/Shell/SplashAnimationView.swift" ]
+[ -f "$ROOT/Views/Shell/OnboardingView.swift" ]
+[ -f "$ROOT/Views/Screens/InitialAuthChoiceView.swift" ]
+[ -f "$ROOT/Views/Screens/AuthLoginRegisterView.swift" ]
+[ -f "$ROOT/Views/Screens/NotificationsView.swift" ]
+[ -f "$ROOT/Views/Screens/NotificationSettingsView.swift" ]
+[ -f "$ROOT/Views/Screens/PersonalCenterView.swift" ]
+[ -f "$ROOT/Views/Screens/AppSettingsView.swift" ]
+[ -f "$ROOT/Views/Screens/PaywallPlaceholderView.swift" ]
+[ -f "$DEBUG_ENTITLEMENTS" ]
+[ -f "$RELEASE_ENTITLEMENTS" ]
+
+echo "Checking Apple Sign In capability wiring..."
+rg -q 'CODE_SIGN_ENTITLEMENTS = DailySpeak/DailySpeak.entitlements;' "$PBXPROJ"
+rg -q 'CODE_SIGN_ENTITLEMENTS = DailySpeak/DailySpeak.Release.entitlements;' "$PBXPROJ"
+rg -q 'com.apple.developer.applesignin' "$DEBUG_ENTITLEMENTS"
+rg -q 'com.apple.developer.applesignin' "$RELEASE_ENTITLEMENTS"
+
+echo "Checking root shell wiring..."
+! rg -q 'TabView(selection: \$appState.selectedTab)' "$CONTENT_VIEW"
+rg -q 'InitialAuthChoiceView' "$CONTENT_VIEW"
+rg -q 'PersonalCenterView' "$CONTENT_VIEW"
+rg -q 'NotificationsView' "$CONTENT_VIEW"
+rg -q 'NavigationStack' "$CONTENT_VIEW"
+! rg -q 'safeAreaInset\(edge: \.top' "$CONTENT_VIEW"
+rg -q 'StageListView\(' "$CONTENT_VIEW"
+rg -q 'showPersonalCenter' "$CONTENT_VIEW"
+rg -q 'inboxNavigation\.openInbox()' "$CONTENT_VIEW"
+rg -q 'navigationDestination\(isPresented: \$showPersonalCenter\)' "$CONTENT_VIEW"
+! rg -q '\.sheet\(isPresented: \$showPersonalCenter\)' "$CONTENT_VIEW"
+rg -q 'bell\.fill' "$ROOT/Views/StageListView.swift"
+rg -q 'person\.crop\.circle\.fill' "$ROOT/Views/StageListView.swift"
+
+echo "Checking ReSelf-style auth and shell screens..."
+rg -q 'enum Step' "$AUTH_VIEW"
+rg -q 'verifyStepView' "$AUTH_VIEW"
+rg -q 'passwordStepView' "$AUTH_VIEW"
+rg -q 'friendlyAppleSignInMessage' "$APP_AUTH"
+rg -q 'navigationBarBackButtonHidden(true)' "$NOTIFICATIONS"
+rg -q 'SettingsCard' "$PERSONAL_CENTER"
+rg -q 'ProfileHeaderCard' "$PERSONAL_CENTER"
+rg -q 'navigationTitle\("个人中心"\)' "$PERSONAL_CENTER"
+rg -q 'SignInWithAppleButton' "$INITIAL_AUTH_VIEW"
+
+echo "Checking direct OpenAI dependency removed from iOS shell..."
+! rg -q 'api.openai.com' "$PRACTICE_AI"
+
+echo "Checking backend contract matches verified server endpoints..."
+rg -q '"translate/text"' "$API_SERVICE"
+rg -q '"sourceLang"' "$API_SERVICE"
+rg -q '"targetLang"' "$API_SERVICE"
+! rg -q '"sourceLanguage"' "$API_SERVICE"
+! rg -q '"targetLanguage"' "$API_SERVICE"
+! rg -q '"scene"' "$API_SERVICE"
+! rg -q '"topic"' "$API_SERVICE"
+! rg -q '"dailyspeak/polish"' "$API_SERVICE"
+rg -q 'requiresAuth: true' "$API_SERVICE"
+rg -q 'requiresAuth: true' "$INBOX_SERVICE"
+rg -q '"push/register"' "$PUSH_SERVICE"
+rg -q '"environment"' "$PUSH_SERVICE"
+rg -q '"deviceId"' "$PUSH_SERVICE"
+rg -q '"pushEnabled"' "$PUSH_SERVICE"
+rg -q 'requiresAuth: true' "$PUSH_SERVICE"
+rg -q 'Logger' "$PUSH_SERVICE"
+rg -q 'logger\.' "$PUSH_SERVICE"
+rg -q 'kSecClassGenericPassword' "$PUSH_SERVICE"
+rg -q 'SecItemCopyMatching' "$PUSH_SERVICE"
+rg -q 'SecItemUpdate' "$PUSH_SERVICE"
+rg -q 'SecItemAdd' "$PUSH_SERVICE"
+! rg -q 'identifierForVendor' "$PUSH_SERVICE"
+rg -q 'waitsForConnectivity = true' "$WS_SERVICE"
+rg -q '\[WS CONNECT\]' "$WS_SERVICE"
+rg -q 'DispatchQueue\.main\.asyncAfter' "$WS_SERVICE"
+rg -q '\[WS\] receive failed' "$WS_SERVICE"
 
 echo "Checking structured lesson repository wiring..."
 rg -q 'struct LessonManifest' "$LESSON_MODEL"

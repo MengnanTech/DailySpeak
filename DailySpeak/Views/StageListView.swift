@@ -2,6 +2,9 @@ import SwiftUI
 
 struct StageListView: View {
     @Environment(ProgressManager.self) private var progress
+    let unreadCount: Int
+    let onProfileTap: () -> Void
+    let onInboxTap: () -> Void
     @State private var selectedStage: Stage?
     @State private var selectedTask: SpeakingTask?
     @State private var carouselStageId: Int?
@@ -124,7 +127,40 @@ struct StageListView: View {
                     .foregroundStyle(AppColors.primaryText)
             }
             Spacer()
+            HStack(spacing: 10) {
+                headerIconButton(icon: "person.crop.circle.fill", badgeCount: 0, action: onProfileTap)
+                headerIconButton(icon: "bell.fill", badgeCount: unreadCount, action: onInboxTap)
+            }
         }
+    }
+
+    private func headerIconButton(icon: String, badgeCount: Int, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            ZStack(alignment: .topTrailing) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(AppColors.primaryText)
+                    .frame(width: 42, height: 42)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(AppColors.border, lineWidth: 1)
+                    )
+                    .cardShadow()
+
+                if badgeCount > 0 {
+                    Text("\(min(badgeCount, 99))")
+                        .font(.caption2.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Capsule().fill(Color(hex: "E85D4A")))
+                        .offset(x: 10, y: -8)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Stats Row

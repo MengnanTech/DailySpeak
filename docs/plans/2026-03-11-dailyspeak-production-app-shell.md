@@ -137,7 +137,19 @@ Expected: FAIL because the production shell files and server-backed AI path do n
 
 **Step 2:** Route translation calls through `manage-man-server /translate/text`.
 
+Verified later:
+
+- endpoint exists
+- it requires APP auth
+- request DTO fields are `text`, `sourceLang`, `targetLang`
+- any client plan using `sourceLanguage`, `targetLanguage`, `scene`, or `topic` must be revised
+
 **Step 3:** Route polish calls through a DailySpeak-specific backend endpoint.
+
+Verified later:
+
+- no current DailySpeak-specific polish endpoint exists in local backend source
+- this step cannot be treated as already supported
 
 **Step 4:** Update error handling so auth failures and server envelope failures surface cleanly in UI.
 
@@ -172,6 +184,11 @@ Expected: FAIL because the production shell files and server-backed AI path do n
 **Step 2:** Implement:
 - polish endpoint
 - TTS endpoint that returns a playable URL or media payload metadata
+
+Verified later:
+
+- this section describes future backend work
+- these endpoints were not found in the current local backend source
 
 **Step 3:** Reuse existing ElevenLabs and file storage facilities instead of creating a separate pipeline.
 

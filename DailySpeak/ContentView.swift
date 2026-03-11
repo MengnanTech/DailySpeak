@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var appState: AppState
+    @ObservedObject private var inboxNavigation = InboxNavigationCoordinator.shared
+    @State private var showPersonalCenter = false
     private let previewStage = CourseData.stages[0]
     private var previewTask: SpeakingTask { previewStage.tasks[0] }
     private let arguments = ProcessInfo.processInfo.arguments
@@ -61,12 +64,39 @@ struct ContentView: View {
                 TaskOverviewView(stage: previewStage, task: previewTask)
             }
         } else {
-            StageListView()
+            NavigationStack {
+                StageListView(
+                    unreadCount: appState.unreadNotificationCount,
+                    onProfileTap: { showPersonalCenter = true },
+                    onInboxTap: { inboxNavigation.openInbox() }
+                )
+                    .navigationDestination(isPresented: $showPersonalCenter) {
+                        PersonalCenterView()
+                            .environmentObject(appState)
+                    }
+                    .fullScreenCover(
+                        isPresented: Binding(
+                            get: { appState.shouldShowInitialAuthChoice },
+                            set: { _ in }
+                        )
+                    ) {
+                        InitialAuthChoiceView()
+                            .environmentObject(appState)
+                            .interactiveDismissDisabled()
+                    }
+                    .sheet(isPresented: $inboxNavigation.shouldPresentInbox) {
+                        NavigationStack {
+                            NotificationsView()
+                                .environmentObject(appState)
+                        }
+                    }
+            }
         }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppState())
         .environment(ProgressManager())
 }

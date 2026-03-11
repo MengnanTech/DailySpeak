@@ -127,9 +127,21 @@ Guest mode is intentionally not blocked because the app's core lesson flow is lo
 
 Use `manage-man-server /translate/text` instead of direct OpenAI access.
 
+Verified later against local backend source:
+
+- endpoint exists
+- it requires APP auth
+- request fields are `text`, optional `sourceLang`, required `targetLang`
+- request fields like `sourceLanguage`, `targetLanguage`, `scene`, `topic` were only assumptions and are not part of the current contract
+
 ### Polish / Rewrite
 
 Add a backend endpoint for turning user input into concise, natural spoken English. This is a DailySpeak-specific learning operation and should live in the server instead of the app.
+
+Verified later against local backend source:
+
+- no current `dailyspeak/polish` endpoint was found
+- this remains planned backend work, not an existing contract
 
 ### Text to Speech
 

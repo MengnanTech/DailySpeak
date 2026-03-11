@@ -1951,8 +1951,8 @@ struct PracticePromptView: View {
 
             if !translatedEnglish.isEmpty {
                 resultCard(
-                    title: "英文直译（API）",
-                    subtitle: "先保留原意，再进入地道化阶段",
+                    title: languageMode == .native ? "英文结果（API）" : "当前英文草稿",
+                    subtitle: languageMode == .native ? "基于当前后端 contract 的翻译结果" : "当前后端没有额外润色接口，保留你的英文输入",
                     text: translatedEnglish,
                     tint: Color(hex: "4A90D9")
                 )
@@ -1960,8 +1960,8 @@ struct PracticePromptView: View {
 
             if !polishedEnglish.isEmpty {
                 resultCard(
-                    title: "地道口语版本（API）",
-                    subtitle: "可直接用于口语训练",
+                    title: "保留字段",
+                    subtitle: "等待后端补充 DailySpeak 专用润色接口后再恢复",
                     text: polishedEnglish,
                     tint: Color(hex: "10B981")
                 )
@@ -2149,7 +2149,7 @@ struct PracticePromptView: View {
                     .foregroundStyle(Color(hex: "DC2626"))
             }
 
-            Text("草稿会自动保存。你可以先用母语输入，再通过 API 转成英文并润色。")
+            Text("草稿会自动保存。你可以先用母语输入，再通过当前后端接口转成英文。")
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
         }
@@ -2201,7 +2201,7 @@ struct PracticePromptView: View {
             )
             .overlay(alignment: .topLeading) {
                 if draftInput.isEmpty {
-                    Text(languageMode == .native ? "先输入母语内容，建议 4-6 句..." : "先写英文草稿，稍后可一键润色...")
+                    Text(languageMode == .native ? "先输入母语内容，建议 4-6 句..." : "先写英文草稿，当前会保留你的原文...")
                         .font(.subheadline)
                         .foregroundStyle(AppColors.tertiaryText)
                         .padding(.horizontal, 16)
@@ -2223,7 +2223,7 @@ struct PracticePromptView: View {
                     Image(systemName: "wand.and.stars")
                         .font(.subheadline.bold())
                 }
-                Text(languageMode == .native ? "母语 -> 英文 -> 地道口语" : "英文草稿 -> 地道口语")
+                Text(languageMode == .native ? "母语 -> 英文" : "保留英文草稿")
                     .font(.subheadline.bold())
             }
             .foregroundStyle(.white)
@@ -2340,13 +2340,8 @@ struct PracticePromptView: View {
                     translated = source
                 }
 
-                let polished = try await PracticeAIService.shared.polishToSpokenEnglish(
-                    englishText: translated,
-                    topic: task.prompt
-                )
-
                 translatedEnglish = translated
-                polishedEnglish = polished
+                polishedEnglish = ""
                 isProcessing = false
             } catch {
                 isProcessing = false
