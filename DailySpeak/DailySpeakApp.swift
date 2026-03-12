@@ -33,7 +33,9 @@ struct DailySpeakApp: App {
 
                 if showSplash {
                     SplashAnimationView {
-                        showSplash = false
+                        withAnimation(.easeInOut(duration: 0.28)) {
+                            showSplash = false
+                        }
                     }
                     .zIndex(1)
                     .transition(.opacity)
