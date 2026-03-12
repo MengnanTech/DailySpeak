@@ -1,9 +1,9 @@
 import SwiftUI
-import AVFoundation
 
 struct PracticeView: View {
     @Environment(ProgressManager.self) private var progress
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var speechPlayer = EnglishSpeechPlayer.shared
     let stage: Stage
     let task: SpeakingTask
 
@@ -12,11 +12,9 @@ struct PracticeView: View {
     @State private var isTranslating = false
     @State private var showCompletion = false
     @State private var errorMessage: String?
-    @State private var isSpeaking = false
     @FocusState private var isFocused: Bool
-
-    private let synthesizer = AVSpeechSynthesizer()
     private var theme: StageTheme { stage.theme }
+    private let speechRate: Float = 0.46
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -144,12 +142,21 @@ struct PracticeView: View {
                 Button {
                     speakTranslation()
                 } label: {
-                    Image(systemName: isSpeaking ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(theme.startColor)
-                        .frame(width: 36, height: 36)
-                        .background(theme.startColor.opacity(0.1))
-                        .clipShape(Circle())
+                    ZStack {
+                        Circle()
+                            .fill(theme.startColor.opacity(0.1))
+                            .frame(width: 36, height: 36)
+
+                        if speechPlayer.isLoading(id: translationPlaybackID) {
+                            ProgressView()
+                                .tint(theme.startColor)
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: speechPlayer.isPlaying(id: translationPlaybackID) ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                                .font(.subheadline)
+                                .foregroundStyle(theme.startColor)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
             }
@@ -285,17 +292,18 @@ struct PracticeView: View {
 
     // MARK: - Text-to-Speech
     private func speakTranslation() {
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-            isSpeaking = false
-            return
-        }
+        WordPronouncer.shared.speak(
+            translatedText,
+            locale: "en-US",
+            rate: speechRate
+        )
+    }
 
-        let utterance = AVSpeechUtterance(string: translatedText)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
-        utterance.pitchMultiplier = 1.0
-        synthesizer.speak(utterance)
-        isSpeaking = true
+    private var translationPlaybackID: String {
+        WordPronouncer.shared.playbackID(
+            for: translatedText,
+            locale: "en-US",
+            rate: speechRate
+        )
     }
 }

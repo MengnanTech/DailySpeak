@@ -3,7 +3,7 @@ import Foundation
 enum APIError: Error {
     case invalidURL
     case decoding
-    case http(Int)
+    case http(Int, String?)
     case api(Int, String?)
     case transport(String)
     case unknown
@@ -16,7 +16,10 @@ extension APIError: LocalizedError {
             return "接口地址无效。"
         case .decoding:
             return "服务器返回无法解析。"
-        case .http(let code):
+        case .http(let code, let message):
+            if let message, !message.isEmpty {
+                return "网络请求失败（\(code)）：\(message)"
+            }
             return "网络请求失败（\(code)）。"
         case .api(_, let message):
             return message ?? "服务器处理失败，请稍后再试。"
@@ -106,7 +109,7 @@ final class APIClient {
                 throw APIError.unknown
             }
             guard (200..<300).contains(http.statusCode) else {
-                throw APIError.http(http.statusCode)
+                throw APIError.http(http.statusCode, decodeHTTPErrorMessage(from: data))
             }
             return data
         } catch let error as APIError {
@@ -114,5 +117,24 @@ final class APIClient {
         } catch {
             throw APIError.transport(error.localizedDescription)
         }
+    }
+
+    private func decodeHTTPErrorMessage(from data: Data) -> String? {
+        guard !data.isEmpty else { return nil }
+
+        if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            if let message = object["msg"] as? String, !message.isEmpty {
+                return message
+            }
+            if let message = object["message"] as? String, !message.isEmpty {
+                return message
+            }
+        }
+
+        let raw = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let raw, !raw.isEmpty {
+            return raw
+        }
+        return nil
     }
 }

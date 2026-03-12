@@ -85,7 +85,15 @@ final class WebSocketInboxClient {
 
         let remoteID = payload["id"] as? String
         let kind: PushInboxKind = ((payload["type"] as? String) ?? "").lowercased() == "system" ? .system : .other
-        let message = PushInboxMessage(title: title, body: body, kind: kind, remoteID: remoteID, rawPayloadJSON: text)
+        let message = PushInboxMessage(
+            title: title,
+            body: body,
+            kind: kind,
+            remoteID: remoteID,
+            rawPayloadJSON: text,
+            createdAt: InboxDateParser.parse(payload["createdAt"] as? String) ?? Date(),
+            isUnread: !((payload["read"] as? Bool) ?? false)
+        )
         Task {
             await PushInboxStore.shared.append(message)
         }

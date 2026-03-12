@@ -17,7 +17,15 @@ final class PushNotificationService {
 
     @MainActor
     func registerForRemoteNotificationsIfPossible() {
-        UIApplication.shared.registerForRemoteNotifications()
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            await MainActor.run {
+                print("⬆️ [PUSH] requesting remote notification registration")
+                print("ℹ️ [PUSH] authorization status: \(Self.authorizationStatusLabel(settings.authorizationStatus))")
+                print("ℹ️ [PUSH] currently registered for remote notifications: \(UIApplication.shared.isRegisteredForRemoteNotifications)")
+                UIApplication.shared.registerForRemoteNotifications()
+            }
+        }
     }
 
     func syncDeviceRegistrationIfPossible() {
@@ -25,12 +33,19 @@ final class PushNotificationService {
             Task {
                 await uploadDeviceTokenIfConfigured(token)
             }
+        } else {
+            print("⚠️ [PUSH] skip upload: missing device token, requesting APNs registration")
+            logger.warning("skip upload: missing device token, requesting APNs registration")
+            Task { @MainActor in
+                registerForRemoteNotificationsIfPossible()
+            }
         }
     }
 
     func didRegisterForRemoteNotifications(deviceToken: Data) {
         let token = deviceToken.map { String(format: "%02x", $0) }.joined()
         UserDefaults.standard.set(token, forKey: deviceTokenKey)
+        print("✅ [PUSH] APNs device token received")
         logger.info("APNs device token received (len=\(token.count, privacy: .public))")
 #if DEBUG
         logger.info("APNs device token: \(token, privacy: .public)")
@@ -41,6 +56,7 @@ final class PushNotificationService {
     }
 
     func didFailToRegisterForRemoteNotifications(error: Error) {
+        print("❌ [PUSH] APNs registration failed: \(error.localizedDescription)")
         logger.error("APNs registration failed: \(error.localizedDescription, privacy: .public)")
     }
 
@@ -48,7 +64,7 @@ final class PushNotificationService {
         let parsed = Self.parseTitleBody(from: userInfo)
         guard let body = parsed.body else { return }
         let title = parsed.title ?? Constants.appName
-        let remoteID = (userInfo["id"] as? String) ?? (userInfo["messageId"] as? String)
+        let remoteID = Self.parseRemoteMessageID(from: userInfo)
         let type = ((userInfo["type"] as? String) ?? (userInfo["kind"] as? String) ?? "").lowercased()
         let kind: PushInboxKind = type == "system" ? .system : .other
 
@@ -59,10 +75,19 @@ final class PushNotificationService {
     }
 
     private func uploadDeviceTokenIfConfigured(_ token: String) async {
-        guard APIConfig.isConfigured else { return }
-        guard !(APIClient.shared.accessToken ?? "").isEmpty else { return }
+        guard APIConfig.isConfigured else {
+            print("⚠️ [PUSH] skip upload: API not configured")
+            logger.warning("skip upload: API not configured")
+            return
+        }
+        guard !(APIClient.shared.accessToken ?? "").isEmpty else {
+            print("⚠️ [PUSH] skip upload: missing access token")
+            logger.warning("skip upload: missing access token")
+            return
+        }
         do {
             let authorizationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+            print("⬆️ [PUSH] uploading device token to push/register")
             let response: APIEnvelope<EmptyDTO> = try await APIClient.shared.request(
                 "push/register",
                 method: "POST",
@@ -85,10 +110,14 @@ final class PushNotificationService {
                 requiresAuth: true
             )
             if response.code != 200 {
+                print("❌ [PUSH] upload rejected: code=\(response.code) msg=\(response.msg ?? "")")
                 logger.error("Push token upload rejected: code=\(response.code, privacy: .public) msg=\(response.msg ?? "", privacy: .public)")
                 return
             }
+            print("✅ [PUSH] Push token uploaded successfully")
+            logger.info("Push token uploaded successfully")
         } catch {
+            print("❌ [PUSH] upload failed: \(error.localizedDescription)")
             logger.error("Failed to upload device token: \(error.localizedDescription, privacy: .public)")
             return
         }
@@ -153,6 +182,23 @@ final class PushNotificationService {
         }
     }
 
+    private static func authorizationStatusLabel(_ status: UNAuthorizationStatus) -> String {
+        switch status {
+        case .notDetermined:
+            return "notDetermined"
+        case .denied:
+            return "denied"
+        case .authorized:
+            return "authorized"
+        case .provisional:
+            return "provisional"
+        case .ephemeral:
+            return "ephemeral"
+        @unknown default:
+            return "unknown"
+        }
+    }
+
     private static func parseTitleBody(from userInfo: [AnyHashable: Any]) -> (title: String?, body: String?) {
         guard let apsAny = userInfo["aps"] else { return (nil, nil) }
         if let aps = apsAny as? [String: Any] {
@@ -164,6 +210,14 @@ final class PushNotificationService {
             }
         }
         return (userInfo["title"] as? String, userInfo["body"] as? String)
+    }
+
+    private static func parseRemoteMessageID(from userInfo: [AnyHashable: Any]) -> String? {
+        (userInfo["id"] as? String)
+            ?? (userInfo["messageId"] as? String)
+            ?? (userInfo["message_id"] as? String)
+            ?? (userInfo["remoteId"] as? String)
+            ?? (userInfo["remote_id"] as? String)
     }
 
     private static func prettyJSONString(from userInfo: [AnyHashable: Any]) -> String? {

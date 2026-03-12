@@ -114,6 +114,9 @@ struct NotificationSettingsView: View {
                 showPermissionDeniedAlert = true
                 return
             }
+            await MainActor.run {
+                PushNotificationService.shared.registerForRemoteNotificationsIfPossible()
+            }
         }
 
         NotificationService.shared.scheduleDailyReminder(at: reminderTimeBinding.wrappedValue)

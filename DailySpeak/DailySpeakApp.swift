@@ -16,6 +16,7 @@ struct DailySpeakApp: App {
     @StateObject private var appState = AppState()
     @State private var showSplash = true
     @State private var showOnboarding = false
+    @State private var shouldStartRuntimeAfterOnboarding = false
 
     var body: some Scene {
         WindowGroup {
@@ -40,12 +41,24 @@ struct DailySpeakApp: App {
             }
             .onAppear {
                 checkFirstLaunch()
+                if showOnboarding {
+                    shouldStartRuntimeAfterOnboarding = true
+                } else {
+                    appState.startRuntimeServices()
+                }
+            }
+            .onChange(of: showOnboarding) { oldValue, newValue in
+                guard oldValue, !newValue else { return }
+                guard shouldStartRuntimeAfterOnboarding else { return }
+                shouldStartRuntimeAfterOnboarding = false
                 appState.startRuntimeServices()
             }
             .onChange(of: scenePhase) { _, phase in
                 switch phase {
                 case .active:
-                    appState.startRuntimeServices()
+                    if !showOnboarding {
+                        appState.startRuntimeServices()
+                    }
                 case .inactive, .background:
                     appState.stopRuntimeServices()
                 @unknown default:
@@ -60,6 +73,7 @@ struct DailySpeakApp: App {
         let hasLaunchedBefore = defaults.bool(forKey: Constants.StorageKeys.hasLaunchedBefore)
         if !hasLaunchedBefore {
             showOnboarding = true
+            shouldStartRuntimeAfterOnboarding = true
             defaults.set(true, forKey: Constants.StorageKeys.hasLaunchedBefore)
         }
     }

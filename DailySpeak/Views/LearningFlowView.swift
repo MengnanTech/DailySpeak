@@ -1121,22 +1121,19 @@ struct VocabDetailSheet: View {
 final class WordPronouncer {
     static let shared = WordPronouncer()
 
-    private let synthesizer = AVSpeechSynthesizer()
-
     private init() {}
 
     func speak(_ text: String, locale: String, rate: Float) {
         guard !text.isEmpty else { return }
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
+        guard locale.lowercased().hasPrefix("en") else { return }
+        EnglishSpeechPlayer.shared.togglePlayback(
+            id: playbackID(for: text, locale: locale, rate: rate),
+            text: text
+        )
+    }
 
-        let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: locale)
-        utterance.rate = rate
-        utterance.pitchMultiplier = 1.0
-        utterance.preUtteranceDelay = 0.02
-        synthesizer.speak(utterance)
+    func playbackID(for text: String, locale _: String, rate _: Float) -> String {
+        EnglishSpeechPlayer.playbackID(for: text)
     }
 }
 

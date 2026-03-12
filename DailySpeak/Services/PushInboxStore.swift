@@ -55,7 +55,9 @@ actor PushInboxStore {
               let messages = try? decoder.decode([PushInboxMessage].self, from: data) else {
             return []
         }
-        return messages.sorted { $0.createdAt > $1.createdAt }
+        let merged = mergeDuplicates(in: messages)
+        persistIfNeeded(merged, original: messages)
+        return merged
     }
 
     func unreadCount() -> Int {
@@ -68,14 +70,8 @@ actor PushInboxStore {
 
     func append(contentsOf messages: [PushInboxMessage]) {
         guard !messages.isEmpty else { return }
-        var current = load()
-        for message in messages {
-            if let remoteID = message.remoteID, current.contains(where: { $0.remoteID == remoteID }) {
-                continue
-            }
-            current.append(message)
-        }
-        persist(current)
+        let merged = mergeDuplicates(in: load() + messages)
+        persist(merged)
     }
 
     func markRead(id: String) {
@@ -107,5 +103,62 @@ actor PushInboxStore {
             defaults.set(data, forKey: storageKey)
         }
         NotificationCenter.default.post(name: .pushInboxDidUpdate, object: nil)
+    }
+
+    private func persistIfNeeded(_ merged: [PushInboxMessage], original: [PushInboxMessage]) {
+        guard merged != original else { return }
+        if let data = try? encoder.encode(merged.sorted { $0.createdAt > $1.createdAt }) {
+            defaults.set(data, forKey: storageKey)
+        }
+    }
+
+    private func mergeDuplicates(in messages: [PushInboxMessage]) -> [PushInboxMessage] {
+        var merged: [PushInboxMessage] = []
+        for message in messages.sorted(by: { $0.createdAt > $1.createdAt }) {
+            if let index = merged.firstIndex(where: { isSameMessage($0, message) }) {
+                merged[index] = merge(merged[index], with: message)
+            } else {
+                merged.append(message)
+            }
+        }
+        return merged.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    private func isSameMessage(_ lhs: PushInboxMessage, _ rhs: PushInboxMessage) -> Bool {
+        let leftRemoteID = normalizedRemoteID(lhs.remoteID)
+        let rightRemoteID = normalizedRemoteID(rhs.remoteID)
+        if let leftRemoteID, let rightRemoteID {
+            return leftRemoteID == rightRemoteID
+        }
+
+        let closeEnough = abs(lhs.createdAt.timeIntervalSince(rhs.createdAt)) <= 600
+        return closeEnough && fallbackSignature(for: lhs) == fallbackSignature(for: rhs)
+    }
+
+    private func merge(_ lhs: PushInboxMessage, with rhs: PushInboxMessage) -> PushInboxMessage {
+        PushInboxMessage(
+            id: lhs.id,
+            title: rhs.title.count > lhs.title.count ? rhs.title : lhs.title,
+            body: rhs.body.count > lhs.body.count ? rhs.body : lhs.body,
+            kind: lhs.kind,
+            remoteID: normalizedRemoteID(lhs.remoteID) ?? normalizedRemoteID(rhs.remoteID),
+            rawPayloadJSON: lhs.rawPayloadJSON ?? rhs.rawPayloadJSON,
+            createdAt: min(lhs.createdAt, rhs.createdAt),
+            isUnread: lhs.isUnread && rhs.isUnread
+        )
+    }
+
+    private func normalizedRemoteID(_ remoteID: String?) -> String? {
+        guard let remoteID else { return nil }
+        let value = remoteID.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
+    }
+
+    private func fallbackSignature(for message: PushInboxMessage) -> String {
+        [
+            message.kind.rawValue,
+            message.title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+            message.body.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        ].joined(separator: "||")
     }
 }

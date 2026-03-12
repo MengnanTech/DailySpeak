@@ -3,6 +3,7 @@ import SwiftUI
 struct OnboardingView: View {
     @Binding var isPresented: Bool
     @State private var selection = 0
+    @State private var isFinishing = false
 
     private let pages: [OnboardingPage] = [
         .init(
@@ -83,10 +84,10 @@ struct OnboardingView: View {
                                 selection += 1
                             }
                         } else {
-                            isPresented = false
+                            finishOnboarding()
                         }
                     } label: {
-                        Text(selection == pages.count - 1 ? "Start DailySpeak" : "Continue")
+                        Text(selection == pages.count - 1 ? (isFinishing ? "Preparing..." : "Start DailySpeak") : "Continue")
                             .font(.headline)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
@@ -94,15 +95,32 @@ struct OnboardingView: View {
                             .background(pages[selection].accent, in: RoundedRectangle(cornerRadius: 18))
                     }
                     .buttonStyle(.plain)
+                    .disabled(isFinishing)
 
                     Button("Skip for now") {
-                        isPresented = false
+                        finishOnboarding()
                     }
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(AppColors.secondText)
+                    .disabled(isFinishing)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)
+            }
+        }
+    }
+
+    private func finishOnboarding() {
+        guard !isFinishing else { return }
+        isFinishing = true
+        Task {
+            let granted = await NotificationService.shared.requestPermission()
+            await MainActor.run {
+                if granted {
+                    PushNotificationService.shared.registerForRemoteNotificationsIfPossible()
+                }
+                isPresented = false
+                isFinishing = false
             }
         }
     }

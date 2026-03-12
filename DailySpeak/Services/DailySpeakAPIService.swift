@@ -6,6 +6,12 @@ private struct TranslateTextResponseDTO: Decodable {
     let provider: String?
 }
 
+private struct EnglishTTSResponseDTO: Decodable {
+    let id: String?
+    let audioUrl: String
+    let provider: String?
+}
+
 final class DailySpeakAPIService {
     static let shared = DailySpeakAPIService()
 
@@ -34,5 +40,25 @@ final class DailySpeakAPIService {
 
     func polishToSpokenEnglish(englishText _: String, topic _: String) async throws -> String {
         throw APIError.transport("后端当前没有 DailySpeak polish 接口，客户端已停止调用该能力。")
+    }
+
+    func generateEnglishAudioURL(id: String, text: String) async throws -> URL {
+        let response: APIEnvelope<EnglishTTSResponseDTO> = try await APIClient.shared.request(
+            "tts/english/mp3",
+            method: "POST",
+            body: [
+                "id": id,
+                "text": text
+            ],
+            requiresAuth: true
+        )
+        guard response.code == 200, let data = response.data else {
+            throw APIError.api(response.code, response.msg)
+        }
+        let trimmed = data.audioUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed), !trimmed.isEmpty else {
+            throw APIError.decoding
+        }
+        return url
     }
 }
