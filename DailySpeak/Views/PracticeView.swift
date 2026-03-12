@@ -3,7 +3,6 @@ import SwiftUI
 struct PracticeView: View {
     @Environment(ProgressManager.self) private var progress
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var speechPlayer = EnglishSpeechPlayer.shared
     let stage: Stage
     let task: SpeakingTask
 
@@ -41,6 +40,7 @@ struct PracticeView: View {
             }
         }
         .onTapGesture { isFocused = false }
+        .onDisappear { EnglishSpeechPlayer.shared.stopPlayback() }
     }
 
     // MARK: - Topic
@@ -138,27 +138,6 @@ struct PracticeView: View {
                 Text("English Translation")
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
-                Spacer()
-                Button {
-                    speakTranslation()
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(theme.startColor.opacity(0.1))
-                            .frame(width: 36, height: 36)
-
-                        if speechPlayer.isLoading(id: translationPlaybackID) {
-                            ProgressView()
-                                .tint(theme.startColor)
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: speechPlayer.isPlaying(id: translationPlaybackID) ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                                .font(.subheadline)
-                                .foregroundStyle(theme.startColor)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
             }
 
             Text(translatedText)
@@ -174,6 +153,14 @@ struct PracticeView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(AppColors.success.opacity(0.2), lineWidth: 1)
                 )
+
+            InlineAudioPlayerControl(
+                text: translatedText,
+                playbackID: translationPlaybackID,
+                sourceLabel: "Practice Translation",
+                accentColor: theme.startColor,
+                title: "Practice Translation"
+            )
 
             Text("Read the translation aloud and compare with sample answers.")
                 .font(.caption)
@@ -290,20 +277,262 @@ struct PracticeView: View {
         }
     }
 
-    // MARK: - Text-to-Speech
-    private func speakTranslation() {
-        WordPronouncer.shared.speak(
-            translatedText,
-            locale: "en-US",
-            rate: speechRate
-        )
-    }
-
     private var translationPlaybackID: String {
         WordPronouncer.shared.playbackID(
             for: translatedText,
             locale: "en-US",
             rate: speechRate
         )
+    }
+}
+
+enum InlineAudioPlayerStyle {
+    case prominent
+    case compact
+}
+
+struct InlineAudioPlayerControl: View {
+    @ObservedObject private var speechPlayer = EnglishSpeechPlayer.shared
+
+    let text: String
+    let playbackID: String
+    let sourceLabel: String
+    let accentColor: Color
+    var title: String? = nil
+    var style: InlineAudioPlayerStyle = .prominent
+
+    @State private var sliderProgress: Double = 0
+    @State private var isScrubbing = false
+    @State private var resumeAfterScrub = false
+
+    private var isCurrent: Bool { speechPlayer.isCurrent(id: playbackID) }
+    private var isLoading: Bool { speechPlayer.isLoading(id: playbackID) }
+    private var isPlaying: Bool { speechPlayer.isPlaying(id: playbackID) }
+    private var isPaused: Bool { speechPlayer.isPaused(id: playbackID) }
+    private var isExpanded: Bool { isCurrent || isLoading || isPaused }
+    private var effectiveProgress: Double { isScrubbing ? sliderProgress : (isCurrent ? speechPlayer.progress : 0) }
+    private var effectiveCurrentTime: Double { isCurrent ? speechPlayer.currentTime : 0 }
+    private var effectiveDuration: Double { isCurrent ? speechPlayer.duration : 0 }
+    private var previewText: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        Group {
+            if isExpanded {
+                expandedControl
+            } else {
+                collapsedControl
+            }
+        }
+        .animation(.spring(response: 0.32, dampingFraction: 0.86), value: isExpanded)
+        .onAppear { syncSlider() }
+        .onChange(of: speechPlayer.playbackContext?.id) { syncSlider() }
+        .onChange(of: speechPlayer.currentTime) { syncSlider() }
+        .onChange(of: speechPlayer.duration) { syncSlider() }
+    }
+
+    private var collapsedControl: some View {
+        Button(action: togglePlayback) {
+            HStack(spacing: style == .compact ? 8 : 10) {
+                Image(systemName: "play.fill")
+                    .font(style == .compact ? .caption.bold() : .subheadline.bold())
+                    .foregroundStyle(accentColor)
+                    .frame(width: style == .compact ? 30 : 36, height: style == .compact ? 30 : 36)
+                    .background(accentColor.opacity(0.12))
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title ?? sourceLabel)
+                        .font(style == .compact ? .caption.bold() : .subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+                    if style == .prominent {
+                        Text("Tap to play with waveform and scrubbing")
+                            .font(.caption)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                }
+
+                Spacer()
+
+                if style == .prominent {
+                    Text("Play")
+                        .font(.caption.bold())
+                        .foregroundStyle(accentColor)
+                }
+            }
+            .padding(.horizontal, style == .compact ? 10 : 14)
+            .padding(.vertical, style == .compact ? 8 : 12)
+            .background(accentColor.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: style == .compact ? 12 : 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: style == .compact ? 12 : 16)
+                    .stroke(accentColor.opacity(0.16), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var expandedControl: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
+                AudioWaveformGlyph(
+                    tint: accentColor,
+                    isAnimating: isPlaying,
+                    isLoading: isLoading,
+                    compact: style == .compact
+                )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title ?? sourceLabel)
+                        .font(style == .compact ? .caption.bold() : .subheadline.bold())
+                        .foregroundStyle(AppColors.primaryText)
+
+                    Text(previewText)
+                        .font(style == .compact ? .caption : .caption)
+                        .foregroundStyle(AppColors.secondText)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Button(action: togglePlayback) {
+                    Image(systemName: isLoading ? "hourglass" : (isPlaying ? "pause.fill" : "play.fill"))
+                        .font(.caption.bold())
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(accentColor)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+
+                Button(action: stopPlayback) {
+                    Image(systemName: "xmark")
+                        .font(.caption.bold())
+                        .foregroundStyle(accentColor)
+                        .frame(width: 30, height: 30)
+                        .background(accentColor.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Slider(value: sliderBinding, in: 0 ... 1, onEditingChanged: handleScrubbing)
+                    .tint(accentColor)
+                    .disabled(isLoading || !isCurrent || effectiveDuration <= 0)
+
+                HStack {
+                    Text(statusLabel)
+                        .font(.caption2)
+                        .foregroundStyle(AppColors.tertiaryText)
+                    Spacer()
+                    Text("\(formatTime(effectiveCurrentTime)) / \(formatTime(effectiveDuration))")
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
+            }
+        }
+        .padding(.horizontal, style == .compact ? 10 : 14)
+        .padding(.vertical, style == .compact ? 10 : 12)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: style == .compact ? 14 : 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: style == .compact ? 14 : 16)
+                .stroke(accentColor.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    private var sliderBinding: Binding<Double> {
+        Binding(
+            get: { effectiveProgress },
+            set: { sliderProgress = $0 }
+        )
+    }
+
+    private var statusLabel: String {
+        if isLoading { return "Loading..." }
+        if isPlaying { return "Playing" }
+        if isPaused { return "Paused" }
+        return "Ready"
+    }
+
+    private func togglePlayback() {
+        guard !previewText.isEmpty else { return }
+        EnglishSpeechPlayer.shared.togglePlayback(
+            id: playbackID,
+            text: previewText,
+            sourceLabel: sourceLabel
+        )
+    }
+
+    private func stopPlayback() {
+        guard isCurrent else { return }
+        EnglishSpeechPlayer.shared.stopPlayback()
+    }
+
+    private func handleScrubbing(_ editing: Bool) {
+        isScrubbing = editing
+        if editing {
+            sliderProgress = isCurrent ? speechPlayer.progress : 0
+            resumeAfterScrub = isPlaying
+            if isPlaying {
+                EnglishSpeechPlayer.shared.pausePlayback()
+            }
+            return
+        }
+
+        EnglishSpeechPlayer.shared.seekPlayback(to: sliderProgress)
+        if resumeAfterScrub {
+            EnglishSpeechPlayer.shared.resumePlayback()
+        }
+        resumeAfterScrub = false
+    }
+
+    private func syncSlider() {
+        guard !isScrubbing else { return }
+        sliderProgress = isCurrent ? speechPlayer.progress : 0
+    }
+
+    private func formatTime(_ seconds: Double) -> String {
+        guard seconds.isFinite, seconds > 0 else { return "0:00" }
+        let totalSeconds = Int(seconds.rounded(.down))
+        return "\(totalSeconds / 60):" + String(format: "%02d", totalSeconds % 60)
+    }
+}
+
+struct AudioWaveformGlyph: View {
+    let tint: Color
+    let isAnimating: Bool
+    let isLoading: Bool
+    var compact: Bool = false
+
+    @State private var animateBars = false
+
+    private let restingHeights: [CGFloat] = [8, 14, 10, 16]
+    private let animatedHeights: [CGFloat] = [18, 9, 20, 12]
+
+    var body: some View {
+        HStack(alignment: .center, spacing: compact ? 3 : 4) {
+            ForEach(Array(restingHeights.enumerated()), id: \.offset) { index, height in
+                Capsule()
+                    .fill(tint.opacity(index == 1 ? 0.75 : 1))
+                    .frame(width: compact ? 3 : 4, height: animateBars ? animatedHeights[index] : height)
+                    .animation(animation(delay: Double(index) * 0.08), value: animateBars)
+            }
+        }
+        .frame(width: compact ? 22 : 28, height: compact ? 20 : 22)
+        .onAppear { updateAnimationState() }
+        .onChange(of: isAnimating) { updateAnimationState() }
+        .onChange(of: isLoading) { updateAnimationState() }
+    }
+
+    private func animation(delay: Double) -> Animation {
+        let isActive = isAnimating || isLoading
+        return isActive
+            ? .easeInOut(duration: 0.45).repeatForever(autoreverses: true).delay(delay)
+            : .easeOut(duration: 0.18)
+    }
+
+    private func updateAnimationState() {
+        animateBars = isAnimating || isLoading
     }
 }

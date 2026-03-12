@@ -34,6 +34,7 @@ struct LearningFlowView: View {
             }
         }
         .onAppear { syncCurrentStep() }
+        .onDisappear { EnglishSpeechPlayer.shared.stopPlayback() }
     }
 
     private func syncCurrentStep() {
@@ -678,7 +679,7 @@ struct VocabularyStepView: View {
                                         .foregroundStyle(AppColors.primaryText)
                                     Spacer()
                                     Button {
-                                        WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48)
+                                        WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary")
                                     } label: {
                                         Image(systemName: "speaker.wave.2.fill")
                                             .font(.system(size: 14))
@@ -886,7 +887,7 @@ struct VocabularyStepView: View {
                 VocabCardView(
                     item: item,
                     onShowMeaning: { selectedItem = item },
-                    onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48) }
+                    onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary") }
                 )
             }
         }
@@ -1045,13 +1046,13 @@ struct VocabDetailSheet: View {
 
                         HStack(spacing: 10) {
                             pronunciationButton(title: "US", icon: "waveform") {
-                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48)
+                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary")
                             }
                             pronunciationButton(title: "UK", icon: "waveform.path.ecg") {
-                                WordPronouncer.shared.speak(item.word, locale: "en-GB", rate: 0.48)
+                                WordPronouncer.shared.speak(item.word, locale: "en-GB", rate: 0.48, sourceLabel: "Vocabulary")
                             }
                             pronunciationButton(title: "Slow", icon: "tortoise.fill") {
-                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.34)
+                                WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.34, sourceLabel: "Vocabulary")
                             }
                         }
                     }
@@ -1123,12 +1124,13 @@ final class WordPronouncer {
 
     private init() {}
 
-    func speak(_ text: String, locale: String, rate: Float) {
+    func speak(_ text: String, locale: String, rate: Float, sourceLabel: String = "English Audio") {
         guard !text.isEmpty else { return }
         guard locale.lowercased().hasPrefix("en") else { return }
         EnglishSpeechPlayer.shared.togglePlayback(
             id: playbackID(for: text, locale: locale, rate: rate),
-            text: text
+            text: text,
+            sourceLabel: sourceLabel
         )
     }
 
@@ -1212,7 +1214,7 @@ struct PhraseCard: View {
                 Spacer()
 
                 Button {
-                    WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46)
+                    WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46, sourceLabel: "Phrase")
                 } label: {
                     Image(systemName: "speaker.wave.2.fill")
                         .font(.system(size: 12, weight: .bold))
@@ -1712,23 +1714,17 @@ struct SamplesStepView: View {
                     highlightedSampleText(sample.content)
                         .lineSpacing(6)
 
-                    // Audio button
-                    Button {
-                        WordPronouncer.shared.speak(sample.content, locale: "en-US", rate: 0.46)
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "play.circle.fill")
-                                .font(.title3)
-                            Text("Listen to Pronunciation")
-                                .font(.subheadline.bold())
-                        }
-                        .foregroundStyle(bandColors[selectedBand])
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(bandColors[selectedBand].opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    .buttonStyle(.plain)
+                    InlineAudioPlayerControl(
+                        text: sample.content,
+                        playbackID: WordPronouncer.shared.playbackID(
+                            for: sample.content,
+                            locale: "en-US",
+                            rate: 0.46
+                        ),
+                        sourceLabel: "Sample Answer",
+                        accentColor: bandColors[selectedBand],
+                        title: "Listen to Pronunciation"
+                    )
 
                     if !sample.nativeFeatures.isEmpty {
                         Divider().background(AppColors.border)
@@ -2243,28 +2239,23 @@ struct PracticePromptView: View {
                 Text(title)
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
-                Spacer()
-                Button {
-                    WordPronouncer.shared.speak(text, locale: "en-US", rate: 0.46)
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "speaker.wave.2.fill")
-                            .font(.caption.bold())
-                        Text("播放")
-                            .font(.caption.bold())
-                    }
-                    .foregroundStyle(tint)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(tint.opacity(0.12))
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
             }
 
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
+
+            InlineAudioPlayerControl(
+                text: text,
+                playbackID: WordPronouncer.shared.playbackID(
+                    for: text,
+                    locale: "en-US",
+                    rate: 0.46
+                ),
+                sourceLabel: "Practice Result",
+                accentColor: tint,
+                title: "Playback"
+            )
 
             Text(text)
                 .font(.subheadline)

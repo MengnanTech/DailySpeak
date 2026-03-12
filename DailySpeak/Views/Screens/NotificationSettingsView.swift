@@ -6,6 +6,7 @@ struct NotificationSettingsView: View {
     @AppStorage("dailyspeak.notifications.dailyReminder.enabled") private var dailyReminderEnabled = false
     @AppStorage("dailyspeak.notifications.dailyReminder.hour") private var dailyReminderHour = 20
     @AppStorage("dailyspeak.notifications.dailyReminder.minute") private var dailyReminderMinute = 30
+    @AppStorage("dailyspeak.notifications.dailyReminder.tone") private var dailyReminderToneRawValue = ReminderTone.focused.rawValue
 
     @State private var permissionStatus: UNAuthorizationStatus?
     @State private var showPermissionDeniedAlert = false
@@ -32,6 +33,17 @@ struct NotificationSettingsView: View {
                 Text("DailySpeak only requests notification permission when you turn reminders on.")
             }
 
+            Section("Reminder tone") {
+                Picker("Tone", selection: reminderToneBinding) {
+                    ForEach(ReminderTone.allCases) { tone in
+                        Text(tone.title).tag(tone)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                reminderPreviewCard
+            }
+
             Section {
                 HStack {
                     Text("Permission")
@@ -45,6 +57,13 @@ struct NotificationSettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await refreshPermissionStatus()
+        }
+        .onChange(of: dailyReminderToneRawValue) { _, _ in
+            guard dailyReminderEnabled else { return }
+            NotificationService.shared.scheduleDailyReminder(
+                at: reminderTimeBinding.wrappedValue,
+                tone: selectedReminderTone
+            )
         }
         .alert("Notifications Disabled", isPresented: $showPermissionDeniedAlert) {
             Button("OK", role: .cancel) {}
@@ -71,10 +90,21 @@ struct NotificationSettingsView: View {
                 dailyReminderHour = components.hour ?? dailyReminderHour
                 dailyReminderMinute = components.minute ?? dailyReminderMinute
                 if dailyReminderEnabled {
-                    NotificationService.shared.scheduleDailyReminder(at: newValue)
+                    NotificationService.shared.scheduleDailyReminder(at: newValue, tone: selectedReminderTone)
                 }
             }
         )
+    }
+
+    private var reminderToneBinding: Binding<ReminderTone> {
+        Binding(
+            get: { selectedReminderTone },
+            set: { dailyReminderToneRawValue = $0.rawValue }
+        )
+    }
+
+    private var selectedReminderTone: ReminderTone {
+        ReminderTone(rawValue: dailyReminderToneRawValue) ?? .focused
     }
 
     private var permissionLabel: String {
@@ -119,12 +149,48 @@ struct NotificationSettingsView: View {
             }
         }
 
-        NotificationService.shared.scheduleDailyReminder(at: reminderTimeBinding.wrappedValue)
+        NotificationService.shared.scheduleDailyReminder(
+            at: reminderTimeBinding.wrappedValue,
+            tone: selectedReminderTone
+        )
     }
 
     private func openSystemSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    private var reminderPreviewCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "bell.badge.fill")
+                    .foregroundStyle(Color(hex: "5B9BF0"))
+                Text("Preview")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+                Text(timePreviewText)
+                    .font(.caption.bold())
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+
+            Text(selectedReminderTone.notificationTitle)
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+
+            Text(selectedReminderTone.notificationBody)
+                .font(.subheadline)
+                .foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 8)
+    }
+
+    private var timePreviewText: String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        return formatter.string(from: reminderTimeBinding.wrappedValue)
     }
 }
 

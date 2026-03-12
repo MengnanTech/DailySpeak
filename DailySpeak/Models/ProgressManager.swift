@@ -6,15 +6,23 @@ final class ProgressManager {
     private let defaults = UserDefaults.standard
     private let stepsKey = "completedSteps"
     private let tasksKey = "completedTasks"
+    private let activityDaysKey = "learningActivityDays"
+    private let taskCompletionDatesKey = "taskCompletionDates"
 
     private(set) var completedSteps: Set<String>
     private(set) var completedTasks: Set<String>
+    private(set) var learningActivityDays: Set<String>
+    private(set) var taskCompletionDates: [String: String]
 
     init() {
         let steps = UserDefaults.standard.stringArray(forKey: "completedSteps") ?? []
         let tasks = UserDefaults.standard.stringArray(forKey: "completedTasks") ?? []
+        let activityDays = UserDefaults.standard.stringArray(forKey: "learningActivityDays") ?? []
+        let completionDates = UserDefaults.standard.dictionary(forKey: "taskCompletionDates") as? [String: String] ?? [:]
         self.completedSteps = Set(steps)
         self.completedTasks = Set(tasks)
+        self.learningActivityDays = Set(activityDays)
+        self.taskCompletionDates = completionDates
     }
 
     // MARK: - Step Progress
@@ -53,7 +61,13 @@ final class ProgressManager {
     }
 
     func completeTask(stageId: Int, taskId: Int) {
-        completedTasks.insert(taskKey(stageId, taskId))
+        let key = taskKey(stageId, taskId)
+        let isNewCompletion = completedTasks.insert(key).inserted
+        if isNewCompletion {
+            let todayKey = dayKey(for: Date())
+            learningActivityDays.insert(todayKey)
+            taskCompletionDates[key] = todayKey
+        }
         save()
     }
 
@@ -71,15 +85,60 @@ final class ProgressManager {
         return isTaskCompleted(stageId: stageId, taskId: taskId - 1)
     }
 
+    // MARK: - Daily Motivation
+    func todayCompletedTaskCount(referenceDate: Date = Date()) -> Int {
+        let key = dayKey(for: referenceDate)
+        return taskCompletionDates.values.filter { $0 == key }.count
+    }
+
+    func currentStreakDays(referenceDate: Date = Date()) -> Int {
+        let calendar = Calendar.current
+        var day = calendar.startOfDay(for: referenceDate)
+        var streak = 0
+
+        while learningActivityDays.contains(dayKey(for: day)) {
+            streak += 1
+            guard let previousDay = calendar.date(byAdding: .day, value: -1, to: day) else { break }
+            day = previousDay
+        }
+
+        return streak
+    }
+
+    func recommendedDailyGoal() -> Int {
+        3
+    }
+
+    func hasMetDailyGoal(referenceDate: Date = Date()) -> Bool {
+        todayCompletedTaskCount(referenceDate: referenceDate) >= recommendedDailyGoal()
+    }
+
+    func dailyGoalRemaining(referenceDate: Date = Date()) -> Int {
+        max(0, recommendedDailyGoal() - todayCompletedTaskCount(referenceDate: referenceDate))
+    }
+
     // MARK: - Persistence
     private func save() {
         defaults.set(Array(completedSteps), forKey: stepsKey)
         defaults.set(Array(completedTasks), forKey: tasksKey)
+        defaults.set(Array(learningActivityDays), forKey: activityDaysKey)
+        defaults.set(taskCompletionDates, forKey: taskCompletionDatesKey)
     }
 
     func resetAll() {
         completedSteps.removeAll()
         completedTasks.removeAll()
+        learningActivityDays.removeAll()
+        taskCompletionDates.removeAll()
         save()
+    }
+
+    private func dayKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar.current
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
     }
 }
