@@ -1,19 +1,23 @@
 import SwiftUI
 
-private enum OverviewPresentationPhase {
+private enum OverviewPresentationPhase: Comparable {
+    case idle
     case heroEntrance
     case heroTitleReveal
     case heroDescriptionReveal
     case heroDockToTop
-    case focusReveal
-    case flowReveal
-    case stepProgression
+    case focusPopup
+    case focusDock
+    case flowPopup
+    case flowStepSpin
+    case flowDock
     case ready
 }
 
 private enum OverviewStepDisplayState {
     case hidden
     case spinning
+    case checked   // checkmark in popup after spin finishes
     case unlocked
     case locked
 }
@@ -24,64 +28,92 @@ struct TaskOverviewView: View {
     let task: SpeakingTask
 
     @State private var showLearning = false
-    @State private var phase: OverviewPresentationPhase = .heroEntrance
+    @State private var phase: OverviewPresentationPhase = .idle
+
+    // Dark overlay (shared by all popups)
+    @State private var darkOverlayOpacity: Double = 0
+
+    // --- Hero card popup ---
     @State private var showCenteredHero = false
-    @State private var centeredHeroSettled = false
-    @State private var centeredHeroDocking = false
-    @State private var darkOverlayOpacity = 0.0
-    @State private var heroTitleVisible = false
+    @State private var heroEntranceScale: CGFloat = 0.5
+    @State private var heroRotationX: Double = 45
+    @State private var heroEntranceOpacity: Double = 0
+    @State private var heroDockOffsetY: CGFloat = 0
+    @State private var heroDockScale: CGFloat = 1.0
+    @State private var heroDockOpacity: Double = 1.0
+    @State private var contentRevealProgress: Double = 0
+    @State private var heroTitleOpacity: Double = 0
     @State private var heroPromptChars = 0
-    @State private var showDockedHero = false
-    @State private var showFocusSection = false
-    @State private var showFlowSection = false
+    @State private var heroMetaOpacity: Double = 0
+    @State private var glowIntensity: Double = 0
+    @State private var shimmerOffset: CGFloat = -200
+
+    // --- Focus card popup ---
+    @State private var showCenteredFocus = false
+    @State private var focusPopupScale: CGFloat = 0.6
+    @State private var focusPopupOpacity: Double = 0
+    @State private var focusContentOpacity: Double = 0
+    @State private var focusDockOffsetY: CGFloat = 0
+    @State private var focusDockScale: CGFloat = 1.0
+    @State private var focusDockOpacity: Double = 1.0
+    // Focus staggered reveal
+    @State private var focusTitleOpacity: Double = 0
+    @State private var focusGoalOpacity: Double = 0
+    @State private var focusChipsOpacity: Double = 0
+    @State private var focusStatsOpacity: Double = 0
+    @State private var focusSuggestionOpacity: Double = 0
+
+    // --- Flow card popup ---
+    @State private var showCenteredFlow = false
+    @State private var flowPopupScale: CGFloat = 0.6
+    @State private var flowPopupOpacity: Double = 0
+    @State private var flowDockOffsetY: CGFloat = 0
+    @State private var flowDockScale: CGFloat = 1.0
+    @State private var flowDockOpacity: Double = 1.0
     @State private var stepDisplayStates: [OverviewStepDisplayState] = []
-    @State private var showStartButton = false
+
+    // --- Docked content ---
+    @State private var showDockedHero = false
+    @State private var showDockedFocus = false
+    @State private var showDockedFlow = false
 
     private var theme: StageTheme { stage.theme }
     private var lessonContent: LessonContent? { task.lessonContent }
+
     private var heroPromptText: String {
         let chars = Array(task.prompt)
         guard !chars.isEmpty, heroPromptChars > 0 else { return "" }
         return String(chars.prefix(min(heroPromptChars, chars.count)))
     }
-    private var centeredHeroOffsetY: CGFloat {
-        if centeredHeroDocking { return -220 }
-        return centeredHeroSettled ? 0 : -56
-    }
-    private var centeredHeroScale: CGFloat {
-        if centeredHeroDocking { return 0.86 }
-        return centeredHeroSettled ? 1 : 0.92
-    }
-    private var centeredHeroRotation: Double {
-        centeredHeroSettled ? 0 : 9
-    }
-    private var centeredHeroOpacity: Double {
-        centeredHeroDocking ? 0.15 : (showCenteredHero ? 1 : 0)
-    }
+
     private var currentUnlockedStepIndex: Int {
         progress.currentStepIndex(stageId: stage.id, taskId: task.id, totalSteps: task.steps.count)
     }
 
+    private var centeredHeroCardWidth: CGFloat {
+        min(UIScreen.main.bounds.width - 48, 420)
+    }
+
+    // MARK: - Body
+
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Scrollable docked content
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     if showDockedHero {
-                        dockedHeroCard
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                        dockedCardContent
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
                     }
-
-                    if showFocusSection {
+                    if showDockedFocus {
                         focusSectionCard
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
                     }
-
-                    if showFlowSection {
+                    if showDockedFlow {
                         flowSectionCard
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
                     }
-
-                    Color.clear.frame(height: showStartButton ? 90 : 36)
+                    Color.clear.frame(height: 36)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -89,27 +121,69 @@ struct TaskOverviewView: View {
             }
             .scrollDisabled(phase != .ready)
 
+            // Cinematic overlay
             if darkOverlayOpacity > 0 {
-                Color.black
+                ZStack {
+                    Color.black.opacity(darkOverlayOpacity * 0.88)
+                    RadialGradient(
+                        colors: [theme.startColor.opacity(0.12), theme.endColor.opacity(0.04), .clear],
+                        center: .center, startRadius: 40, endRadius: 350
+                    )
                     .opacity(darkOverlayOpacity)
-                    .ignoresSafeArea()
-                    .transition(.opacity)
+                }
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
             }
 
+            // Hero popup overlay
             if showCenteredHero {
-                centeredHeroCard
-                    .padding(.horizontal, 20)
-                    .offset(y: centeredHeroOffsetY)
-                    .scaleEffect(centeredHeroScale)
-                    .rotation3DEffect(.degrees(centeredHeroRotation), axis: (x: 1, y: 0, z: 0), perspective: 0.6)
-                    .opacity(centeredHeroOpacity)
-                    .zIndex(2)
+                popupOverlay {
+                    ZStack {
+                        Ellipse()
+                            .fill(RadialGradient(
+                                colors: [theme.startColor.opacity(0.28), theme.endColor.opacity(0.08), .clear],
+                                center: .center, startRadius: 30, endRadius: 220
+                            ))
+                            .frame(width: 360, height: 280)
+                            .blur(radius: 50)
+                            .opacity(glowIntensity)
+
+                        centeredCardContent
+                            .padding(.horizontal, 24)
+                            .shadow(color: theme.startColor.opacity(0.35 * glowIntensity), radius: 28, x: 0, y: 12)
+                    }
+                    .scaleEffect(heroEntranceScale * heroDockScale)
+                    .rotation3DEffect(.degrees(heroRotationX), axis: (x: 1, y: 0, z: 0), perspective: 0.7)
+                    .opacity(heroEntranceOpacity * heroDockOpacity)
+                    .offset(y: heroDockOffsetY)
+                }
             }
 
-            if showStartButton {
-                startButton
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            // Focus popup overlay
+            if showCenteredFocus {
+                popupOverlay {
+                    focusSectionCard
+                        .padding(.horizontal, 24)
+                        .opacity(focusContentOpacity)
+                        .shadow(color: theme.startColor.opacity(0.2), radius: 20, x: 0, y: 8)
+                        .scaleEffect(focusPopupScale * focusDockScale)
+                        .opacity(focusPopupOpacity * focusDockOpacity)
+                        .offset(y: focusDockOffsetY)
+                }
             }
+
+            // Flow popup overlay
+            if showCenteredFlow {
+                popupOverlay {
+                    flowSectionCard
+                        .padding(.horizontal, 24)
+                        .shadow(color: theme.startColor.opacity(0.2), radius: 20, x: 0, y: 8)
+                        .scaleEffect(flowPopupScale * flowDockScale)
+                        .opacity(flowPopupOpacity * flowDockOpacity)
+                        .offset(y: flowDockOffsetY)
+                }
+            }
+
         }
         .background(AppColors.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
@@ -135,86 +209,198 @@ struct TaskOverviewView: View {
         }
     }
 
-    // MARK: - Hero Card
-    private var centeredHeroCard: some View {
-        heroBanner(isCentered: true)
-            .shadow(color: Color.black.opacity(0.3), radius: 24, x: 0, y: 18)
+    // Shared popup container
+    private func popupOverlay<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack {
+            Spacer()
+            content()
+            Spacer()
+        }
+        .zIndex(10)
     }
 
-    private var dockedHeroCard: some View {
-        heroBanner(isCentered: false)
-            .transition(.move(edge: .top).combined(with: .opacity))
+    // MARK: - Centered Hero Card (Theme-Colored Premium Reveal)
+
+    private var centeredCardContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 6) {
+                        if let lessonContent {
+                            revealChip(lessonContent.topic.stageLabel, delay: 0)
+                            revealChip("Q\(String(format: "%02d", task.id))", delay: 0.05)
+                        } else {
+                            revealChip("Stage \(stage.id)", delay: 0)
+                        }
+                        revealChip(task.questionType, delay: 0.1)
+                    }
+                    Text(task.title)
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                        .opacity(heroTitleOpacity)
+                    Text(task.englishTitle)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .opacity(heroTitleOpacity)
+                }
+                Spacer(minLength: 8)
+                ZStack {
+                    Text(theme.emoji).font(.system(size: 42)).blur(radius: 12).opacity(0.4)
+                    Text(theme.emoji).font(.system(size: 42))
+                }
+                .opacity(heroTitleOpacity)
+            }
+            .padding(.bottom, 18)
+
+            Rectangle()
+                .fill(LinearGradient(colors: [.white.opacity(0.35), .white.opacity(0.08), .clear], startPoint: .leading, endPoint: .trailing))
+                .frame(height: 0.5)
+                .padding(.bottom, 16)
+                .opacity(heroTitleOpacity)
+
+            centeredHeroPromptBlock
+
+            if let lessonContent {
+                HStack(spacing: 8) {
+                    metaPill(icon: "clock", text: lessonContent.practice.targetLength)
+                    metaPill(icon: "doc.text", text: "\(task.sampleAnswers.count) samples")
+                    metaPill(icon: "textformat.abc", text: "\(task.vocabulary.count) vocab")
+                }
+                .opacity(heroMetaOpacity)
+            }
+        }
+        .padding(24)
+        .frame(width: centeredHeroCardWidth, alignment: .leading)
+        .background(centeredCardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(centeredCardBorder)
+        .overlay(centeredCardShimmer)
     }
 
-    @ViewBuilder
-    private func heroBanner(isCentered: Bool) -> some View {
-        if let lessonContent {
-            lessonBanner(lessonContent, isCentered: isCentered)
-        } else {
-            topBanner(isCentered: isCentered)
+    private var centeredCardBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: [theme.startColor.opacity(0.85), theme.startColor, theme.endColor.opacity(0.9)],
+                startPoint: .topLeading, endPoint: .bottomTrailing
+            )
+            GeometryReader { geo in
+                Circle()
+                    .fill(RadialGradient(colors: [.white.opacity(0.18), .clear], center: .center, startRadius: 0, endRadius: 80))
+                    .frame(width: 160, height: 160)
+                    .offset(x: geo.size.width - 60, y: -40)
+                Circle()
+                    .fill(RadialGradient(colors: [.white.opacity(0.1), .clear], center: .center, startRadius: 0, endRadius: 50))
+                    .frame(width: 100, height: 100)
+                    .offset(x: -30, y: geo.size.height - 30)
+                Ellipse()
+                    .fill(RadialGradient(colors: [theme.endColor.opacity(0.2), .clear], center: .center, startRadius: 0, endRadius: 100))
+                    .frame(width: 200, height: 140)
+                    .offset(x: geo.size.width * 0.3, y: geo.size.height * 0.5)
+            }
+            LinearGradient(colors: [.clear, .black.opacity(0.15)], startPoint: .top, endPoint: .bottom)
         }
     }
 
-    private func topBanner(isCentered: Bool) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(theme.softGradient)
+    private var centeredHeroPromptBlock: some View {
+        ZStack(alignment: .topLeading) {
+            Text(task.prompt)
+                .font(.system(size: 15, weight: .regular))
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .hidden()
 
-            GeometryReader { geo in
-                Circle()
-                    .fill(.white.opacity(0.1))
-                    .frame(width: 80)
-                    .offset(x: geo.size.width - 50, y: -15)
-                Circle()
-                    .fill(.white.opacity(0.06))
-                    .frame(width: 50)
-                    .offset(x: -15, y: 55)
+            Text(heroPromptText)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(.white.opacity(0.82))
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .opacity(heroPromptChars > 0 ? 1 : 0)
+        }
+        .padding(.bottom, 18)
+    }
+
+    private var centeredCardBorder: some View {
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .stroke(
+                LinearGradient(colors: [.white.opacity(0.35), .white.opacity(0.12), .white.opacity(0.06), .white.opacity(0.15)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                lineWidth: 0.8
+            )
+    }
+
+    private var centeredCardShimmer: some View {
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .fill(LinearGradient(colors: [.clear, .white.opacity(0.08), .clear], startPoint: .leading, endPoint: .trailing))
+            .offset(x: shimmerOffset)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .allowsHitTesting(false)
+    }
+
+    private func revealChip(_ text: String, delay: Double) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .bold, design: .rounded))
+            .textCase(.uppercase).tracking(0.5)
+            .foregroundStyle(.white.opacity(0.9))
+            .padding(.horizontal, 10).padding(.vertical, 5)
+            .background(.white.opacity(0.18))
+            .clipShape(Capsule())
+            .opacity(contentRevealProgress > delay ? 1 : 0)
+    }
+
+    private func metaPill(icon: String, text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon).font(.system(size: 9, weight: .semibold))
+            Text(text).font(.system(size: 10, weight: .semibold, design: .rounded))
+        }
+        .foregroundStyle(.white.opacity(0.7))
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .background(.white.opacity(0.12))
+        .clipShape(Capsule())
+    }
+
+    // MARK: - Docked Hero Card
+
+    private var dockedCardContent: some View {
+        Group {
+            if let lessonContent {
+                dockedLessonBanner(lessonContent)
+            } else {
+                dockedSimpleBanner
             }
+        }
+    }
 
+    private var dockedSimpleBanner: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20).fill(theme.softGradient)
+            GeometryReader { geo in
+                Circle().fill(.white.opacity(0.1)).frame(width: 80).offset(x: geo.size.width - 50, y: -15)
+                Circle().fill(.white.opacity(0.06)).frame(width: 50).offset(x: -15, y: 55)
+            }
             HStack {
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        lessonChip("Stage \(stage.id)")
-                        lessonChip(task.questionType)
-                    }
-
-                    Text(task.title)
-                        .font(.title3.bold())
-                        .foregroundStyle(.white)
-                        .opacity(isCentered ? (heroTitleVisible ? 1 : 0) : 1)
-
-                    Text(task.englishTitle)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
-                        .opacity(isCentered ? (heroTitleVisible ? 1 : 0) : 1)
+                    HStack(spacing: 8) { lessonChip("Stage \(stage.id)"); lessonChip(task.questionType) }
+                    Text(task.title).font(.title3.bold()).foregroundStyle(.white)
+                    Text(task.englishTitle).font(.caption).foregroundStyle(.white.opacity(0.7))
                 }
-
                 Spacer(minLength: 10)
-                Text(theme.emoji)
-                    .font(.system(size: 34))
+                Text(theme.emoji).font(.system(size: 34))
             }
             .padding(18)
         }
-        .frame(height: 125)
-        .heroShadow()
+        .frame(height: 125).heroShadow()
     }
 
-    private func lessonBanner(_ lesson: LessonContent, isCentered: Bool) -> some View {
+    private func dockedLessonBanner(_ lesson: LessonContent) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24)
-                .fill(theme.softGradient)
-
+            RoundedRectangle(cornerRadius: 24).fill(theme.softGradient)
             GeometryReader { geo in
-                Circle()
-                    .fill(.white.opacity(0.12))
-                    .frame(width: 120)
-                    .offset(x: geo.size.width - 70, y: -30)
-                Circle()
-                    .fill(.white.opacity(0.08))
-                    .frame(width: 64)
-                    .offset(x: -10, y: 92)
+                Circle().fill(.white.opacity(0.12)).frame(width: 120).offset(x: geo.size.width - 70, y: -30)
+                Circle().fill(.white.opacity(0.08)).frame(width: 64).offset(x: -10, y: 92)
             }
-
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -223,24 +409,12 @@ struct TaskOverviewView: View {
                             lessonChip("Q\(String(format: "%02d", task.id))")
                             lessonChip(task.questionType)
                         }
-
-                        Text(task.title)
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .opacity(isCentered ? (heroTitleVisible ? 1 : 0) : 1)
-
-                        Text(isCentered ? heroPromptText : task.prompt)
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.82))
-                            .fixedSize(horizontal: false, vertical: true)
+                        Text(task.title).font(.system(size: 28, weight: .bold, design: .rounded)).foregroundStyle(.white)
+                        Text(task.prompt).font(.subheadline).foregroundStyle(.white.opacity(0.82)).fixedSize(horizontal: false, vertical: true)
                     }
-
                     Spacer(minLength: 12)
-
-                    Text(theme.emoji)
-                        .font(.system(size: 40))
+                    Text(theme.emoji).font(.system(size: 40))
                 }
-
                 HStack(spacing: 10) {
                     lessonMetaPill(icon: "clock.fill", text: lesson.practice.targetLength)
                     lessonMetaPill(icon: "text.quote", text: "\(task.sampleAnswers.count) samples")
@@ -249,35 +423,28 @@ struct TaskOverviewView: View {
             }
             .padding(20)
         }
-        .frame(minHeight: 190)
-        .heroShadow()
+        .frame(minHeight: 190).heroShadow()
     }
 
     private func lessonChip(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 10, weight: .bold, design: .rounded))
+        Text(text).font(.system(size: 10, weight: .bold, design: .rounded))
             .foregroundStyle(.white.opacity(0.82))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(.white.opacity(0.14))
-            .clipShape(Capsule())
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(.white.opacity(0.14)).clipShape(Capsule())
     }
 
     private func lessonMetaPill(icon: String, text: String) -> some View {
         HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 10, weight: .bold))
-            Text(text)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+            Image(systemName: icon).font(.system(size: 10, weight: .bold))
+            Text(text).font(.system(size: 11, weight: .bold, design: .rounded))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(.white.opacity(0.12))
-        .clipShape(Capsule())
+        .padding(.horizontal, 10).padding(.vertical, 7)
+        .background(.white.opacity(0.12)).clipShape(Capsule())
     }
 
-    // MARK: - Focus
+    // MARK: - Focus Section Card
+
     private var focusSectionCard: some View {
         Group {
             if let lessonContent {
@@ -289,33 +456,34 @@ struct TaskOverviewView: View {
     }
 
     private func lessonSummaryCard(_ lesson: LessonContent) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
+        let isPopup = showCenteredFocus
+        return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("学习重点")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+                Text("学习重点").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
                 Text(lesson.practice.targetLength)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08))
-                    .clipShape(Capsule())
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
+            .opacity(isPopup ? focusTitleOpacity : 1)
 
             Text(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondText)
+                .font(.subheadline).foregroundStyle(AppColors.secondText)
                 .fixedSize(horizontal: false, vertical: true)
+                .opacity(isPopup ? focusGoalOpacity : 1)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(lesson.strategy.angles, id: \.title) { angle in
-                        lessonAngleChip(title: angle.title)
+                        Text(angle.title).font(.caption.bold()).foregroundStyle(theme.startColor)
+                            .padding(.horizontal, 12).padding(.vertical, 8)
+                            .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
                     }
                 }
             }
+            .opacity(isPopup ? focusChipsOpacity : 1)
 
             HStack(spacing: 8) {
                 lessonMiniStat(title: "Angles", value: "\(lesson.strategy.angles.count)")
@@ -323,108 +491,74 @@ struct TaskOverviewView: View {
                 lessonMiniStat(title: "Vocab", value: "\(task.vocabulary.count)")
                 lessonMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)")
             }
+            .opacity(isPopup ? focusStatsOpacity : 1)
 
             Divider().background(AppColors.border)
+                .opacity(isPopup ? focusSuggestionOpacity : 1)
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("建议顺序")
-                    .font(.caption.bold())
-                    .foregroundStyle(theme.startColor)
-
+                Text("建议顺序").font(.caption.bold()).foregroundStyle(theme.startColor)
                 Text("先看答题思路，再学词汇和框架，最后对照范文开口练。")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.primaryText)
+                    .font(.subheadline).foregroundStyle(AppColors.primaryText)
             }
+            .opacity(isPopup ? focusSuggestionOpacity : 1)
         }
-        .padding(16)
-        .cardStyle()
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
-
-    private func lessonAngleChip(title: String) -> some View {
-        Text(title)
-            .font(.caption.bold())
-            .foregroundStyle(theme.startColor)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(theme.startColor.opacity(0.08))
-            .clipShape(Capsule())
+        .padding(16).cardStyle()
     }
 
     private func lessonMiniStat(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption2.bold())
-                .foregroundStyle(AppColors.tertiaryText)
-            Text(value)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(AppColors.primaryText)
+            Text(title).font(.caption2.bold()).foregroundStyle(AppColors.tertiaryText)
+            Text(value).font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(AppColors.primaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var fallbackFocusCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        let isPopup = showCenteredFocus
+        return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("学习重点")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+                Text("学习重点").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
                 Text(task.suggestedTime)
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08))
-                    .clipShape(Capsule())
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
-
+            .opacity(isPopup ? focusTitleOpacity : 1)
             Text("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondText)
-
+                .font(.subheadline).foregroundStyle(AppColors.secondText)
+                .opacity(isPopup ? focusGoalOpacity : 1)
             VStack(spacing: 12) {
                 ForEach(Array(task.tips.prefix(3).enumerated()), id: \.offset) { index, tip in
                     HStack(alignment: .top, spacing: 10) {
                         ZStack {
-                            Circle()
-                                .fill(theme.startColor.opacity(0.12))
-                                .frame(width: 26, height: 26)
-                            Text("\(index + 1)")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundStyle(theme.startColor)
+                            Circle().fill(theme.startColor.opacity(0.12)).frame(width: 26, height: 26)
+                            Text("\(index + 1)").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(theme.startColor)
                         }
-
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.primaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-
+                        Text(tip).font(.subheadline).foregroundStyle(AppColors.primaryText).fixedSize(horizontal: false, vertical: true)
                         Spacer()
                     }
                 }
             }
+            .opacity(isPopup ? focusChipsOpacity : 1)
         }
-        .padding(16)
-        .cardStyle()
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .padding(16).cardStyle()
     }
 
-    // MARK: - Flow
+    // MARK: - Flow Section Card
+
     private var flowSectionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("学习流程")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+                Text("学习流程").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
                 Text("\(task.steps.count) steps")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08))
-                    .clipShape(Capsule())
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
             .padding(.bottom, 2)
 
@@ -434,57 +568,42 @@ struct TaskOverviewView: View {
                     if state != .hidden {
                         flowStepRow(step: step, index: index, state: state)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-
                         if index < task.steps.count - 1 {
                             Rectangle()
                                 .fill(connectorColor(for: index))
-                                .frame(width: 2)
-                                .frame(height: 18)
-                                .padding(.leading, 15)
-                                .padding(.vertical, 2)
+                                .frame(width: 2, height: 18)
+                                .padding(.leading, 15).padding(.vertical, 2)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                 }
             }
         }
-        .padding(18)
-        .cardStyle()
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .padding(18).cardStyle()
     }
 
     @ViewBuilder
     private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState) -> some View {
+        let isTappable = phase == .ready && !showCenteredFlow && (state == .unlocked || progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index))
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) {
-                    Circle()
-                        .fill(AppColors.success)
-                        .frame(width: 30, height: 30)
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(.white)
+                    Circle().fill(AppColors.success).frame(width: 30, height: 30)
+                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
                 } else {
                     switch state {
-                    case .hidden:
-                        EmptyView()
+                    case .hidden: EmptyView()
                     case .spinning:
-                        StepSpinnerBadge(number: index + 1, color: step.type.color)
-                            .frame(width: 30, height: 30)
+                        StepSpinnerBadge(number: index + 1, color: step.type.color).frame(width: 30, height: 30)
+                    case .checked:
+                        Circle().fill(AppColors.success).frame(width: 30, height: 30)
+                        Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
                     case .unlocked:
-                        Circle()
-                            .fill(step.type.color.opacity(0.14))
-                            .frame(width: 30, height: 30)
-                        Text("\(index + 1)")
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundStyle(step.type.color)
+                        Circle().fill(step.type.color.opacity(0.14)).frame(width: 30, height: 30)
+                        Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(step.type.color)
                     case .locked:
-                        Circle()
-                            .fill(AppColors.surface)
-                            .frame(width: 30, height: 30)
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(AppColors.tertiaryText)
+                        Circle().fill(AppColors.surface).frame(width: 30, height: 30)
+                        Image(systemName: "lock.fill").font(.system(size: 10, weight: .bold)).foregroundStyle(AppColors.tertiaryText)
                     }
                 }
             }
@@ -492,23 +611,25 @@ struct TaskOverviewView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Image(systemName: step.icon)
-                        .font(.system(size: 10, weight: .bold))
+                    Image(systemName: step.icon).font(.system(size: 10, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
-                    Text(step.title)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
+                    Text(step.title).font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 }
-
-                Text(stepSubtitle(for: step, state: state))
-                    .font(.caption)
-                    .foregroundStyle(AppColors.tertiaryText)
+                Text(stepSubtitle(for: step, state: state)).font(.caption).foregroundStyle(AppColors.tertiaryText)
             }
             .opacity(state == .spinning ? 0.92 : 1)
-
             Spacer()
+            if isTappable {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
         }
         .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isTappable { showLearning = true }
+        }
     }
 
     private func stepDisplayState(at index: Int) -> OverviewStepDisplayState {
@@ -517,128 +638,194 @@ struct TaskOverviewView: View {
     }
 
     private func stepTitleColor(for step: LearningStep, index: Int, state: OverviewStepDisplayState) -> Color {
-        if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) {
-            return AppColors.success
-        }
-
+        if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) { return AppColors.success }
         switch state {
-        case .hidden, .spinning:
-            return step.type.color
-        case .unlocked:
-            return step.type.color
-        case .locked:
-            return AppColors.tertiaryText
+        case .locked: return AppColors.tertiaryText
+        case .checked: return AppColors.success
+        default: return step.type.color
         }
     }
 
     private func stepSubtitle(for step: LearningStep, state: OverviewStepDisplayState) -> String {
-        switch state {
-        case .locked:
-            return "完成前一步后解锁"
-        default:
-            return step.subtitle
-        }
+        state == .locked ? "完成前一步后解锁" : step.subtitle
     }
 
     private func connectorColor(for index: Int) -> Color {
-        if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) {
-            return AppColors.success.opacity(0.28)
-        }
-
+        if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) { return AppColors.success.opacity(0.28) }
         switch stepDisplayState(at: index) {
-        case .unlocked:
-            return theme.startColor.opacity(0.22)
-        case .locked:
-            return AppColors.border.opacity(0.45)
-        case .spinning:
-            return stepDisplayStates.indices.contains(index) ? task.steps[index].type.color.opacity(0.2) : AppColors.border.opacity(0.3)
-        case .hidden:
-            return .clear
+        case .unlocked: return theme.startColor.opacity(0.22)
+        case .checked: return AppColors.success.opacity(0.28)
+        case .locked: return AppColors.border.opacity(0.45)
+        case .spinning: return task.steps[index].type.color.opacity(0.2)
+        case .hidden: return .clear
         }
     }
 
     // MARK: - Reveal Sequence
+
     @MainActor
     private func runRevealSequence() async {
         resetRevealState()
 
+        // ========== HERO CARD POPUP ==========
         phase = .heroEntrance
         showCenteredHero = true
-        withAnimation(.easeOut(duration: 0.18)) {
-            darkOverlayOpacity = 0.74
+        withAnimation(.easeOut(duration: 0.35)) { darkOverlayOpacity = 0.85 }
+        await pause(0.12)
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.spring(duration: 0.85, bounce: 0.12)) {
+            heroEntranceScale = 1.0; heroRotationX = 0; heroEntranceOpacity = 1
         }
-        withAnimation(.spring(duration: 0.72, bounce: 0.16)) {
-            centeredHeroSettled = true
-        }
-        await pause(0.48)
+        withAnimation(.easeInOut(duration: 1.2)) { glowIntensity = 1 }
+        await pause(0.55)
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.easeInOut(duration: 0.8)) { shimmerOffset = 400 }
+        withAnimation(.easeOut(duration: 0.25)) { contentRevealProgress = 1 }
+        await pause(0.2)
         guard !Task.isCancelled else { return }
 
         phase = .heroTitleReveal
-        withAnimation(.easeOut(duration: 0.3)) {
-            heroTitleVisible = true
-        }
-        await pause(0.24)
+        withAnimation(.spring(duration: 0.45, bounce: 0.08)) { heroTitleOpacity = 1 }
+        await pause(0.25)
         guard !Task.isCancelled else { return }
 
         phase = .heroDescriptionReveal
         await typeHeroPrompt()
-        await pause(0.12)
+        await pause(0.1)
         guard !Task.isCancelled else { return }
 
+        withAnimation(.easeOut(duration: 0.3)) { heroMetaOpacity = 1 }
+        await pause(0.6)
+        guard !Task.isCancelled else { return }
+
+        // Hero dock
         phase = .heroDockToTop
-        withAnimation(.spring(duration: 0.7, bounce: 0.12)) {
-            showDockedHero = true
-            centeredHeroDocking = true
+        withAnimation(.spring(duration: 0.7, bounce: 0.08)) {
+            heroDockOffsetY = -300; heroDockScale = 0.65; heroDockOpacity = 0; glowIntensity = 0
         }
-        await pause(0.55)
+        withAnimation(.easeOut(duration: 0.45)) { darkOverlayOpacity = 0 }
+        await pause(0.25)
         guard !Task.isCancelled else { return }
-
+        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedHero = true }
+        await pause(0.4)
+        guard !Task.isCancelled else { return }
         showCenteredHero = false
-        withAnimation(.easeOut(duration: 0.24)) {
-            darkOverlayOpacity = 0
-        }
 
-        phase = .focusReveal
-        withAnimation(.spring(duration: 0.42, bounce: 0.12)) {
-            showFocusSection = true
-        }
-        await pause(0.26)
+        // ========== FOCUS CARD POPUP ==========
+        phase = .focusPopup
+        showCenteredFocus = true
+        withAnimation(.easeOut(duration: 0.3)) { darkOverlayOpacity = 0.72 }
+        await pause(0.1)
         guard !Task.isCancelled else { return }
 
-        phase = .flowReveal
-        withAnimation(.spring(duration: 0.42, bounce: 0.12)) {
-            showFlowSection = true
+        // Focus card enters
+        withAnimation(.spring(duration: 0.65, bounce: 0.12)) {
+            focusPopupScale = 1.0; focusPopupOpacity = 1
         }
-        await pause(0.14)
+        await pause(0.3)
         guard !Task.isCancelled else { return }
 
-        phase = .stepProgression
-        await runStepProgression()
+        // Staggered content reveal — section by section
+        withAnimation(.easeOut(duration: 0.4)) { focusContentOpacity = 1 }
+        // Title row
+        withAnimation(.easeOut(duration: 0.5)) { focusTitleOpacity = 1 }
+        await pause(0.4)
+        guard !Task.isCancelled else { return }
+        // Goal / description
+        withAnimation(.easeOut(duration: 0.6)) { focusGoalOpacity = 1 }
+        await pause(0.45)
+        guard !Task.isCancelled else { return }
+        // Angle chips
+        withAnimation(.easeOut(duration: 0.5)) { focusChipsOpacity = 1 }
+        await pause(0.4)
+        guard !Task.isCancelled else { return }
+        // Stats
+        withAnimation(.easeOut(duration: 0.5)) { focusStatsOpacity = 1 }
+        await pause(0.35)
+        guard !Task.isCancelled else { return }
+        // Suggestion
+        withAnimation(.easeOut(duration: 0.5)) { focusSuggestionOpacity = 1 }
+        // Stabilization pause
+        await pause(1.2)
         guard !Task.isCancelled else { return }
 
-        phase = .ready
-        withAnimation(.spring(duration: 0.45, bounce: 0.12)) {
-            showStartButton = true
+        // Focus dock
+        phase = .focusDock
+        withAnimation(.spring(duration: 0.65, bounce: 0.08)) {
+            focusDockOffsetY = -280; focusDockScale = 0.7; focusDockOpacity = 0
         }
-    }
+        withAnimation(.easeOut(duration: 0.4)) { darkOverlayOpacity = 0 }
+        await pause(0.2)
+        guard !Task.isCancelled else { return }
+        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedFocus = true }
+        await pause(0.35)
+        guard !Task.isCancelled else { return }
+        showCenteredFocus = false
 
-    @MainActor
-    private func runStepProgression() async {
+        // ========== FLOW CARD POPUP (with step spinning) ==========
+        phase = .flowPopup
+        showCenteredFlow = true
+        // Pre-init all steps as hidden so the card shell shows
         stepDisplayStates = Array(repeating: .hidden, count: task.steps.count)
+
+        withAnimation(.easeOut(duration: 0.3)) { darkOverlayOpacity = 0.72 }
+        await pause(0.1)
+        guard !Task.isCancelled else { return }
+
+        // Flow card enters
+        withAnimation(.spring(duration: 0.65, bounce: 0.12)) {
+            flowPopupScale = 1.0; flowPopupOpacity = 1
+        }
+        await pause(0.35)
+        guard !Task.isCancelled else { return }
+
+        // Steps spin one by one, each becomes checkmark when done
+        phase = .flowStepSpin
         for index in task.steps.indices {
             guard !Task.isCancelled else { return }
-
-            withAnimation(.spring(duration: 0.36, bounce: 0.16)) {
+            // Start spinning
+            withAnimation(.spring(duration: 0.4, bounce: 0.16)) {
                 stepDisplayStates[index] = .spinning
             }
-            await pause(index == 0 ? 0.42 : 0.32)
+            await pause(0.6)
             guard !Task.isCancelled else { return }
+            // Settle to checkmark
+            withAnimation(.spring(duration: 0.35, bounce: 0.2)) {
+                stepDisplayStates[index] = .checked
+            }
+            await pause(0.2)
+        }
+        guard !Task.isCancelled else { return }
 
-            withAnimation(.spring(duration: 0.42, bounce: 0.14)) {
+        // Brief stabilization with all checkmarks visible
+        await pause(0.8)
+        guard !Task.isCancelled else { return }
+
+        // Flow dock
+        phase = .flowDock
+        withAnimation(.spring(duration: 0.65, bounce: 0.08)) {
+            flowDockOffsetY = -280; flowDockScale = 0.7; flowDockOpacity = 0
+        }
+        withAnimation(.easeOut(duration: 0.4)) { darkOverlayOpacity = 0 }
+        await pause(0.2)
+        guard !Task.isCancelled else { return }
+        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedFlow = true }
+        await pause(0.2)
+        guard !Task.isCancelled else { return }
+        showCenteredFlow = false
+        // Switch from checkmarks to actual progress (locked/unlocked)
+        withAnimation(.spring(duration: 0.45, bounce: 0.15)) {
+            for index in task.steps.indices {
                 stepDisplayStates[index] = settledStepState(for: index)
             }
-            await pause(0.14)
         }
+        await pause(0.3)
+        guard !Task.isCancelled else { return }
+
+        // ========== READY ==========
+        phase = .ready
     }
 
     private func settledStepState(for index: Int) -> OverviewStepDisplayState {
@@ -651,9 +838,8 @@ struct TaskOverviewView: View {
     private func typeHeroPrompt() async {
         let characters = Array(task.prompt)
         guard !characters.isEmpty else { return }
-        let totalDuration = min(0.82, max(0.48, Double(characters.count) * 0.018))
+        let totalDuration = min(1.0, max(0.5, Double(characters.count) * 0.02))
         let interval = totalDuration / Double(characters.count)
-
         for index in characters.indices {
             guard !Task.isCancelled else { return }
             heroPromptChars = index + 1
@@ -662,75 +848,36 @@ struct TaskOverviewView: View {
     }
 
     private func resetRevealState() {
-        phase = .heroEntrance
-        showCenteredHero = false
-        centeredHeroSettled = false
-        centeredHeroDocking = false
+        phase = .idle
         darkOverlayOpacity = 0
-        heroTitleVisible = false
-        heroPromptChars = 0
-        showDockedHero = false
-        showFocusSection = false
-        showFlowSection = false
+        // Hero
+        showCenteredHero = false
+        heroEntranceScale = 0.5; heroRotationX = 45; heroEntranceOpacity = 0
+        heroDockOffsetY = 0; heroDockScale = 1.0; heroDockOpacity = 1.0
+        contentRevealProgress = 0; heroTitleOpacity = 0; heroPromptChars = 0; heroMetaOpacity = 0
+        glowIntensity = 0; shimmerOffset = -200
+        // Focus
+        showCenteredFocus = false
+        focusPopupScale = 0.6; focusPopupOpacity = 0; focusContentOpacity = 0
+        focusDockOffsetY = 0; focusDockScale = 1.0; focusDockOpacity = 1.0
+        focusTitleOpacity = 0; focusGoalOpacity = 0; focusChipsOpacity = 0
+        focusStatsOpacity = 0; focusSuggestionOpacity = 0
+        // Flow
+        showCenteredFlow = false
+        flowPopupScale = 0.6; flowPopupOpacity = 0
+        flowDockOffsetY = 0; flowDockScale = 1.0; flowDockOpacity = 1.0
         stepDisplayStates = Array(repeating: .hidden, count: task.steps.count)
-        showStartButton = false
+        // Docked
+        showDockedHero = false; showDockedFocus = false; showDockedFlow = false
     }
 
     private func pause(_ seconds: Double) async {
-        let nanos = UInt64(seconds * 1_000_000_000)
-        try? await Task.sleep(nanoseconds: nanos)
+        try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 
-    // MARK: - CTA
-    private var startButton: some View {
-        let currentStep = progress.currentStepIndex(
-            stageId: stage.id,
-            taskId: task.id,
-            totalSteps: task.steps.count
-        )
-        let taskDone = currentStep >= task.steps.count
-        let label = taskDone ? "Review Again" : (currentStep > 0 ? "Continue Learning" : "Start Learning")
-        let icon = taskDone ? "arrow.counterclockwise" : "arrow.right"
-
-        return VStack(spacing: 0) {
-            LinearGradient(
-                colors: [AppColors.background.opacity(0), AppColors.background],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 24)
-
-            Button {
-                showLearning = true
-            } label: {
-                HStack(spacing: 8) {
-                    Text(label)
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                    Image(systemName: icon)
-                        .font(.system(size: 12, weight: .bold))
-                }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(theme.gradient)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(.white.opacity(0.2), lineWidth: 1)
-                )
-                .shadow(color: theme.startColor.opacity(0.35), radius: 16, x: 0, y: 8)
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 10)
-            .background(AppColors.background)
-            .opacity(showStartButton ? 1 : 0)
-            .scaleEffect(showStartButton ? 1 : 0.94)
-        }
-    }
 }
 
-// MARK: - Step Spinner Badge (spinning number)
+// MARK: - Step Spinner Badge
 struct StepSpinnerBadge: View {
     let number: Int
     let color: Color
@@ -739,20 +886,14 @@ struct StepSpinnerBadge: View {
 
     var body: some View {
         ZStack {
-            Circle()
-                .stroke(color.opacity(0.15), lineWidth: 2.5)
-
+            Circle().stroke(color.opacity(0.15), lineWidth: 2.5)
             Circle()
                 .trim(from: 0, to: 0.35)
                 .stroke(
-                    AngularGradient(
-                        colors: [color.opacity(0.05), color],
-                        center: .center
-                    ),
+                    AngularGradient(colors: [color.opacity(0.05), color], center: .center),
                     style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                 )
                 .rotationEffect(.degrees(rotation))
-
             Text("\(number)")
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundStyle(color)
@@ -760,12 +901,8 @@ struct StepSpinnerBadge: View {
                 .opacity(numberVisible ? 1 : 0)
         }
         .onAppear {
-            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
-                rotation = 360
-            }
-            withAnimation(.spring(duration: 0.4, bounce: 0.3).delay(0.1)) {
-                numberVisible = true
-            }
+            withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) { rotation = 360 }
+            withAnimation(.spring(duration: 0.4, bounce: 0.3).delay(0.1)) { numberVisible = true }
         }
     }
 }
