@@ -8,6 +8,7 @@ struct LearningFlowView: View {
     let task: SpeakingTask
 
     @State private var currentStep: Int
+    @State private var stepTransitionDirection: Edge = .trailing
 
     private var theme: StageTheme { stage.theme }
     private var steps: [LearningStep] { task.steps }
@@ -16,6 +17,11 @@ struct LearningFlowView: View {
         self.stage = stage
         self.task = task
         _currentStep = State(initialValue: 0)
+    }
+
+    private func isStepUnlocked(_ index: Int) -> Bool {
+        if index == 0 { return true }
+        return progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index - 1)
     }
 
     var body: some View {
@@ -28,9 +34,14 @@ struct LearningFlowView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(steps[currentStep].title)
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primaryText)
+                HStack(spacing: 8) {
+                    Image(systemName: steps[currentStep].icon)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(steps[currentStep].type.color)
+                    Text(steps[currentStep].title)
+                        .font(.headline)
+                        .foregroundStyle(AppColors.primaryText)
+                }
             }
         }
         .onAppear { syncCurrentStep() }
@@ -46,42 +57,148 @@ struct LearningFlowView: View {
         currentStep = min(saved, steps.count - 1)
     }
 
-    // MARK: - Step Indicator
+    // MARK: - Step Indicator (Enhanced)
     private var stepIndicator: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 4) {
             ForEach(0..<steps.count, id: \.self) { index in
-                Capsule()
-                    .fill(
-                        index < currentStep
-                            ? AppColors.success
-                            : index == currentStep
-                                ? theme.startColor
-                                : AppColors.border
-                    )
-                    .frame(height: 4)
-                    .onTapGesture { withAnimation(.spring(duration: 0.35)) { currentStep = index } }
+                let isCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index)
+                let isCurrent = index == currentStep
+                let isLocked = !isStepUnlocked(index)
+
+                Button {
+                    guard !isLocked else { return }
+                    let dir: Edge = index > currentStep ? .trailing : .leading
+                    stepTransitionDirection = dir
+                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                        currentStep = index
+                    }
+                } label: {
+                    VStack(spacing: 4) {
+                        ZStack {
+                            if isCompleted {
+                                Circle()
+                                    .fill(AppColors.success)
+                                    .frame(width: 22, height: 22)
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(.white)
+                            } else if isCurrent {
+                                Circle()
+                                    .fill(steps[index].type.color)
+                                    .frame(width: 22, height: 22)
+                                Text("\(index + 1)")
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.white)
+                            } else if isLocked {
+                                Circle()
+                                    .fill(AppColors.border.opacity(0.5))
+                                    .frame(width: 22, height: 22)
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            } else {
+                                Circle()
+                                    .strokeBorder(steps[index].type.color.opacity(0.4), lineWidth: 1.5)
+                                    .frame(width: 22, height: 22)
+                                Text("\(index + 1)")
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundStyle(steps[index].type.color.opacity(0.6))
+                            }
+                        }
+
+                        RoundedRectangle(cornerRadius: 1.5)
+                            .fill(
+                                isCurrent
+                                    ? steps[index].type.color
+                                    : isCompleted
+                                        ? AppColors.success
+                                        : Color.clear
+                            )
+                            .frame(height: 3)
+                    }
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+                .opacity(isLocked ? 0.5 : 1)
+                .animation(.spring(duration: 0.3), value: currentStep)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
         .background(AppColors.card)
     }
 
-    // MARK: - Step Content
+    // MARK: - Step Content (locked steps show lock overlay)
     private var stepContent: some View {
         TabView(selection: $currentStep) {
             ForEach(0..<steps.count, id: \.self) { index in
-                ScrollView(showsIndicators: false) {
-                    stepView(for: steps[index].type)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 0)
-                        .padding(.bottom, 100)
+                Group {
+                    if isStepUnlocked(index) {
+                        ScrollView(showsIndicators: false) {
+                            stepView(for: steps[index].type)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 4)
+                                .padding(.bottom, 100)
+                        }
+                    } else {
+                        lockedStepOverlay(step: steps[index], index: index)
+                    }
                 }
                 .tag(index)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-        .animation(.spring(duration: 0.35), value: currentStep)
+        .animation(.spring(duration: 0.4, bounce: 0.12), value: currentStep)
+    }
+
+    private func lockedStepOverlay(step: LearningStep, index: Int) -> some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(step.type.color.opacity(0.08))
+                    .frame(width: 100, height: 100)
+                Circle()
+                    .fill(step.type.color.opacity(0.05))
+                    .frame(width: 70, height: 70)
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(step.type.color.opacity(0.4))
+            }
+
+            VStack(spacing: 8) {
+                Text(step.title)
+                    .font(.title3.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Text("Complete Step \(index) to unlock")
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+
+            Button {
+                stepTransitionDirection = .leading
+                withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                    currentStep = index - 1
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "chevron.left")
+                        .font(.caption.bold())
+                    Text("Go to Step \(index)")
+                        .font(.subheadline.bold())
+                }
+                .foregroundStyle(step.type.color)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(step.type.color.opacity(0.1))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+        }
     }
 
     @ViewBuilder
@@ -97,47 +214,78 @@ struct LearningFlowView: View {
         }
     }
 
-    // MARK: - Bottom Bar
+    // MARK: - Bottom Bar (Enhanced with step locking)
     private var bottomBar: some View {
-        HStack(spacing: 12) {
+        let isCurrentCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: currentStep)
+        let isLastStep = currentStep == steps.count - 1
+
+        return HStack(spacing: 12) {
             if currentStep > 0 {
                 Button {
-                    withAnimation(.spring(duration: 0.35)) { currentStep -= 1 }
+                    stepTransitionDirection = .leading
+                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                        currentStep -= 1
+                    }
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "chevron.left")
-                            .font(.caption.bold())
+                            .font(.system(size: 11, weight: .bold))
                         Text("Back")
-                            .font(.subheadline.bold())
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(AppColors.secondText)
-                    .frame(height: 48)
+                    .frame(height: 50)
                     .frame(maxWidth: .infinity)
                     .background(AppColors.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
 
             Button {
                 markCurrentComplete()
-                if currentStep < steps.count - 1 {
-                    withAnimation(.spring(duration: 0.35)) { currentStep += 1 }
-                } else {
+                if isLastStep {
                     finishTask()
+                } else {
+                    stepTransitionDirection = .trailing
+                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                        currentStep += 1
+                    }
                 }
             } label: {
-                HStack(spacing: 5) {
-                    Text(currentStep < steps.count - 1 ? "Next" : "Complete")
-                        .font(.subheadline.bold())
-                    Image(systemName: currentStep < steps.count - 1 ? "chevron.right" : "checkmark")
-                        .font(.caption.bold())
+                HStack(spacing: 6) {
+                    if !isCurrentCompleted {
+                        Image(systemName: "checkmark.circle")
+                            .font(.system(size: 13, weight: .bold))
+                    }
+                    Text(
+                        isLastStep
+                            ? "Complete"
+                            : isCurrentCompleted
+                                ? "Next"
+                                : "Mark Complete & Next"
+                    )
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                    Image(systemName: isLastStep ? "checkmark" : "chevron.right")
+                        .font(.system(size: 11, weight: .bold))
                 }
                 .foregroundStyle(.white)
-                .frame(height: 48)
+                .frame(height: 50)
                 .frame(maxWidth: .infinity)
-                .background(theme.gradient)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .background(
+                    isLastStep
+                        ? AnyShapeStyle(
+                            LinearGradient(
+                                colors: [AppColors.success, AppColors.success.opacity(0.8)],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                        )
+                        : AnyShapeStyle(theme.gradient)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                .shadow(color: (isLastStep ? AppColors.success : theme.startColor).opacity(0.3), radius: 10, x: 0, y: 4)
             }
             .buttonStyle(.plain)
         }
@@ -160,7 +308,7 @@ struct LearningFlowView: View {
     }
 }
 
-// MARK: - Step Hero Header
+// MARK: - Step Hero Header (Enhanced with shimmer and depth)
 struct StepHeroHeader: View {
     let icon: String
     let title: String
@@ -169,58 +317,94 @@ struct StepHeroHeader: View {
     let accentColor: Color
     var secondaryColor: Color? = nil
 
+    @State private var shimmer = false
+
     private var endColor: Color { secondaryColor ?? accentColor.opacity(0.7) }
 
     var body: some View {
         ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [accentColor, endColor],
+                        colors: [accentColor, endColor, accentColor.opacity(0.85)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
 
-            // Decorative
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(
+                    RadialGradient(
+                        colors: [.white.opacity(0.15), .clear],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: 200
+                    )
+                )
+
             GeometryReader { geo in
                 Circle()
-                    .fill(.white.opacity(0.08))
-                    .frame(width: 80)
-                    .offset(x: geo.size.width - 50, y: -25)
+                    .fill(.white.opacity(0.1))
+                    .frame(width: 100)
+                    .blur(radius: 1)
+                    .offset(x: geo.size.width - 55, y: -30)
                 Circle()
-                    .fill(.white.opacity(0.05))
-                    .frame(width: 55)
-                    .offset(x: geo.size.width - 20, y: 40)
+                    .fill(.white.opacity(0.06))
+                    .frame(width: 65)
+                    .offset(x: geo.size.width - 20, y: 45)
+                Circle()
+                    .fill(accentColor.opacity(0.2))
+                    .frame(width: 40)
+                    .blur(radius: 12)
+                    .offset(x: -10, y: geo.size.height - 20)
             }
 
             HStack {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(english.uppercased())
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
-                        .tracking(1.2)
+                        .font(.system(size: 10, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.65))
+                        .tracking(1.5)
 
                     Text(title)
-                        .font(.title3.bold())
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
 
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(.white.opacity(0.75))
                         .lineLimit(2)
                 }
 
                 Spacer()
 
-                Image(systemName: icon)
-                    .font(.system(size: 30, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.25))
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.1))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: icon)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .symbolEffect(.pulse, options: .repeating.speed(0.5))
+                }
             }
-            .padding(18)
+            .padding(20)
         }
-        .frame(height: 110)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .frame(height: 120)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [.white.opacity(0.25), .white.opacity(0.05)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 0.8
+                )
+        )
+        .shadow(color: accentColor.opacity(0.2), radius: 12, x: 0, y: 6)
     }
 }
 
@@ -231,14 +415,18 @@ struct LessonStepHeader: View {
     let accentColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(label.uppercased())
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .heavy, design: .rounded))
                 .foregroundStyle(accentColor)
-                .tracking(1.1)
+                .tracking(1.3)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(accentColor.opacity(0.08))
+                .clipShape(Capsule())
 
             Text(title)
-                .font(.title3.bold())
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(AppColors.primaryText)
 
             Text(subtitle)
@@ -251,7 +439,7 @@ struct LessonStepHeader: View {
     }
 }
 
-// MARK: - Staggered Animation Modifier
+// MARK: - Staggered Animation Modifier (Enhanced)
 struct StaggeredAppear: ViewModifier {
     let index: Int
     let appeared: Bool
@@ -259,9 +447,10 @@ struct StaggeredAppear: ViewModifier {
     func body(content: Content) -> some View {
         content
             .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 18)
+            .offset(y: appeared ? 0 : 22)
+            .scaleEffect(appeared ? 1 : 0.97, anchor: .top)
             .animation(
-                .spring(response: 0.5, dampingFraction: 0.78).delay(0.06 * Double(index) + 0.1),
+                .spring(response: 0.55, dampingFraction: 0.8).delay(0.07 * Double(index) + 0.08),
                 value: appeared
             )
     }
@@ -496,6 +685,13 @@ private enum VocabCategory: String, CaseIterable {
         case .extended: "扩展词汇"
         }
     }
+
+    var icon: String {
+        switch self {
+        case .core: "textbook.fill"
+        case .extended: "sparkles"
+        }
+    }
 }
 
 private enum VocabViewMode: String, CaseIterable {
@@ -620,7 +816,7 @@ struct VocabularyStepView: View {
         .onAppear { appeared = true }
     }
 
-    // MARK: - Flashcard View
+    // MARK: - Flashcard View (Enhanced 3D flip)
     private var flashcardView: some View {
         let items = currentFlashcardItems
         guard !items.isEmpty else {
@@ -634,19 +830,17 @@ struct VocabularyStepView: View {
         let item = items[flashcardIndex % items.count]
 
         return AnyView(
-            VStack(spacing: 16) {
-                // Card
+            VStack(spacing: 18) {
                 Button {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.72)) {
                         flashcardFlipped.toggle()
                     }
                 } label: {
                     ZStack {
                         if !flashcardFlipped {
-                            // Front: word + phonetic
-                            VStack(spacing: 12) {
+                            VStack(spacing: 14) {
                                 Text(item.word)
-                                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                                    .font(.system(size: 30, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppColors.primaryText)
 
                                 if !item.phonetic.isEmpty {
@@ -659,19 +853,21 @@ struct VocabularyStepView: View {
                                     .font(.system(size: 11, weight: .bold, design: .rounded))
                                     .foregroundStyle(item.band.color)
                                     .padding(.horizontal, 10)
-                                    .padding(.vertical, 4)
-                                    .background(item.band.color.opacity(0.12))
+                                    .padding(.vertical, 5)
+                                    .background(item.band.color.opacity(0.1))
                                     .clipShape(Capsule())
 
-                                Spacer().frame(height: 8)
+                                Spacer().frame(height: 6)
 
-                                Text("tap to flip")
-                                    .font(.caption2)
-                                    .foregroundStyle(AppColors.tertiaryText)
+                                HStack(spacing: 4) {
+                                    Image(systemName: "hand.tap.fill")
+                                        .font(.system(size: 10))
+                                    Text("tap to flip")
+                                        .font(.caption2)
+                                }
+                                .foregroundStyle(AppColors.tertiaryText.opacity(0.7))
                             }
-                            .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
                         } else {
-                            // Back: meaning + example
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     Text(item.word)
@@ -684,8 +880,8 @@ struct VocabularyStepView: View {
                                         Image(systemName: "speaker.wave.2.fill")
                                             .font(.system(size: 14))
                                             .foregroundStyle(item.band.color)
-                                            .frame(width: 32, height: 32)
-                                            .background(item.band.color.opacity(0.12))
+                                            .frame(width: 34, height: 34)
+                                            .background(item.band.color.opacity(0.1))
                                             .clipShape(Circle())
                                     }
                                     .buttonStyle(.plain)
@@ -714,6 +910,7 @@ struct VocabularyStepView: View {
                                         .font(.subheadline)
                                         .foregroundStyle(AppColors.primaryText)
                                         .italic()
+                                        .lineSpacing(3)
                                 }
 
                                 if !item.exampleTranslation.isEmpty {
@@ -723,31 +920,33 @@ struct VocabularyStepView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .rotation3DEffect(.degrees(0), axis: (x: 0, y: 1, z: 0))
                         }
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(minHeight: 220)
-                    .padding(24)
+                    .frame(minHeight: 240)
+                    .padding(26)
                     .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .stroke(
-                                flashcardFlipped ? item.band.color.opacity(0.2) : AppColors.border.opacity(0.5),
-                                lineWidth: 1.5
+                                flashcardFlipped
+                                    ? item.band.color.opacity(0.2)
+                                    : AppColors.border.opacity(0.4),
+                                lineWidth: 1
                             )
                     )
-                    .shadow(color: accentColor.opacity(0.1), radius: 16, x: 0, y: 8)
                     .rotation3DEffect(
-                        .degrees(flashcardFlipped ? 0 : 0),
-                        axis: (x: 0, y: 1, z: 0)
+                        .degrees(flashcardFlipped ? 180 : 0),
+                        axis: (x: 0, y: 1, z: 0),
+                        perspective: 0.5
                     )
+                    .shadow(color: accentColor.opacity(0.12), radius: 18, x: 0, y: 10)
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                 }
                 .buttonStyle(.plain)
 
-                // Navigation
-                HStack(spacing: 16) {
+                HStack(spacing: 18) {
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             flashcardFlipped = false
@@ -755,18 +954,19 @@ struct VocabularyStepView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.subheadline.bold())
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(AppColors.secondText)
-                            .frame(width: 44, height: 44)
+                            .frame(width: 46, height: 46)
                             .background(AppColors.surface)
                             .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
                     }
                     .buttonStyle(.plain)
 
                     Text("\(flashcardIndex % items.count + 1) / \(items.count)")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.secondText)
-                        .frame(minWidth: 50)
+                        .frame(minWidth: 60)
 
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -775,11 +975,12 @@ struct VocabularyStepView: View {
                         }
                     } label: {
                         Image(systemName: "chevron.right")
-                            .font(.subheadline.bold())
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(.white)
-                            .frame(width: 44, height: 44)
+                            .frame(width: 46, height: 46)
                             .background(accentColor)
                             .clipShape(Circle())
+                            .shadow(color: accentColor.opacity(0.25), radius: 6, x: 0, y: 3)
                     }
                     .buttonStyle(.plain)
                 }
@@ -801,6 +1002,8 @@ struct VocabularyStepView: View {
                     }
                 } label: {
                     HStack(spacing: 6) {
+                        Image(systemName: category.icon)
+                            .font(.system(size: 12, weight: .bold))
                         Text(category.title)
                             .font(.subheadline.bold())
                         Text("\(count)")
@@ -899,12 +1102,14 @@ struct VocabCardView: View {
     let onShowMeaning: () -> Void
     let onPronounce: () -> Void
 
+    @State private var isPressed = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 7) {
                     Text(item.word)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
 
                     HStack(spacing: 8) {
@@ -919,7 +1124,7 @@ struct VocabCardView: View {
                             .foregroundStyle(item.band.color)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(item.band.color.opacity(0.12))
+                            .background(item.band.color.opacity(0.1))
                             .clipShape(Capsule())
                     }
                 }
@@ -929,12 +1134,14 @@ struct VocabCardView: View {
                 Button {
                     onPronounce()
                 } label: {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(item.band.color)
-                        .frame(width: 34, height: 34)
-                        .background(item.band.color.opacity(0.12))
-                        .clipShape(Circle())
+                    ZStack {
+                        Circle()
+                            .fill(item.band.color.opacity(0.1))
+                            .frame(width: 38, height: 38)
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(item.band.color)
+                    }
                 }
                 .buttonStyle(.plain)
             }
@@ -947,12 +1154,12 @@ struct VocabCardView: View {
                         Image(systemName: "book.closed.fill")
                             .font(.system(size: 11, weight: .bold))
                         Text("释义")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(item.band.color)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(item.band.color.opacity(0.12))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(item.band.color.opacity(0.1))
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -971,14 +1178,24 @@ struct VocabCardView: View {
                 }
             }
         }
-        .padding(14)
+        .padding(16)
         .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(item.band.color.opacity(0.16), lineWidth: 1)
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(item.band.color.opacity(0.4))
+                    .frame(width: 3)
+                Spacer()
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         )
-        .cardShadow()
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(item.band.color.opacity(0.12), lineWidth: 0.8)
+        )
+        .shadow(color: item.band.color.opacity(0.08), radius: 10, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -1187,21 +1404,24 @@ struct PhraseCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Top: number + phrase + speak button
             HStack(alignment: .top, spacing: 12) {
-                // Left color bar + number
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(accentColor.opacity(0.12))
-                        .frame(width: 32, height: 32)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [accentColor.opacity(0.15), accentColor.opacity(0.08)],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 34, height: 34)
                     Text("\(index)")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(accentColor)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(phrase.phrase)
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
 
                     if let meaning = phrase.meaning {
@@ -1216,29 +1436,35 @@ struct PhraseCard: View {
                 Button {
                     WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46, sourceLabel: "Phrase")
                 } label: {
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(accentColor)
-                        .frame(width: 32, height: 32)
-                        .background(accentColor.opacity(0.1))
-                        .clipShape(Circle())
+                    ZStack {
+                        Circle()
+                            .fill(accentColor.opacity(0.1))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(accentColor)
+                    }
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 12)
 
-            // Example: tap to reveal
             Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.82)) {
                     exampleVisible.toggle()
                 }
             } label: {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 6) {
                         Image(systemName: exampleVisible ? "eye.fill" : "eye.slash")
                             .font(.system(size: 10, weight: .bold))
+                            .rotationEffect(.degrees(exampleVisible ? 0 : -10))
                         Text(exampleVisible ? "Example" : "Tap to see example")
                             .font(.caption.bold())
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 9, weight: .bold))
+                            .rotationEffect(.degrees(exampleVisible ? 180 : 0))
                     }
                     .foregroundStyle(accentColor.opacity(0.7))
 
@@ -1254,8 +1480,11 @@ struct PhraseCard: View {
                                 .font(.subheadline)
                                 .foregroundStyle(AppColors.secondText)
                                 .italic()
-                                .lineSpacing(3)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                .lineSpacing(4)
+                                .transition(.asymmetric(
+                                    insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
+                                    removal: .opacity
+                                ))
                         }
 
                         if let nativeNote = phrase.nativeNote {
@@ -1263,30 +1492,36 @@ struct PhraseCard: View {
                                 .font(.caption)
                                 .foregroundStyle(AppColors.tertiaryText)
                                 .lineSpacing(2)
-                                .transition(.opacity.combined(with: .move(edge: .top)))
+                                .transition(.opacity)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(10)
-                .background(accentColor.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(12)
+                .background(accentColor.opacity(exampleVisible ? 0.06 : 0.03))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
         }
-        .padding(14)
+        .padding(16)
         .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             HStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(accentColor.opacity(0.5))
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [accentColor.opacity(0.6), accentColor.opacity(0.3)],
+                            startPoint: .top, endPoint: .bottom
+                        )
+                    )
                     .frame(width: 3)
                 Spacer()
             }
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         )
-        .cardShadow()
+        .shadow(color: accentColor.opacity(0.08), radius: 10, x: 0, y: 4)
+        .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -1526,38 +1761,48 @@ struct FrameworkSentenceCard: View {
     let isLast: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Left: number + connector
+        HStack(alignment: .top, spacing: 14) {
             VStack(spacing: 0) {
                 ZStack {
                     Circle()
-                        .fill(accentColor)
-                        .frame(width: 28, height: 28)
+                        .fill(
+                            LinearGradient(
+                                colors: [accentColor, accentColor.opacity(0.7)],
+                                startPoint: .topLeading, endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 30, height: 30)
+                        .shadow(color: accentColor.opacity(0.25), radius: 4, x: 0, y: 2)
                     Text("\(index)")
-                        .font(.caption.bold())
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                 }
                 if !isLast {
                     Rectangle()
-                        .fill(accentColor.opacity(0.15))
+                        .fill(
+                            LinearGradient(
+                                colors: [accentColor.opacity(0.2), accentColor.opacity(0.08)],
+                                startPoint: .top, endPoint: .bottom
+                            )
+                        )
                         .frame(width: 2)
                         .frame(maxHeight: .infinity)
                 }
             }
-            .frame(width: 28)
+            .frame(width: 30)
 
-            // Right: label + sentence with fill-in highlights
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(label)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
                     .foregroundStyle(accentColor)
+                    .tracking(0.5)
 
                 highlightedSentence(sentence)
                     .font(.subheadline)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .padding(.vertical, 2)
-            .padding(.bottom, isLast ? 0 : 10)
+            .padding(.vertical, 3)
+            .padding(.bottom, isLast ? 0 : 12)
         }
     }
 

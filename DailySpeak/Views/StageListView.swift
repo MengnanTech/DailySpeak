@@ -188,11 +188,11 @@ struct StageListView: View {
         }
     }
 
-    // MARK: - Stage Carousel
+    // MARK: - Stage Carousel (Pseudo-3D)
     private var stageCarousel: some View {
         GeometryReader { geo in
-            let sidePeek = min(18, max(10, geo.size.width * 0.045))
-            let itemSpacing = min(8, max(5, geo.size.width * 0.016))
+            let sidePeek = min(24, max(12, geo.size.width * 0.06))
+            let itemSpacing: CGFloat = min(10, max(6, geo.size.width * 0.018))
             let cardWidth = max(0, geo.size.width - sidePeek * 2)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -204,25 +204,37 @@ struct StageListView: View {
                             onTaskTap: { selectedTask = $0 }
                         )
                         .frame(width: cardWidth)
-                        .scrollTransition(.animated(.spring(response: 0.6, dampingFraction: 0.72))) { content, phase in
-                            content
-                                .opacity(1 - min(0.22, abs(phase.value) * 0.22))
-                                .scaleEffect(max(0.985, 1 - abs(phase.value) * 0.015))
-                                .saturation(1 - min(0.12, abs(phase.value) * 0.12))
-                                .brightness(-min(0.04, abs(phase.value) * 0.04))
+                        .scrollTransition(.animated(.spring(response: 0.5, dampingFraction: 0.78))) { content, phase in
+                            let p = phase.value
+                            let absP = min(abs(p), 1.0)
+                            return content
+                                .opacity(1 - absP * 0.35)
+                                .scaleEffect(
+                                    x: 1 - absP * 0.08,
+                                    y: 1 - absP * 0.12,
+                                    anchor: p > 0 ? .leading : .trailing
+                                )
+                                .rotation3DEffect(
+                                    .degrees(-p * 25),
+                                    axis: (x: 0.08, y: 1, z: 0.02),
+                                    anchor: p > 0 ? .leading : .trailing,
+                                    perspective: 0.4
+                                )
+                                .offset(y: absP * 12)
+                                .blur(radius: absP * 1.5)
                         }
                         .id(stage.id)
                     }
                 }
                 .scrollTargetLayout()
-                .padding(.vertical, 24)
+                .padding(.vertical, 28)
             }
             .contentMargins(.horizontal, sidePeek, for: .scrollContent)
             .scrollClipDisabled()
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $carouselStageId, anchor: .center)
         }
-        .frame(height: 278)
+        .frame(height: 286)
     }
 
     // MARK: - Page Indicator
@@ -421,7 +433,7 @@ struct StatChip: View {
     }
 }
 
-// MARK: - Carousel Hero Card (DailySpeak todayTaskCard style)
+// MARK: - Carousel Hero Card (Pseudo-3D depth style)
 struct CarouselStageCard: View {
     @Environment(ProgressManager.self) private var progress
     let stage: Stage
@@ -438,75 +450,130 @@ struct CarouselStageCard: View {
     var body: some View {
         Button(action: onStageTap) {
             ZStack(alignment: .leading) {
-                // Gradient background
-                LinearGradient(
-                    colors: [theme.startColor, theme.endColor],
-                    startPoint: .topLeading, endPoint: .bottomTrailing
-                )
+                // Multi-layer gradient for depth
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                theme.startColor,
+                                theme.endColor,
+                                theme.endColor.opacity(0.8)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
 
-                // Decorative circles
+                // Ambient light reflection (top-left glow)
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        RadialGradient(
+                            colors: [.white.opacity(0.18), .clear],
+                            center: .topLeading,
+                            startRadius: 0,
+                            endRadius: 260
+                        )
+                    )
+
+                // Decorative depth circles with layered opacity
                 GeometryReader { geo in
-                    Circle().fill(.white.opacity(0.09)).frame(width: 130)
-                        .offset(x: geo.size.width - 65, y: -40)
-                    Circle().fill(.white.opacity(0.06)).frame(width: 90)
-                        .offset(x: geo.size.width - 10, y: 70)
+                    Circle()
+                        .fill(.white.opacity(0.1))
+                        .frame(width: 150)
+                        .blur(radius: 2)
+                        .offset(x: geo.size.width - 80, y: -50)
+                    Circle()
+                        .fill(.white.opacity(0.07))
+                        .frame(width: 100)
+                        .blur(radius: 1)
+                        .offset(x: geo.size.width - 15, y: 65)
+                    Circle()
+                        .fill(theme.startColor.opacity(0.3))
+                        .frame(width: 60)
+                        .blur(radius: 20)
+                        .offset(x: -20, y: geo.size.height - 40)
                 }
 
                 // Content
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         Text("STAGE \(stage.id)")
-                            .font(.caption2.bold())
-                            .foregroundStyle(.white.opacity(0.8))
-                            .tracking(1.5)
+                            .font(.system(size: 11, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .tracking(2.0)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.white.opacity(0.12))
+                            .clipShape(Capsule())
                         Spacer()
-                        Text(theme.emoji).font(.system(size: 36))
+                        Text(theme.emoji)
+                            .font(.system(size: 40))
+                            .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
                     }
-                    .padding(.bottom, 14)
+                    .padding(.bottom, 16)
 
                     Text(stage.chineseTitle)
-                        .font(.title2.bold()).foregroundStyle(.white)
-                        .padding(.bottom, 4)
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        .padding(.bottom, 5)
                     Text(stage.title)
-                        .font(.subheadline).foregroundStyle(.white.opacity(0.75))
-                        .padding(.bottom, 20)
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.78))
+                        .padding(.bottom, 22)
 
                     HStack {
-                        // Progress
                         HStack(spacing: 8) {
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
-                                    Capsule().fill(.white.opacity(0.2)).frame(height: 5)
+                                    Capsule().fill(.white.opacity(0.18)).frame(height: 6)
                                     Capsule().fill(.white)
-                                        .frame(width: max(0, geo.size.width * prog), height: 5)
+                                        .frame(width: max(0, geo.size.width * prog), height: 6)
+                                        .shadow(color: .white.opacity(0.4), radius: 4, x: 0, y: 0)
                                 }
                             }
-                            .frame(height: 5)
+                            .frame(height: 6)
                             .frame(maxWidth: 120)
 
                             Text("\(completedCount)/\(stage.taskCount)")
-                                .font(.caption2.bold())
-                                .foregroundStyle(.white.opacity(0.8))
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.85))
                         }
 
                         Spacer()
 
-                        // Continue button
                         HStack(spacing: 6) {
-                            Text("Continue").font(.subheadline.bold())
+                            Text("Continue")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
                                 .foregroundStyle(theme.startColor)
-                            Image(systemName: "arrow.right").font(.caption.bold())
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(theme.startColor)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 9)
-                        .background(.white).clipShape(Capsule())
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 10)
+                        .background(.white)
+                        .clipShape(Capsule())
+                        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
                     }
                 }
-                .padding(22)
+                .padding(24)
             }
-            .frame(height: 230)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
+            .frame(height: 240)
+            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [.white.opacity(0.3), .white.opacity(0.05)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .shadow(color: theme.startColor.opacity(0.25), radius: 20, x: 0, y: 12)
+            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
     }

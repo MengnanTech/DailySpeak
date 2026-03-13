@@ -51,7 +51,7 @@ enum StepType: Int, CaseIterable, Codable {
         switch self {
         case .strategy:   "lightbulb.fill"
         case .review:     "checklist"
-        case .vocabulary:  "textbook"
+        case .vocabulary:  "character.book.closed.fill"
         case .phrases:     "text.quote"
         case .framework:   "rectangle.3.group.fill"
         case .samples:     "doc.richtext.fill"
