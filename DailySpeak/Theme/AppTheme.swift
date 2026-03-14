@@ -110,3 +110,98 @@ extension View {
     }
 
 }
+
+// MARK: - Step Section Label
+struct StepSectionLabel: View {
+    let icon: String
+    let title: String
+    let color: Color
+    var trailing: String? = nil
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(color.opacity(0.12))
+                    .frame(width: 28, height: 28)
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(color)
+            }
+            Text(title)
+                .font(.subheadline.bold())
+                .foregroundStyle(AppColors.primaryText)
+            if let trailing {
+                Spacer()
+                Text(trailing)
+                    .font(.caption.bold())
+                    .foregroundStyle(color)
+            }
+        }
+    }
+}
+
+// MARK: - Gradient Accent Card
+struct GradientAccentCard<Content: View>: View {
+    let color: Color
+    var spacing: CGFloat = 14
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            LinearGradient(
+                colors: [color.opacity(0.5), color.opacity(0.15)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(height: 3)
+
+            VStack(alignment: .leading, spacing: spacing) {
+                content()
+            }
+            .padding(18)
+        }
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: color.opacity(0.08), radius: 10, x: 0, y: 4)
+        .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Numbered Item Row
+struct NumberedItemRow: View {
+    let index: Int
+    let text: String
+    let color: Color
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.6)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 28, height: 28)
+                    .shadow(color: color.opacity(0.25), radius: 3, x: 0, y: 1)
+                Text("\(index)")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(AppColors.primaryText)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppColors.surface.opacity(0.5))
+        )
+    }
+}

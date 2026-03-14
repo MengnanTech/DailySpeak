@@ -508,93 +508,99 @@ struct StrategyStepView: View {
         .onAppear { appeared = true }
     }
 
+    private let stepColor = Color(hex: "F59E0B")
+
     private var standardStrategyContent: some View {
         Group {
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("\(index + 1)")
-                            .font(.caption.bold())
-                            .foregroundStyle(.white)
-                            .frame(width: 24, height: 24)
-                            .background(accentColor)
-                            .clipShape(Circle())
+            GradientAccentCard(color: stepColor) {
+                StepSectionLabel(icon: "lightbulb.fill", title: "答题思路", color: stepColor)
 
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.primaryText)
-                    }
+                ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
+                    NumberedItemRow(index: index + 1, text: tip, color: stepColor)
                 }
             }
-            .padding(16)
-            .cardStyle()
             .staggerIn(index: 1, appeared: appeared)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("TOPIC")
-                    .font(.caption2.bold())
-                    .foregroundStyle(accentColor)
-                    .tracking(1)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "quote.bubble.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 26, height: 26)
+                        .background(stepColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    Text("TOPIC")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(stepColor)
+                        .tracking(1.2)
+                }
+
                 Text(task.prompt)
                     .font(.body)
                     .foregroundStyle(AppColors.primaryText)
                     .italic()
+                    .lineSpacing(4)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(accentColor.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(accentColor.opacity(0.15), lineWidth: 1)
+            .background(
+                ZStack {
+                    AppColors.card
+                    LinearGradient(
+                        colors: [stepColor.opacity(0.06), stepColor.opacity(0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                }
             )
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(stepColor.opacity(0.15), lineWidth: 1)
+            )
+            .shadow(color: stepColor.opacity(0.08), radius: 10, x: 0, y: 4)
             .staggerIn(index: 2, appeared: appeared)
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "target")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .frame(width: 24, height: 24)
-                        .background(Color(hex: "EF4444"))
-                        .clipShape(Circle())
-                    Text("过关标准")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
-                }
+            GradientAccentCard(color: Color(hex: "EF4444")) {
+                StepSectionLabel(icon: "target", title: "过关标准", color: Color(hex: "EF4444"))
 
                 ForEach(task.passCriteria, id: \.self) { criteria in
-                    HStack(spacing: 8) {
-                        Image(systemName: "circle")
-                            .font(.system(size: 8))
-                            .foregroundStyle(accentColor)
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "checkmark.circle")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(AppColors.success)
+                            .padding(.top, 1)
                         Text(criteria)
                             .font(.subheadline)
                             .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(2)
                     }
+                    .padding(.vertical, 2)
                 }
             }
-            .padding(16)
-            .cardStyle()
             .staggerIn(index: 3, appeared: appeared)
         }
     }
 
     private func lessonStrategyContent(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("先想这 4 点")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+            // Angles — flat layout, no nested cards
+            VStack(alignment: .leading, spacing: 20) {
+                StepSectionLabel(
+                    icon: "brain.head.profile",
+                    title: "先想这 \(lesson.strategy.angles.count) 点",
+                    color: stepColor
+                )
 
                 ForEach(Array(lesson.strategy.angles.enumerated()), id: \.offset) { index, angle in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(alignment: .top, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top, spacing: 12) {
                             Text("\(index + 1)")
-                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
-                                .frame(width: 22, height: 22)
-                                .background(accentColor)
+                                .frame(width: 24, height: 24)
+                                .background(stepColor)
                                 .clipShape(Circle())
 
                             Text(angle.title)
@@ -604,79 +610,89 @@ struct StrategyStepView: View {
                         }
 
                         ForEach(angle.content, id: \.self) { item in
-                            Text(item)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.secondText)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.leading, 32)
+                            HStack(alignment: .top, spacing: 8) {
+                                Circle()
+                                    .fill(stepColor.opacity(0.35))
+                                    .frame(width: 5, height: 5)
+                                    .padding(.top, 7)
+                                Text(item)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(2)
+                            }
+                            .padding(.leading, 36)
+                        }
+
+                        if index < lesson.strategy.angles.count - 1 {
+                            Divider().background(AppColors.border.opacity(0.5))
+                                .padding(.top, 4)
                         }
                     }
                 }
             }
-            .staggerIn(index: 2, appeared: appeared)
+            .padding(18)
+            .cardStyle()
+            .staggerIn(index: 1, appeared: appeared)
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("按这个顺序说")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+            VStack(alignment: .leading, spacing: 16) {
+                StepSectionLabel(icon: "arrow.right.circle.fill", title: "按这个顺序说", color: stepColor)
 
                 ForEach(Array(lesson.strategy.sequence.enumerated()), id: \.offset) { index, item in
-                    VStack(alignment: .leading, spacing: 5) {
-                        HStack(alignment: .top, spacing: 10) {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(spacing: 0) {
                             Text("\(index + 1)")
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(accentColor)
-                                .frame(width: 18, height: 18)
-                                .background(accentColor.opacity(0.1))
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(stepColor)
+                                .frame(width: 24, height: 24)
+                                .background(stepColor.opacity(0.1))
                                 .clipShape(Circle())
-
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack(spacing: 6) {
-                                    Text(item.phase)
-                                        .font(.caption.bold())
-                                        .foregroundStyle(AppColors.primaryText)
-
-                                    Text(item.focus)
-                                        .font(.caption)
-                                        .foregroundStyle(accentColor)
-                                }
-
-                                Text(item.target)
-                                    .font(.caption)
-                                    .foregroundStyle(AppColors.tertiaryText)
-                                    .fixedSize(horizontal: false, vertical: true)
+                            if index < lesson.strategy.sequence.count - 1 {
+                                Rectangle()
+                                    .fill(stepColor.opacity(0.12))
+                                    .frame(width: 2)
+                                    .frame(maxHeight: .infinity)
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(width: 24)
 
-                        if index < lesson.strategy.sequence.count - 1 {
-                            Divider().background(AppColors.border.opacity(0.7))
-                                .padding(.leading, 28)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 6) {
+                                Text(item.phase)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(AppColors.primaryText)
+                                Text(item.focus)
+                                    .font(.caption)
+                                    .foregroundStyle(stepColor)
+                            }
+                            Text(item.target)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.tertiaryText)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
+                        .padding(.bottom, index < lesson.strategy.sequence.count - 1 ? 10 : 0)
                     }
                 }
 
                 Divider().background(AppColors.border)
 
-                Text("内容分配")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
+                StepSectionLabel(icon: "chart.bar.fill", title: "内容分配", color: stepColor)
 
                 ForEach(lesson.strategy.contentRatio, id: \.label) { ratio in
                     HStack {
                         Text(ratio.label)
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundStyle(AppColors.secondText)
                         Spacer()
                         Text(ratio.value)
                             .font(.caption.bold())
-                            .foregroundStyle(AppColors.primaryText)
+                            .foregroundStyle(stepColor)
                     }
                 }
             }
-            .padding(16)
+            .padding(18)
             .cardStyle()
-            .staggerIn(index: 3, appeared: appeared)
+            .staggerIn(index: 2, appeared: appeared)
         }
     }
 }
@@ -1393,9 +1409,25 @@ struct PhrasesStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
+            // Phrases count badge
+            HStack(spacing: 8) {
+                Image(systemName: "text.quote")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color(hex: "10B981"))
+                Text("\(task.phrases.count) 个表达")
+                    .font(.caption.bold())
+                    .foregroundStyle(Color(hex: "10B981"))
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color(hex: "10B981").opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .staggerIn(index: 1, appeared: appeared)
+
             ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
                 PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor)
-                    .staggerIn(index: index + 1, appeared: appeared)
+                    .staggerIn(index: index + 2, appeared: appeared)
             }
         }
         .onAppear { appeared = true }
@@ -1413,17 +1445,18 @@ struct PhraseCard: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    Circle()
                         .fill(
                             LinearGradient(
-                                colors: [accentColor.opacity(0.15), accentColor.opacity(0.08)],
+                                colors: [accentColor, accentColor.opacity(0.6)],
                                 startPoint: .topLeading, endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 34, height: 34)
+                        .shadow(color: accentColor.opacity(0.25), radius: 3, x: 0, y: 1)
                     Text("\(index)")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(accentColor)
+                        .foregroundStyle(.white)
                 }
 
                 VStack(alignment: .leading, spacing: 5) {
@@ -1446,7 +1479,7 @@ struct PhraseCard: View {
                     ZStack {
                         Circle()
                             .fill(accentColor.opacity(0.1))
-                            .frame(width: 36, height: 36)
+                            .frame(width: 38, height: 38)
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.system(size: 13, weight: .bold))
                             .foregroundStyle(accentColor)
@@ -1478,7 +1511,11 @@ struct PhraseCard: View {
                     if let sourceBand = phrase.sourceBand {
                         Text(sourceBand)
                             .font(.caption2.bold())
-                            .foregroundStyle(accentColor)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(accentColor.opacity(0.5))
+                            .clipShape(Capsule())
                     }
 
                     if exampleVisible {
@@ -1513,20 +1550,19 @@ struct PhraseCard: View {
         .padding(16)
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            HStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [accentColor.opacity(0.6), accentColor.opacity(0.3)],
-                            startPoint: .top, endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 3)
-                Spacer()
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        )
+        .overlay(alignment: .top) {
+            UnevenRoundedRectangle(
+                topLeadingRadius: 18, bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0, topTrailingRadius: 18
+            )
+            .fill(
+                LinearGradient(
+                    colors: [accentColor.opacity(0.4), accentColor.opacity(0.1)],
+                    startPoint: .leading, endPoint: .trailing
+                )
+            )
+            .frame(height: 3)
+        }
         .shadow(color: accentColor.opacity(0.08), radius: 10, x: 0, y: 4)
         .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
     }
@@ -1572,138 +1608,141 @@ struct FrameworkStepView: View {
         .onAppear { appeared = true }
     }
 
+    private let frameworkColor = Color(hex: "8B5CF6")
+
     private var standardFrameworkContent: some View {
         Group {
-            VStack(spacing: 10) {
-                ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                    FrameworkSentenceCard(
-                        index: index + 1,
-                        label: index < labels.count ? labels[index] : "要点",
-                        sentence: sentence,
-                        accentColor: accentColor,
-                        isLast: index == task.frameworkSentences.count - 1
-                    )
-                    .staggerIn(index: index + 1, appeared: appeared)
+            GradientAccentCard(color: frameworkColor, spacing: 0) {
+                VStack(spacing: 0) {
+                    ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
+                        FrameworkSentenceCard(
+                            index: index + 1,
+                            label: index < labels.count ? labels[index] : "要点",
+                            sentence: sentence,
+                            accentColor: frameworkColor,
+                            isLast: index == task.frameworkSentences.count - 1
+                        )
+                    }
                 }
             }
+            .staggerIn(index: 1, appeared: appeared)
 
             if !task.upgradeExpressions.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(.white)
-                            .frame(width: 26, height: 26)
-                            .background(Color(hex: "F59E0B"))
-                            .clipShape(Circle())
-                        Text("升级表达")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(AppColors.primaryText)
-                    }
+                GradientAccentCard(color: Color(hex: "F59E0B")) {
+                    StepSectionLabel(
+                        icon: "arrow.up.circle.fill",
+                        title: "升级表达",
+                        color: Color(hex: "F59E0B")
+                    )
 
-                    ForEach(Array(task.upgradeExpressions.enumerated()), id: \.offset) { idx, pair in
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 6) {
+                    ForEach(Array(task.upgradeExpressions.enumerated()), id: \.offset) { _, pair in
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(alignment: .top, spacing: 8) {
                                 Text("Before")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .font(.system(size: 9, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
                                     .background(AppColors.tertiaryText)
                                     .clipShape(Capsule())
                                 Text(pair.original)
-                                    .font(.caption)
+                                    .font(.subheadline)
                                     .foregroundStyle(AppColors.tertiaryText)
-                                    .strikethrough()
+                                    .strikethrough(color: AppColors.tertiaryText.opacity(0.5))
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(hex: "EF4444").opacity(0.04))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
 
-                            HStack(spacing: 6) {
+                            HStack(alignment: .top, spacing: 8) {
                                 Text("After")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .font(.system(size: 9, weight: .bold, design: .rounded))
                                     .foregroundStyle(.white)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
+                                    .padding(.horizontal, 7)
+                                    .padding(.vertical, 3)
                                     .background(AppColors.success)
                                     .clipShape(Capsule())
                                 Text(pair.upgraded)
-                                    .font(.caption)
+                                    .font(.subheadline.bold())
                                     .foregroundStyle(AppColors.primaryText)
-                                    .bold()
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(AppColors.success.opacity(0.06))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
                         .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(AppColors.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .cardShadow()
-                        .staggerIn(index: task.frameworkSentences.count + idx + 1, appeared: appeared)
+                        .background(AppColors.surface.opacity(0.4))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
                 }
-                .staggerIn(index: task.frameworkSentences.count + 1, appeared: appeared)
+                .staggerIn(index: 2, appeared: appeared)
             }
         }
     }
 
     private func lessonFrameworkContent(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Framework Goal")
-                    .font(.caption.bold())
-                    .foregroundStyle(accentColor)
+            GradientAccentCard(color: frameworkColor, spacing: 16) {
+                StepSectionLabel(
+                    icon: "rectangle.3.group.fill",
+                    title: "Framework Goal",
+                    color: frameworkColor
+                )
+
                 Text(lesson.framework.goal)
                     .font(.subheadline)
                     .foregroundStyle(AppColors.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
-
-                Divider().background(AppColors.border)
+                    .lineSpacing(3)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(frameworkColor.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 ForEach(lesson.framework.defaultStructure, id: \.section) { section in
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 10) {
                         Text(section.section)
                             .font(.caption.bold())
-                            .foregroundStyle(accentColor)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(frameworkColor.opacity(0.7))
+                            .clipShape(Capsule())
 
                         ForEach(section.moves, id: \.self) { move in
-                            HStack(alignment: .top, spacing: 8) {
+                            HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(accentColor)
-                                    .padding(.top, 4)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(frameworkColor)
+                                    .padding(.top, 3)
                                 Text(move)
                                     .font(.subheadline)
                                     .foregroundStyle(AppColors.secondText)
                                     .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(2)
                             }
                         }
                     }
+                    .padding(14)
+                    .background(AppColors.surface.opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
-            .padding(16)
-            .cardStyle()
             .staggerIn(index: 1, appeared: appeared)
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 10) {
-                    Circle()
-                        .fill(Color(hex: "5B6EF5").opacity(0.12))
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            Image(systemName: "text.quote")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(Color(hex: "5B6EF5"))
-                        )
-
-                    Text("Delivery Markers")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(AppColors.primaryText)
-                }
-
-                Divider().background(AppColors.border)
+            GradientAccentCard(color: Color(hex: "5B6EF5")) {
+                StepSectionLabel(
+                    icon: "text.quote",
+                    title: "Delivery Markers",
+                    color: Color(hex: "5B6EF5")
+                )
 
                 lessonMarkersContent(lesson.framework.deliveryMarkers)
             }
-            .padding(16)
-            .cardStyle()
             .staggerIn(index: 2, appeared: appeared)
         }
     }
@@ -1882,23 +1921,39 @@ struct SamplesStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            // Band selector
-            HStack(spacing: 8) {
+            // Band selector — enhanced pill tabs
+            HStack(spacing: 6) {
                 ForEach(Array(task.sampleAnswers.enumerated()), id: \.offset) { index, sample in
+                    let isSelected = selectedBand == index
                     Button {
                         withAnimation(.spring(duration: 0.3)) { selectedBand = index }
                     } label: {
-                        Text(sample.band)
-                            .font(.caption.bold())
-                            .foregroundStyle(selectedBand == index ? .white : bandColors[index])
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(
-                                selectedBand == index
-                                    ? bandColors[index]
-                                    : bandColors[index].opacity(0.1)
-                            )
-                            .clipShape(Capsule())
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(isSelected ? .white.opacity(0.3) : bandColors[index].opacity(0.3))
+                                .frame(width: 8, height: 8)
+                            Text(sample.band)
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(isSelected ? .white : bandColors[index])
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            isSelected
+                                ? AnyShapeStyle(
+                                    LinearGradient(
+                                        colors: [bandColors[index], bandColors[index].opacity(0.78)],
+                                        startPoint: .leading, endPoint: .trailing
+                                    )
+                                )
+                                : AnyShapeStyle(bandColors[index].opacity(0.08))
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(bandColors[index].opacity(isSelected ? 0 : 0.2), lineWidth: 1)
+                        )
+                        .shadow(color: isSelected ? bandColors[index].opacity(0.25) : .clear, radius: 6, x: 0, y: 3)
                     }
                     .buttonStyle(.plain)
                 }
@@ -1906,16 +1961,21 @@ struct SamplesStepView: View {
             .staggerIn(index: 1, appeared: appeared)
 
             if selectedBand < task.sampleAnswers.count, let bandGuide = task.sampleAnswers[selectedBand].bandGuide {
-
-                VStack(alignment: .leading, spacing: 12) {
+                GradientAccentCard(color: bandColors[selectedBand], spacing: 12) {
                     HStack {
-                        Text("Band \(bandGuide.band) 表达框架")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(AppColors.primaryText)
+                        StepSectionLabel(
+                            icon: "list.bullet.rectangle.portrait",
+                            title: "Band \(bandGuide.band) 表达框架",
+                            color: bandColors[selectedBand]
+                        )
                         Spacer()
                         Text(bandGuide.focus)
                             .font(.caption.bold())
                             .foregroundStyle(bandColors[selectedBand])
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(bandColors[selectedBand].opacity(0.1))
+                            .clipShape(Capsule())
                     }
 
                     frameworkGuideSection(
@@ -1934,37 +1994,36 @@ struct SamplesStepView: View {
                         tint: bandColors[selectedBand]
                     )
                 }
-                .padding(16)
-                .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(bandColors[selectedBand].opacity(0.14), lineWidth: 1)
-                )
-                .cardShadow()
                 .staggerIn(index: 2, appeared: appeared)
             }
 
             // Sample content
             if selectedBand < task.sampleAnswers.count {
                 let sample = task.sampleAnswers[selectedBand]
+                let bandColor = bandColors[selectedBand]
 
-                VStack(alignment: .leading, spacing: 12) {
+                GradientAccentCard(color: bandColor, spacing: 14) {
                     HStack {
                         Text(sample.band)
-                            .font(.caption.bold())
-                            .foregroundStyle(bandColors[selectedBand])
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(bandColor)
+                            .clipShape(Capsule())
                         Spacer()
                         Text("\(sample.wordCount) words")
-                            .font(.caption)
+                            .font(.caption.bold())
                             .foregroundStyle(AppColors.tertiaryText)
                     }
-
-                    Divider().background(AppColors.border)
 
                     // Highlighted sample content
                     highlightedSampleText(sample.content)
                         .lineSpacing(6)
+                        .padding(14)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(bandColor.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
 
                     InlineAudioPlayerControl(
                         text: sample.content,
@@ -1974,69 +2033,105 @@ struct SamplesStepView: View {
                             rate: 0.46
                         ),
                         sourceLabel: "Sample Answer",
-                        accentColor: bandColors[selectedBand],
+                        accentColor: bandColor,
                         title: "Listen to Pronunciation"
                     )
 
                     if !sample.nativeFeatures.isEmpty {
-                        Divider().background(AppColors.border)
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
+                                    startPoint: .leading, endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 1)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Native Features")
-                                .font(.caption.bold())
-                                .foregroundStyle(bandColors[selectedBand])
+                            StepSectionLabel(icon: "sparkles", title: "Native Features", color: bandColor)
 
                             ForEach(sample.nativeFeatures, id: \.self) { feature in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "sparkles")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(bandColors[selectedBand])
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "star.fill")
+                                        .font(.system(size: 9))
+                                        .foregroundStyle(bandColor)
                                         .padding(.top, 4)
                                     Text(feature)
-                                        .font(.caption)
+                                        .font(.subheadline)
                                         .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
+                                .padding(10)
+                                .background(bandColor.opacity(0.04))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                         }
                     }
 
                     if !sample.upgrades.isEmpty {
-                        Divider().background(AppColors.border)
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
+                                    startPoint: .leading, endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 1)
 
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Expression Upgrades")
-                                .font(.caption.bold())
-                                .foregroundStyle(bandColors[selectedBand])
+                            StepSectionLabel(icon: "arrow.up.circle.fill", title: "Expression Upgrades", color: bandColor)
 
                             ForEach(Array(sample.upgrades.enumerated()), id: \.offset) { _, item in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    upgradeLabelLine(tag: "Original", text: item.original, tint: AppColors.tertiaryText)
-                                    upgradeLabelLine(tag: "Improved", text: item.improved, tint: bandColors[selectedBand])
+                                VStack(alignment: .leading, spacing: 10) {
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text("Original")
+                                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 7)
+                                            .padding(.vertical, 3)
+                                            .background(AppColors.tertiaryText)
+                                            .clipShape(Capsule())
+                                        Text(item.original)
+                                            .font(.subheadline)
+                                            .foregroundStyle(AppColors.tertiaryText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text("Improved")
+                                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 7)
+                                            .padding(.vertical, 3)
+                                            .background(bandColor)
+                                            .clipShape(Capsule())
+                                        Text(item.improved)
+                                            .font(.subheadline.bold())
+                                            .foregroundStyle(AppColors.primaryText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+
                                     Text(item.why)
                                         .font(.caption)
                                         .foregroundStyle(AppColors.secondText)
                                         .fixedSize(horizontal: false, vertical: true)
-                                    Text(item.note)
-                                        .font(.caption)
-                                        .foregroundStyle(AppColors.tertiaryText)
-                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(2)
+
+                                    if !item.note.isEmpty {
+                                        Text(item.note)
+                                            .font(.caption)
+                                            .foregroundStyle(AppColors.tertiaryText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
                                 }
-                                .padding(12)
+                                .padding(14)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(AppColors.surface)
+                                .background(AppColors.surface.opacity(0.5))
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                             }
                         }
                     }
                 }
-                .padding(16)
-                .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(bandColors[selectedBand].opacity(0.15), lineWidth: 1)
-                )
-                .cardShadow()
                 .transition(.asymmetric(
                     insertion: .opacity.combined(with: .move(edge: .trailing)),
                     removal: .opacity.combined(with: .move(edge: .leading))
@@ -2093,21 +2188,6 @@ struct SamplesStepView: View {
         })
     }
 
-    private func upgradeLabelLine(tag: String, text: String, tint: Color) -> some View {
-        HStack(spacing: 6) {
-            Text(tag)
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(tint)
-                .clipShape(Capsule())
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(AppColors.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
 }
 
 // MARK: - Practice Prompt
@@ -2243,21 +2323,29 @@ struct PracticePromptView: View {
         .onAppear { appeared = true }
     }
 
+    private let practiceColor = Color(hex: "EF4444")
+
     private var topicCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 26, height: 26)
+                    .background(practiceColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 Text("TOPIC")
-                    .font(.caption2.bold())
-                    .foregroundStyle(accentColor)
-                    .tracking(1)
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(practiceColor)
+                    .tracking(1.2)
                 Spacer()
                 if let lesson {
                     Text(lesson.practice.targetLength)
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(accentColor)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(accentColor.opacity(0.1))
+                        .background(practiceColor.opacity(0.7))
                         .clipShape(Capsule())
                 }
             }
@@ -2270,103 +2358,111 @@ struct PracticePromptView: View {
                 .font(.body)
                 .foregroundStyle(AppColors.primaryText)
                 .italic()
+                .lineSpacing(4)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(accentColor.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .background(
+            ZStack {
+                AppColors.card
+                LinearGradient(
+                    colors: [practiceColor.opacity(0.06), practiceColor.opacity(0.02)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(accentColor.opacity(0.15), lineWidth: 1)
-            )
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(practiceColor.opacity(0.15), lineWidth: 1)
+        )
+        .shadow(color: practiceColor.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 
     private func practiceChecklistCard(_ lesson: LessonContent) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Speaking Checklist")
-                .font(.subheadline.bold())
-                .foregroundStyle(AppColors.primaryText)
+        GradientAccentCard(color: practiceColor, spacing: 14) {
+            StepSectionLabel(icon: "checklist.checked", title: "Speaking Checklist", color: practiceColor)
 
             ForEach(lesson.practice.checklist, id: \.self) { item in
-                HStack(alignment: .top, spacing: 8) {
+                HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(accentColor)
-                        .padding(.top, 3)
+                        .font(.system(size: 13))
+                        .foregroundStyle(practiceColor)
+                        .padding(.top, 2)
                     Text(item)
                         .font(.subheadline)
                         .foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(2)
                 }
+                .padding(10)
+                .background(practiceColor.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
 
-            Divider().background(AppColors.border)
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                )
+                .frame(height: 1)
 
-            Text("Self Prompts")
-                .font(.caption.bold())
-                .foregroundStyle(accentColor)
+            StepSectionLabel(icon: "text.bubble.fill", title: "Self Prompts", color: practiceColor)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(lesson.practice.selfPrompts, id: \.self) { prompt in
                         Text(prompt)
                             .font(.caption.bold())
-                            .foregroundStyle(accentColor)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
-                            .background(accentColor.opacity(0.08))
+                            .foregroundStyle(practiceColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(practiceColor.opacity(0.08))
                             .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(practiceColor.opacity(0.15), lineWidth: 1)
+                            )
                     }
                 }
             }
         }
-        .padding(16)
-        .cardStyle()
     }
 
     private var frameworkHints: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "list.bullet.rectangle.portrait")
-                    .font(.caption)
-                    .foregroundStyle(accentColor)
-                Text("表达框架提示")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
-            }
+        GradientAccentCard(color: Color(hex: "8B5CF6"), spacing: 12) {
+            StepSectionLabel(
+                icon: "list.bullet.rectangle.portrait",
+                title: "表达框架提示",
+                color: Color(hex: "8B5CF6")
+            )
 
             ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                HStack(alignment: .top, spacing: 8) {
+                HStack(alignment: .top, spacing: 10) {
                     Text(index < labels.count ? labels[index] : "要点")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(accentColor)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(accentColor.opacity(0.12))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: "8B5CF6").opacity(0.6))
                         .clipShape(Capsule())
 
                     Text(sentence)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(AppColors.secondText)
                         .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(2)
                 }
             }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(AppColors.border.opacity(0.6), lineWidth: 0.8)
-        )
-        .cardShadow()
     }
 
     private var inputCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("输入你的回答草稿")
-                .font(.subheadline.bold())
-                .foregroundStyle(AppColors.primaryText)
+        GradientAccentCard(color: Color(hex: "4A90D9"), spacing: 14) {
+            StepSectionLabel(icon: "square.and.pencil", title: "输入你的回答草稿", color: Color(hex: "4A90D9"))
 
             modeSelector(
                 title: "输入方式",
@@ -2397,9 +2493,8 @@ struct PracticePromptView: View {
             Text("草稿会自动保存。你可以先用母语输入，再通过当前后端接口转成英文。")
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
+                .lineSpacing(2)
         }
-        .padding(16)
-        .cardStyle()
     }
 
     private var voiceTools: some View {
@@ -2469,33 +2564,41 @@ struct PracticePromptView: View {
                         .font(.subheadline.bold())
                 }
                 Text(languageMode == .native ? "母语 -> 英文" : "保留英文草稿")
-                    .font(.subheadline.bold())
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 48)
+            .frame(height: 50)
             .background(
                 draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing
                     ? AnyShapeStyle(AppColors.border)
-                    : AnyShapeStyle(accentColor)
+                    : AnyShapeStyle(
+                        LinearGradient(
+                            colors: [practiceColor, practiceColor.opacity(0.8)],
+                            startPoint: .leading, endPoint: .trailing
+                        )
+                    )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+            .shadow(
+                color: draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    ? .clear
+                    : practiceColor.opacity(0.3),
+                radius: 10, x: 0, y: 4
+            )
         }
         .buttonStyle(.plain)
         .disabled(draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing)
     }
 
     private func resultCard(title: String, subtitle: String, text: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Text(title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
-            }
+        GradientAccentCard(color: tint, spacing: 12) {
+            StepSectionLabel(icon: "text.bubble.fill", title: title, color: tint)
 
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
+                .lineSpacing(2)
 
             InlineAudioPlayerControl(
                 text: text,
@@ -2513,19 +2616,16 @@ struct PracticePromptView: View {
                 .font(.subheadline)
                 .foregroundStyle(AppColors.primaryText)
                 .lineSpacing(5)
-                .padding(12)
+                .textSelection(.enabled)
+                .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(tint.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(tint.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(tint.opacity(0.22), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(tint.opacity(0.15), lineWidth: 1)
                 )
         }
-        .padding(16)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .cardShadow()
     }
 
     private func modeSelector<Item: Identifiable>(
