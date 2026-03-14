@@ -25,6 +25,7 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
     private var statusObservation: NSKeyValueObservation?
     private var timeObserver: Any?
     private var cachedAudioURLs: [String: URL] = [:]
+    private var cachedAudioDurations: [String: Double] = [:]
     private var requestSequence = 0
 
     private override init() {
@@ -39,6 +40,45 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
 
     func clearAudioCache() {
         cachedAudioURLs.removeAll()
+        cachedAudioDurations.removeAll()
+    }
+
+    func isAudioCached(id: String) -> Bool {
+        cachedAudioURLs[id] != nil
+    }
+
+    /// Returns the cached audio duration in seconds, or nil if not prepared.
+    func cachedDuration(id: String) -> Double? {
+        cachedAudioDurations[id]
+    }
+
+    /// Fetch audio URL, download MP3 to local file, probe duration, and cache.
+    func prepareAudio(id: String, text: String) async -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        if cachedAudioURLs[id] != nil { return true }
+        do {
+            let voiceId = VoiceManager.shared.selectedVoiceId
+            let remoteURL = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: trimmed, voiceId: voiceId)
+            print("⬇️ [TTS] downloading audio to local: id=\(id)")
+            let (data, _) = try await URLSession.shared.data(from: remoteURL)
+            let localURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(id).mp3")
+            try data.write(to: localURL)
+            cachedAudioURLs[id] = localURL
+
+            // Probe duration
+            let asset = AVAsset(url: localURL)
+            let cmDuration = try await asset.load(.duration)
+            let seconds = CMTimeGetSeconds(cmDuration)
+            if seconds.isFinite && seconds > 0 {
+                cachedAudioDurations[id] = seconds
+            }
+            print("✅ [TTS] prepared audio (local): id=\(id) size=\(data.count) duration=\(String(format: "%.1f", seconds))s")
+            return true
+        } catch {
+            print("❌ [TTS] prepare failed: \(error.localizedDescription)")
+            return false
+        }
     }
 
     var hasVisiblePlayback: Bool {

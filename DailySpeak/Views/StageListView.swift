@@ -86,7 +86,7 @@ struct StageListView: View {
             }
             .navigationDestination(item: $selectedTask) { task in
                 let stage = stages.first { s in s.tasks.contains { $0.id == task.id } } ?? currentStage
-                TaskOverviewView(stage: stage, task: task)
+                TaskLoadingContainerView(stage: stage, task: task)
             }
             .sheet(item: $paywallTarget) { target in
                 PaywallPlaceholderView(targetStageId: target.stageId)

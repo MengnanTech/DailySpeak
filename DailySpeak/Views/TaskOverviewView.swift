@@ -227,6 +227,9 @@ struct TaskOverviewView: View {
         .task(id: task.id) {
             await runRevealSequence()
         }
+        .onDisappear {
+            EnglishSpeechPlayer.shared.stopPlayback()
+        }
     }
 
     // Shared popup container
@@ -411,21 +414,19 @@ struct TaskOverviewView: View {
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
 
-            // Angle chips — prominent style
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(lesson.strategy.angles, id: \.title) { angle in
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(theme.startColor)
-                                .frame(width: 6, height: 6)
-                            Text(angle.title)
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(theme.startColor)
-                        }
-                        .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(theme.startColor.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            // Angle chips — vertical list
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(lesson.strategy.angles.enumerated()), id: \.element.title) { index, angle in
+                    HStack(spacing: 10) {
+                        Text("\(index + 1)")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .frame(width: 22, height: 22)
+                            .background(theme.startColor)
+                            .clipShape(Circle())
+                        Text(angle.title)
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(AppColors.primaryText)
                     }
                 }
             }
@@ -623,54 +624,56 @@ struct TaskOverviewView: View {
             VStack(spacing: 0) {
                 ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
                     let state = stepDisplayState(at: index)
+                    let isLast = index == task.steps.count - 1
                     if state != .hidden {
-                        flowStepRow(step: step, index: index, state: state)
+                        flowStepRow(step: step, index: index, state: state, isLast: isLast)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-                        if index < task.steps.count - 1 {
-                            Rectangle()
-                                .fill(connectorColor(for: index))
-                                .frame(width: 2, height: 18)
-                                .padding(.leading, 15).padding(.vertical, 2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
                     }
                 }
             }
         }
-        .padding(18).cardStyle()
+        .padding(16).cardStyle()
     }
 
     @ViewBuilder
-    private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState) -> some View {
+    private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState, isLast: Bool) -> some View {
         let isAnimating = phase != .ready
         let isCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index)
         let isTappable = phase == .ready && !showCenteredFlow && (state == .unlocked || isCompleted)
         HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                // During animation, always use stepDisplayState; only shortcut to green checkmark when settled
-                if isCompleted && !isAnimating {
-                    Circle().fill(AppColors.success).frame(width: 30, height: 30)
-                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-                } else {
-                    switch state {
-                    case .hidden: EmptyView()
-                    case .spinning:
-                        StepSpinnerBadge(number: index + 1, color: step.type.color).frame(width: 30, height: 30)
-                    case .checked:
-                        Circle().fill(AppColors.success).frame(width: 30, height: 30)
+            // Badge + connector in one column
+            VStack(spacing: 0) {
+                ZStack {
+                    if isCompleted && !isAnimating {
+                        Circle().fill(AppColors.success).frame(width: 28, height: 28)
                         Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-                    case .unlocked:
-                        Circle().fill(step.type.color.opacity(0.14)).frame(width: 30, height: 30)
-                        Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(step.type.color)
-                    case .locked:
-                        Circle().fill(AppColors.surface).frame(width: 30, height: 30)
-                        Image(systemName: "lock.fill").font(.system(size: 10, weight: .bold)).foregroundStyle(AppColors.tertiaryText)
+                    } else {
+                        switch state {
+                        case .hidden: EmptyView()
+                        case .spinning:
+                            StepSpinnerBadge(number: index + 1, color: step.type.color).frame(width: 28, height: 28)
+                        case .checked:
+                            Circle().fill(AppColors.success).frame(width: 28, height: 28)
+                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                        case .unlocked:
+                            Circle().fill(step.type.color.opacity(0.14)).frame(width: 28, height: 28)
+                            Text("\(index + 1)").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(step.type.color)
+                        case .locked:
+                            Circle().fill(AppColors.surface).frame(width: 28, height: 28)
+                            Image(systemName: "lock.fill").font(.system(size: 10)).foregroundStyle(AppColors.tertiaryText)
+                        }
                     }
                 }
-            }
-            .animation(.spring(duration: 0.4, bounce: 0.2), value: stepDisplayStates)
+                .animation(.spring(duration: 0.4, bounce: 0.2), value: stepDisplayStates)
 
-            VStack(alignment: .leading, spacing: 4) {
+                if !isLast {
+                    Rectangle()
+                        .fill(connectorColor(for: index))
+                        .frame(width: 2, height: 18)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Image(systemName: step.icon).font(.system(size: 10, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
@@ -684,12 +687,10 @@ struct TaskOverviewView: View {
             Spacer()
             if isTappable {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppColors.tertiaryText)
-                    .frame(maxHeight: .infinity)
             }
         }
-        .padding(.vertical, 12)
         .contentShape(Rectangle())
         .onTapGesture {
             if isTappable {
@@ -985,7 +986,14 @@ struct TaskOverviewView: View {
         }
         let characters = Array(text)
         guard !characters.isEmpty else { return }
-        let totalDuration = min(1.5, max(0.6, Double(characters.count) * 0.035))
+
+        // Play TTS — audio was pre-loaded in TaskLoadingView, plays from local file instantly
+        let playbackId = EnglishSpeechPlayer.playbackID(for: text, category: "focus-goal")
+        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: text, sourceLabel: "学习重点")
+
+        // Match typewriter duration to actual audio duration
+        let audioDuration = EnglishSpeechPlayer.shared.cachedDuration(id: playbackId)
+        let totalDuration = audioDuration ?? min(2.5, max(1.2, Double(characters.count) * 0.045))
         let interval = totalDuration / Double(characters.count)
         for index in characters.indices {
             guard !Task.isCancelled else { return }
