@@ -27,7 +27,7 @@
         {
           "description" : "解锁阶段 2：事件叙述与初级认知",
           "displayName" : "阶段 2",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.2",
@@ -47,7 +47,7 @@
         {
           "description" : "解锁阶段 3：过程、问题与判断",
           "displayName" : "阶段 3",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.3",
@@ -67,7 +67,7 @@
         {
           "description" : "解锁阶段 4：观点、比较与不确定性",
           "displayName" : "阶段 4",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.4",
@@ -87,7 +87,7 @@
         {
           "description" : "解锁阶段 5：现实情境与沟通策略",
           "displayName" : "阶段 5",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.5",
@@ -107,7 +107,7 @@
         {
           "description" : "解锁阶段 6：职场表达与责任意识",
           "displayName" : "阶段 6",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.6",
@@ -127,7 +127,7 @@
         {
           "description" : "解锁阶段 7：人际关系与情感沟通",
           "displayName" : "阶段 7",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.7",
@@ -147,7 +147,7 @@
         {
           "description" : "解锁阶段 8：抽象话题与价值判断",
           "displayName" : "阶段 8",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.8",
@@ -167,7 +167,7 @@
         {
           "description" : "解锁阶段 9：反思、整合与自我定位",
           "displayName" : "阶段 9",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "productID" : "com.levi.dailyspeak.stage.9",
@@ -181,7 +181,7 @@
     "_billingIssuesEnabled" : false,
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
-    "_locale" : "zh_CN",
+    "_locale" : "zh_Hans",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "CHN",
     "_storeKitErrors" : [
@@ -201,7 +201,7 @@
         {
           "description" : "解锁全部 9 个阶段和 47+ 口语课程",
           "displayName" : "DailySpeak PRO",
-          "locale" : "zh_CN"
+          "locale" : "zh_Hans"
         }
       ],
       "name" : "DailySpeak PRO",
@@ -227,7 +227,7 @@
             {
               "description" : "按周订阅，畅享所有 PRO 内容",
               "displayName" : "PRO 周订阅",
-              "locale" : "zh_CN"
+              "locale" : "zh_Hans"
             }
           ],
           "productID" : "com.levi.dailyspeak.pro.weekly",
@@ -260,7 +260,7 @@
             {
               "description" : "按月订阅，畅享所有 PRO 内容",
               "displayName" : "PRO 月度订阅",
-              "locale" : "zh_CN"
+              "locale" : "zh_Hans"
             }
           ],
           "productID" : "com.levi.dailyspeak.pro.monthly",
@@ -293,7 +293,7 @@
             {
               "description" : "按年订阅，节省 55%，畅享所有 PRO 内容",
               "displayName" : "PRO 年度订阅",
-              "locale" : "zh_CN"
+              "locale" : "zh_Hans"
             }
           ],
           "productID" : "com.levi.dailyspeak.pro.yearly",
