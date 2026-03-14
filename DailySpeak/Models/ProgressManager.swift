@@ -81,8 +81,22 @@ final class ProgressManager {
     }
 
     func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage) -> Bool {
-        if taskId == 1 { return true }
-        return isTaskCompleted(stageId: stageId, taskId: taskId - 1)
+        // All tasks within an unlocked stage are accessible in any order
+        return isStageUnlocked(stageId: stageId)
+    }
+
+    // MARK: - Stage Progress
+
+    func isStageCompleted(_ stage: Stage) -> Bool {
+        stage.tasks.allSatisfy { isTaskCompleted(stageId: stage.id, taskId: $0.id) }
+    }
+
+    func isStageUnlocked(stageId: Int) -> Bool {
+        if stageId == 1 { return true }
+        // Previous stage must be fully completed
+        let stages = CourseData.stages
+        guard let prevStage = stages.first(where: { $0.id == stageId - 1 }) else { return false }
+        return isStageCompleted(prevStage)
     }
 
     // MARK: - Daily Motivation

@@ -216,8 +216,14 @@ struct StageListView: View {
                     ForEach(stages) { stage in
                         CarouselStageCard(
                             stage: stage,
-                            onStageTap: { selectedStage = stage },
-                            onTaskTap: { selectedTask = $0 }
+                            onStageTap: {
+                                guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                                selectedStage = stage
+                            },
+                            onTaskTap: { task in
+                                guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                                selectedTask = task
+                            }
                         )
                         .frame(width: cardWidth)
                         .scrollTransition(.animated(.spring(response: 0.5, dampingFraction: 0.78))) { content, phase in
@@ -292,7 +298,10 @@ struct StageListView: View {
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
                 Spacer()
-                Button { selectedStage = stage } label: {
+                Button {
+                    guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                    selectedStage = stage
+                } label: {
                     Text("View all")
                         .font(.caption.bold())
                         .foregroundStyle(theme.startColor)
@@ -316,7 +325,10 @@ struct StageListView: View {
                 let delay = 0.12 * Double(idx) + 0.15
 
                 VStack(spacing: 0) {
-                    Button { selectedTask = task } label: {
+                    Button {
+                        guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                        selectedTask = task
+                    } label: {
                         HStack(spacing: 12) {
                             // Number badge with bounce
                             ZStack {
@@ -376,7 +388,10 @@ struct StageListView: View {
                 let footerDelay = 0.12 * Double(min(stage.tasks.count, 4)) + 0.15
                 VStack(spacing: 0) {
                     Divider().background(AppColors.border).padding(.leading, 52)
-                    Button { selectedStage = stage } label: {
+                    Button {
+                        guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                        selectedStage = stage
+                    } label: {
                         HStack {
                             Text("View all \(stage.tasks.count) tasks")
                                 .font(.caption.bold()).foregroundStyle(theme.startColor)
@@ -486,6 +501,7 @@ struct CarouselStageCard: View {
     private var completedCount: Int { progress.completedTaskCount(for: stage) }
     private var prog: Double { progress.stageProgress(for: stage) }
     private var theme: StageTheme { stage.theme }
+    private var isStageLocked: Bool { !progress.isStageUnlocked(stageId: stage.id) }
     private var nextTask: SpeakingTask? {
         stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
     }
@@ -567,6 +583,19 @@ struct CarouselStageCard: View {
                                 .background(.white.opacity(0.18))
                                 .clipShape(Capsule())
                             }
+                            if isStageLocked {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 8, weight: .bold))
+                                    Text("完成上一阶段解锁")
+                                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                }
+                                .foregroundStyle(.white.opacity(0.9))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .background(.white.opacity(0.18))
+                                .clipShape(Capsule())
+                            }
                         }
                         Spacer()
                         Text(theme.emoji)
@@ -626,6 +655,13 @@ struct CarouselStageCard: View {
                                 Text("Completed")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppColors.success)
+                            } else if isStageLocked {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(AppColors.tertiaryText)
+                                Text("Locked")
+                                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppColors.tertiaryText)
                             } else {
                                 Text("Continue")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))

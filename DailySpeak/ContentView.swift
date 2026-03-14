@@ -15,9 +15,12 @@ struct ContentView: View {
     private var previewTask: SpeakingTask { previewStage.tasks[0] }
     private let arguments = ProcessInfo.processInfo.arguments
 
+    @State private var previewCanComplete = false
+    @State private var previewProgressHint: String? = nil
+
     private var previewStrategyView: some View {
         ScrollView(showsIndicators: false) {
-            StrategyStepView(task: previewTask, accentColor: previewStage.theme.startColor)
+            StrategyStepView(task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
         }
@@ -28,7 +31,7 @@ struct ContentView: View {
 
     private var previewFrameworkView: some View {
         ScrollView(showsIndicators: false) {
-            FrameworkStepView(task: previewTask, accentColor: previewStage.theme.startColor)
+            FrameworkStepView(task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
         }
@@ -39,7 +42,7 @@ struct ContentView: View {
 
     private var previewPracticeView: some View {
         ScrollView(showsIndicators: false) {
-            PracticePromptView(stageId: previewStage.id, task: previewTask, accentColor: previewStage.theme.startColor)
+            PracticePromptView(stageId: previewStage.id, task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
         }

@@ -300,6 +300,7 @@ struct InlineAudioPlayerControl: View {
     let accentColor: Color
     var title: String? = nil
     var style: InlineAudioPlayerStyle = .prominent
+    var onPlay: (() -> Void)? = nil
 
     @State private var sliderProgress: Double = 0
     @State private var isScrubbing = false
@@ -462,6 +463,7 @@ struct InlineAudioPlayerControl: View {
             text: previewText,
             sourceLabel: sourceLabel
         )
+        onPlay?()
     }
 
     private func stopPlayback() {

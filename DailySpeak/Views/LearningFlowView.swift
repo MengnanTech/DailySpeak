@@ -9,6 +9,8 @@ struct LearningFlowView: View {
 
     @State private var currentStep: Int
     @State private var stepTransitionDirection: Edge = .trailing
+    @State private var stepCanComplete = false
+    @State private var stepProgressHint: String?
 
     private var theme: StageTheme { stage.theme }
     private var steps: [LearningStep] { task.steps }
@@ -49,6 +51,10 @@ struct LearningFlowView: View {
         }
         .onAppear { syncCurrentStep() }
         .onDisappear { EnglishSpeechPlayer.shared.stopPlayback() }
+        .onChange(of: currentStep) { _, _ in
+            stepCanComplete = false
+            stepProgressHint = nil
+        }
     }
 
     private func syncCurrentStep() {
@@ -211,93 +217,123 @@ struct LearningFlowView: View {
     @ViewBuilder
     private func stepView(for type: StepType) -> some View {
         switch type {
-        case .strategy:   StrategyStepView(task: task, accentColor: theme.startColor)
-        case .review:     ReviewStepView(task: task, accentColor: theme.startColor)
-        case .vocabulary:  VocabularyStepView(task: task, accentColor: theme.startColor)
-        case .phrases:     PhrasesStepView(task: task, accentColor: theme.startColor)
-        case .framework:   FrameworkStepView(task: task, accentColor: theme.startColor)
-        case .samples:     SamplesStepView(task: task, accentColor: theme.startColor)
-        case .practice:    PracticePromptView(stageId: stage.id, task: task, accentColor: theme.startColor)
+        case .strategy:   StrategyStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .review:     ReviewStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .vocabulary:  VocabularyStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .phrases:     PhrasesStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .framework:   FrameworkStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .samples:     SamplesStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .practice:    PracticePromptView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
         }
     }
 
-    // MARK: - Bottom Bar (Enhanced with step locking)
+    // MARK: - Bottom Bar (Enhanced with step locking + completion gate)
     private var bottomBar: some View {
         let isCurrentCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: currentStep)
         let isLastStep = currentStep == steps.count - 1
+        let canProceed = isCurrentCompleted || stepCanComplete
 
-        return HStack(spacing: 12) {
-            if currentStep > 0 {
+        return VStack(spacing: 0) {
+            // Progress hint when step not yet completable
+            if !canProceed, let hint = stepProgressHint {
+                HStack(spacing: 6) {
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 11, weight: .bold))
+                    Text(hint)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(steps[currentStep].type.color)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .background(steps[currentStep].type.color.opacity(0.08))
+            }
+
+            HStack(spacing: 12) {
+                if currentStep > 0 {
+                    Button {
+                        stepTransitionDirection = .leading
+                        withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                            currentStep -= 1
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 11, weight: .bold))
+                            Text("Back")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(AppColors.secondText)
+                        .frame(height: 50)
+                        .frame(maxWidth: .infinity)
+                        .background(AppColors.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Button {
-                    stepTransitionDirection = .leading
-                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
-                        currentStep -= 1
+                    markCurrentComplete()
+                    if isLastStep {
+                        finishTask()
+                    } else {
+                        stepTransitionDirection = .trailing
+                        withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
+                            currentStep += 1
+                        }
                     }
                 } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                        Text("Back")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                    HStack(spacing: 6) {
+                        if !isCurrentCompleted && canProceed {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: 13, weight: .bold))
+                        }
+                        if !canProceed {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 11, weight: .bold))
+                        }
+                        Text(
+                            !canProceed
+                                ? "完成本步骤内容"
+                                : isLastStep
+                                    ? "Complete"
+                                    : isCurrentCompleted
+                                        ? "Next"
+                                        : "Mark Complete & Next"
+                        )
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        if canProceed {
+                            Image(systemName: isLastStep ? "checkmark" : "chevron.right")
+                                .font(.system(size: 11, weight: .bold))
+                        }
                     }
-                    .foregroundStyle(AppColors.secondText)
+                    .foregroundStyle(.white)
                     .frame(height: 50)
                     .frame(maxWidth: .infinity)
-                    .background(AppColors.surface)
+                    .background(
+                        !canProceed
+                            ? AnyShapeStyle(AppColors.border)
+                            : isLastStep
+                                ? AnyShapeStyle(
+                                    LinearGradient(
+                                        colors: [AppColors.success, AppColors.success.opacity(0.8)],
+                                        startPoint: .leading, endPoint: .trailing
+                                    )
+                                )
+                                : AnyShapeStyle(theme.gradient)
+                    )
                     .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                    .shadow(color: canProceed ? (isLastStep ? AppColors.success : theme.startColor).opacity(0.3) : .clear, radius: 10, x: 0, y: 4)
                 }
                 .buttonStyle(.plain)
+                .disabled(!canProceed)
             }
-
-            Button {
-                markCurrentComplete()
-                if isLastStep {
-                    finishTask()
-                } else {
-                    stepTransitionDirection = .trailing
-                    withAnimation(.spring(duration: 0.4, bounce: 0.15)) {
-                        currentStep += 1
-                    }
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    if !isCurrentCompleted {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 13, weight: .bold))
-                    }
-                    Text(
-                        isLastStep
-                            ? "Complete"
-                            : isCurrentCompleted
-                                ? "Next"
-                                : "Mark Complete & Next"
-                    )
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    Image(systemName: isLastStep ? "checkmark" : "chevron.right")
-                        .font(.system(size: 11, weight: .bold))
-                }
-                .foregroundStyle(.white)
-                .frame(height: 50)
-                .frame(maxWidth: .infinity)
-                .background(
-                    isLastStep
-                        ? AnyShapeStyle(
-                            LinearGradient(
-                                colors: [AppColors.success, AppColors.success.opacity(0.8)],
-                                startPoint: .leading, endPoint: .trailing
-                            )
-                        )
-                        : AnyShapeStyle(theme.gradient)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
-                .shadow(color: (isLastStep ? AppColors.success : theme.startColor).opacity(0.3), radius: 10, x: 0, y: 4)
-            }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
         .background(
             AppColors.card
                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: -3)
@@ -473,6 +509,8 @@ extension View {
 struct StrategyStepView: View {
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
 
     @State private var appeared = false
     private var lesson: LessonContent? { task.lessonContent }
@@ -504,8 +542,18 @@ struct StrategyStepView: View {
             } else {
                 standardStrategyContent
             }
+
+            // Scroll-to-bottom gate sentinel
+            Color.clear.frame(height: 1)
+                .onAppear {
+                    canComplete = true
+                    progressHint = nil
+                }
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            progressHint = "滚动到底部以继续"
+        }
     }
 
     private let stepColor = Color(hex: "F59E0B")
@@ -739,6 +787,8 @@ private enum VocabViewMode: String, CaseIterable {
 struct VocabularyStepView: View {
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
 
     @State private var selectedCategory: VocabCategory = .core
     @State private var selectedItem: VocabItem?
@@ -748,6 +798,7 @@ struct VocabularyStepView: View {
     @State private var flashcardIndex = 0
     @State private var flashcardFlipped = false
     @State private var appeared = false
+    @State private var revealedWords: Set<String> = []
     private var hasLessonContent: Bool { task.lessonContent != nil }
 
     private var coreItems: [VocabItem] {
@@ -836,7 +887,29 @@ struct VocabularyStepView: View {
             VocabDetailSheet(item: item, accentColor: accentColor)
                 .presentationBackground(AppColors.background)
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            updateVocabProgress()
+        }
+        .onChange(of: revealedWords.count) { _, _ in
+            updateVocabProgress()
+        }
+    }
+
+    private var allCoreWords: Set<String> {
+        Set(coreItems.map { $0.word })
+    }
+
+    private func updateVocabProgress() {
+        let total = allCoreWords.count
+        let revealed = allCoreWords.intersection(revealedWords).count
+        if revealed >= total {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "还剩 \(total - revealed) 个核心词汇未学习"
+        }
     }
 
     // MARK: - Flashcard View (Enhanced 3D flip)
@@ -857,6 +930,9 @@ struct VocabularyStepView: View {
                 Button {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.72)) {
                         flashcardFlipped.toggle()
+                        if flashcardFlipped {
+                            revealedWords.insert(item.word)
+                        }
                     }
                 } label: {
                     ZStack {
@@ -1112,7 +1188,10 @@ struct VocabularyStepView: View {
             ForEach(items) { item in
                 VocabCardView(
                     item: item,
-                    onShowMeaning: { selectedItem = item },
+                    onShowMeaning: {
+                        selectedItem = item
+                        revealedWords.insert(item.word)
+                    },
                     onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary") }
                 )
             }
@@ -1383,8 +1462,11 @@ final class WordPronouncer {
 struct PhrasesStepView: View {
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
 
     @State private var appeared = false
+    @State private var listenedPhrases: Set<String> = []
     private var hasLessonContent: Bool { task.lessonContent != nil }
 
     var body: some View {
@@ -1414,7 +1496,7 @@ struct PhrasesStepView: View {
                 Image(systemName: "text.quote")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color(hex: "10B981"))
-                Text("\(task.phrases.count) 个表达")
+                Text("\(listenedPhrases.count)/\(task.phrases.count) 个表达已听")
                     .font(.caption.bold())
                     .foregroundStyle(Color(hex: "10B981"))
                 Spacer()
@@ -1426,11 +1508,31 @@ struct PhrasesStepView: View {
             .staggerIn(index: 1, appeared: appeared)
 
             ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
-                PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor)
+                PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor, onListen: {
+                    listenedPhrases.insert(phrase.phrase)
+                })
                     .staggerIn(index: index + 2, appeared: appeared)
             }
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            updatePhrasesProgress()
+        }
+        .onChange(of: listenedPhrases.count) { _, _ in
+            updatePhrasesProgress()
+        }
+    }
+
+    private func updatePhrasesProgress() {
+        let total = task.phrases.count
+        let listened = listenedPhrases.count
+        if listened >= total {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "还剩 \(total - listened) 个词组未听"
+        }
     }
 }
 
@@ -1438,6 +1540,7 @@ struct PhraseCard: View {
     let phrase: PhraseItem
     let index: Int
     let accentColor: Color
+    var onListen: (() -> Void)? = nil
 
     @State private var exampleVisible = false
 
@@ -1475,6 +1578,7 @@ struct PhraseCard: View {
 
                 Button {
                     WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46, sourceLabel: "Phrase")
+                    onListen?()
                 } label: {
                     ZStack {
                         Circle()
@@ -1572,6 +1676,8 @@ struct PhraseCard: View {
 struct FrameworkStepView: View {
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
 
     @State private var appeared = false
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
@@ -1604,8 +1710,18 @@ struct FrameworkStepView: View {
             } else {
                 standardFrameworkContent
             }
+
+            // Scroll-to-bottom gate sentinel
+            Color.clear.frame(height: 1)
+                .onAppear {
+                    canComplete = true
+                    progressHint = nil
+                }
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            progressHint = "滚动到底部以继续"
+        }
     }
 
     private let frameworkColor = Color(hex: "8B5CF6")
@@ -1889,9 +2005,12 @@ struct FrameworkSentenceCard: View {
 struct SamplesStepView: View {
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
 
     @State private var selectedBand = 0
     @State private var appeared = false
+    @State private var listenedBands: Set<Int> = []
     private var hasLessonContent: Bool { task.lessonContent != nil }
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2028,7 +2147,8 @@ struct SamplesStepView: View {
                         ),
                         sourceLabel: "Sample Answer",
                         accentColor: bandColor,
-                        title: "Listen to Pronunciation"
+                        title: "Listen to Pronunciation",
+                        onPlay: { listenedBands.insert(selectedBand) }
                     )
 
                     if !sample.nativeFeatures.isEmpty {
@@ -2110,7 +2230,16 @@ struct SamplesStepView: View {
                 .staggerIn(index: lesson == nil ? 2 : 3, appeared: appeared)
             }
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            progressHint = "听完至少 1 个 Band 的范文音频"
+        }
+        .onChange(of: listenedBands.count) { _, _ in
+            if !listenedBands.isEmpty {
+                canComplete = true
+                progressHint = nil
+            }
+        }
     }
 
     private func frameworkGuideSection(title: String, lines: [String], tint: Color) -> some View {
@@ -2180,6 +2309,8 @@ struct PracticePromptView: View {
     let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
+    @Binding var canComplete: Bool
+    @Binding var progressHint: String?
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2194,10 +2325,12 @@ struct PracticePromptView: View {
     @State private var appeared = false
     @FocusState private var isInputFocused: Bool
 
-    init(stageId: Int, task: SpeakingTask, accentColor: Color) {
+    init(stageId: Int, task: SpeakingTask, accentColor: Color, canComplete: Binding<Bool>, progressHint: Binding<String?>) {
         self.stageId = stageId
         self.task = task
         self.accentColor = accentColor
+        self._canComplete = canComplete
+        self._progressHint = progressHint
 
         let defaults = UserDefaults.standard
         let base = "practice_s\(stageId)_t\(task.id)"
@@ -2291,7 +2424,23 @@ struct PracticePromptView: View {
         .onDisappear {
             speechInput.stopRecording()
         }
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            updatePracticeProgress()
+        }
+        .onChange(of: translatedEnglish) { _, _ in
+            updatePracticeProgress()
+        }
+    }
+
+    private func updatePracticeProgress() {
+        if !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "提交你的回答并获取翻译结果"
+        }
     }
 
     private let practiceColor = Color(hex: "EF4444")
