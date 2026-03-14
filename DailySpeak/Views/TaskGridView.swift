@@ -163,7 +163,7 @@ struct TaskGridView: View {
             return .completed
         } else if task.id == nextTask?.id {
             return .current
-        } else if progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, isPro: subscription.isPro) {
+        } else if progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, subscription: subscription) {
             return .unlocked
         } else {
             return .locked
@@ -288,6 +288,14 @@ struct TimelineRow: View {
                     Text(task.englishTitle)
                         .font(.caption2)
                         .foregroundStyle(AppColors.tertiaryText)
+                }
+                .blur(radius: state == .locked ? 4 : 0)
+                .overlay {
+                    if state == .locked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
                 }
 
                 Spacer()

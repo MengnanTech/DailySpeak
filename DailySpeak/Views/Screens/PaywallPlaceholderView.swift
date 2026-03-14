@@ -4,23 +4,43 @@ import StoreKit
 struct PaywallPlaceholderView: View {
     @Environment(SubscriptionManager.self) private var subscription
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedPlan: PlanType = .yearly
+    @State private var selectedSubPlan: SubPlan = .yearly
+    @State private var purchaseMode: PurchaseMode = .subscribe
     @State private var appeared = false
     @State private var glowPhase = false
 
-    private enum PlanType { case monthly, yearly }
+    /// Optional: which stage the user tried to access (nil = generic paywall)
+    var targetStageId: Int? = nil
 
-    // Brand
+    private enum SubPlan: String, CaseIterable { case weekly, monthly, yearly }
+    private enum PurchaseMode: String, CaseIterable {
+        case subscribe, stage
+        var label: String {
+            switch self {
+            case .subscribe: return "订阅全部"
+            case .stage: return "单独解锁"
+            }
+        }
+    }
+
     private let accent = Color(hex: "4F6BED")
     private let accentLight = Color(hex: "7B8FF5")
-    private let gold = Color(hex: "D4A844")
 
     private var proTaskCount: Int {
         CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
     }
 
-    private var selectedProduct: Product? {
-        selectedPlan == .monthly ? subscription.monthlyProduct : subscription.yearlyProduct
+    private var selectedSubProduct: Product? {
+        switch selectedSubPlan {
+        case .weekly:  return subscription.weeklyProduct
+        case .monthly: return subscription.monthlyProduct
+        case .yearly:  return subscription.yearlyProduct
+        }
+    }
+
+    private var targetStage: Stage? {
+        guard let id = targetStageId else { return nil }
+        return CourseData.stages.first { $0.id == id }
     }
 
     private let features: [(icon: String, color: String, text: String)] = [
@@ -32,21 +52,14 @@ struct PaywallPlaceholderView: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // Background
             LinearGradient(
-                colors: [
-                    accent.opacity(0.03),
-                    AppColors.background,
-                    AppColors.background,
-                ],
-                startPoint: .top,
-                endPoint: .bottom
+                colors: [accent.opacity(0.03), AppColors.background, AppColors.background],
+                startPoint: .top, endPoint: .bottom
             )
             .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    // Hero
                     heroArea
                         .padding(.top, 50)
 
@@ -54,36 +67,29 @@ struct PaywallPlaceholderView: View {
                         proActiveBanner
                             .padding(.horizontal, 24)
                             .padding(.top, 24)
-                    }
+                    } else {
+                        // Purchase mode picker (only if we have a target stage)
+                        if targetStageId != nil {
+                            modePicker
+                                .padding(.horizontal, 24)
+                                .padding(.top, 28)
+                        }
 
-                    // Features
-                    featureList
-                        .padding(.horizontal, 24)
-                        .padding(.top, 28)
+                        if purchaseMode == .subscribe || targetStageId == nil {
+                            subscribeSection
+                        } else {
+                            stageSection
+                        }
 
-                    if !subscription.isPro {
-                        // Plans
-                        planSelector
-                            .padding(.horizontal, 24)
-                            .padding(.top, 32)
-
-                        // CTA
-                        ctaButton
-                            .padding(.horizontal, 24)
-                            .padding(.top, 24)
-
-                        // Trust
                         trustFooter
                             .padding(.horizontal, 24)
                             .padding(.top, 20)
                             .padding(.bottom, 40)
-                    } else {
-                        Spacer(minLength: 40)
                     }
                 }
             }
 
-            // Close button
+            // Close
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 14, weight: .semibold))
@@ -96,10 +102,10 @@ struct PaywallPlaceholderView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            // If we have a target stage, default to single stage mode
+            if targetStageId != nil { purchaseMode = .stage }
             withAnimation(.easeOut(duration: 0.8)) { appeared = true }
-            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
-                glowPhase = true
-            }
+            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) { glowPhase = true }
         }
         .onChange(of: subscription.isPro) { _, isPro in
             if isPro { dismiss() }
@@ -109,30 +115,19 @@ struct PaywallPlaceholderView: View {
     // MARK: - Hero
     private var heroArea: some View {
         VStack(spacing: 20) {
-            // Animated icon
             ZStack {
-                // Outer glow ring
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [accent.opacity(0.12), accent.opacity(0)],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 70
+                            center: .center, startRadius: 30, endRadius: 70
                         )
                     )
                     .frame(width: 140, height: 140)
                     .scaleEffect(glowPhase ? 1.1 : 0.9)
 
-                // Inner circle
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [accent, accentLight],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(LinearGradient(colors: [accent, accentLight], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 80, height: 80)
                     .shadow(color: accent.opacity(0.3), radius: 20, x: 0, y: 10)
 
@@ -145,15 +140,24 @@ struct PaywallPlaceholderView: View {
             .scaleEffect(appeared ? 1 : 0.6)
 
             VStack(spacing: 10) {
-                Text("解锁完整口语之旅")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(AppColors.primaryText)
-
-                Text("\(proTaskCount)+ 节精品课程，系统提升你的口语表达")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.secondText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
+                if let stage = targetStage {
+                    Text("解锁「\(stage.chineseTitle)」")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                        .multilineTextAlignment(.center)
+                    Text("Stage \(stage.id) · \(stage.taskCount) 节课程")
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+                } else {
+                    Text("解锁完整口语之旅")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                    Text("\(proTaskCount)+ 节精品课程，系统提升你的口语表达")
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
             }
             .opacity(appeared ? 1 : 0)
             .offset(y: appeared ? 0 : 20)
@@ -192,6 +196,105 @@ struct PaywallPlaceholderView: View {
         )
     }
 
+    // MARK: - Mode Picker
+    private var modePicker: some View {
+        HStack(spacing: 0) {
+            ForEach(PurchaseMode.allCases, id: \.self) { mode in
+                Button {
+                    withAnimation(.spring(response: 0.3)) { purchaseMode = mode }
+                } label: {
+                    Text(mode.label)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(purchaseMode == mode ? .white : AppColors.secondText)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 38)
+                        .background(
+                            purchaseMode == mode
+                                ? AnyShapeStyle(LinearGradient(colors: [accent, accentLight], startPoint: .leading, endPoint: .trailing))
+                                : AnyShapeStyle(Color.clear)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(3)
+        .background(AppColors.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Subscribe Section
+    private var subscribeSection: some View {
+        VStack(spacing: 0) {
+            // Feature list
+            featureList
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+
+            // Plan selector
+            VStack(spacing: 10) {
+                ForEach(SubPlan.allCases, id: \.self) { plan in
+                    if let product = subProduct(for: plan) {
+                        subPlanRow(plan: plan, product: product)
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+
+            // Error
+            if let error = subscription.purchaseError {
+                Text(error)
+                    .font(.caption).foregroundStyle(.red)
+                    .padding(.horizontal, 24).padding(.top, 8)
+            }
+
+            // CTA
+            purchaseButton(
+                title: "立即订阅",
+                product: selectedSubProduct
+            )
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+
+            Text("可随时取消 · 自动续费")
+                .font(.system(size: 12))
+                .foregroundStyle(AppColors.tertiaryText)
+                .padding(.top, 10)
+        }
+    }
+
+    // MARK: - Stage Section
+    private var stageSection: some View {
+        VStack(spacing: 0) {
+            if let stageId = targetStageId, let stage = targetStage {
+                // Stage info card
+                stageInfoCard(stage: stage)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+
+                // Stage purchase button
+                if let product = subscription.stageProduct(for: stageId) {
+                    purchaseButton(
+                        title: "解锁 \(stage.chineseTitle)  \(product.displayPrice)",
+                        product: product
+                    )
+                    .padding(.horizontal, 24)
+                    .padding(.top, 24)
+
+                    Text("一次购买，永久使用")
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppColors.tertiaryText)
+                        .padding(.top, 10)
+                }
+
+                // Upsell: subscribe for all
+                upsellBanner
+                    .padding(.horizontal, 24)
+                    .padding(.top, 20)
+            }
+        }
+    }
+
     // MARK: - Feature List
     private var featureList: some View {
         VStack(spacing: 0) {
@@ -207,122 +310,55 @@ struct PaywallPlaceholderView: View {
                     Text(feature.text)
                         .font(.system(size: 15))
                         .foregroundStyle(AppColors.primaryText)
-
                     Spacer(minLength: 0)
                 }
                 .padding(.vertical, 12)
                 .opacity(appeared ? 1 : 0)
                 .offset(x: appeared ? 0 : -30)
-                .animation(
-                    .spring(response: 0.6, dampingFraction: 0.8).delay(0.1 + Double(index) * 0.08),
-                    value: appeared
-                )
+                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1 + Double(index) * 0.08), value: appeared)
 
                 if index < features.count - 1 {
-                    Divider()
-                        .background(AppColors.border.opacity(0.5))
-                        .padding(.leading, 50)
+                    Divider().background(AppColors.border.opacity(0.5)).padding(.leading, 50)
                 }
             }
         }
     }
 
-    // MARK: - Plan Selector
-    private var planSelector: some View {
-        VStack(spacing: 10) {
-            // Yearly plan (recommended)
-            if let yearly = subscription.yearlyProduct {
-                planRow(
-                    product: yearly,
-                    title: "年度订阅",
-                    subtitle: monthlyEquivalent(yearly),
-                    badge: "推荐",
-                    isSelected: selectedPlan == .yearly
-                ) {
-                    withAnimation(.spring(response: 0.3)) { selectedPlan = .yearly }
-                }
-            }
+    // MARK: - Sub Plan Row
+    private func subPlanRow(plan: SubPlan, product: Product) -> some View {
+        let isSelected = selectedSubPlan == plan
 
-            // Monthly plan
-            if let monthly = subscription.monthlyProduct {
-                planRow(
-                    product: monthly,
-                    title: "月度订阅",
-                    subtitle: nil,
-                    badge: nil,
-                    isSelected: selectedPlan == .monthly
-                ) {
-                    withAnimation(.spring(response: 0.3)) { selectedPlan = .monthly }
-                }
-            }
-
-            // Error
-            if let error = subscription.purchaseError {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .padding(.top, 4)
-            }
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 20)
-        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.5), value: appeared)
-    }
-
-    private func planRow(
-        product: Product,
-        title: String,
-        subtitle: String?,
-        badge: String?,
-        isSelected: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
+        return Button {
+            withAnimation(.spring(response: 0.3)) { selectedSubPlan = plan }
+        } label: {
             HStack(spacing: 14) {
-                // Radio
                 ZStack {
                     Circle()
                         .stroke(isSelected ? accent : AppColors.border, lineWidth: isSelected ? 0 : 1.5)
                         .frame(width: 22, height: 22)
-
                     if isSelected {
-                        Circle()
-                            .fill(accent)
-                            .frame(width: 22, height: 22)
+                        Circle().fill(accent).frame(width: 22, height: 22)
                         Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 11, weight: .bold)).foregroundStyle(.white)
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
-                        Text(title)
+                        Text(planTitle(plan))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(AppColors.primaryText)
-
-                        if let badge {
-                            Text(badge)
+                        if plan == .yearly {
+                            Text("推荐")
                                 .font(.system(size: 10, weight: .heavy, design: .rounded))
                                 .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule().fill(
-                                        LinearGradient(
-                                            colors: [accent, accentLight],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                )
+                                .padding(.horizontal, 8).padding(.vertical, 3)
+                                .background(Capsule().fill(LinearGradient(colors: [accent, accentLight], startPoint: .leading, endPoint: .trailing)))
                         }
                     }
-
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(.caption)
-                            .foregroundStyle(AppColors.tertiaryText)
+                    if plan == .yearly, let yearly = subscription.yearlyProduct {
+                        Text(monthlyEquivalent(yearly))
+                            .font(.caption).foregroundStyle(AppColors.tertiaryText)
                     }
                 }
 
@@ -332,7 +368,7 @@ struct PaywallPlaceholderView: View {
                     Text(product.displayPrice)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(isSelected ? accent : AppColors.secondText)
-                    Text(product.subscription?.subscriptionPeriod.unit == .year ? "/年" : "/月")
+                    Text(periodLabel(plan))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(AppColors.tertiaryText)
                 }
@@ -344,65 +380,112 @@ struct PaywallPlaceholderView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(
-                        isSelected ? accent.opacity(0.5) : AppColors.border.opacity(0.4),
-                        lineWidth: isSelected ? 1.5 : 0.5
+                    .stroke(isSelected ? accent.opacity(0.5) : AppColors.border.opacity(0.4), lineWidth: isSelected ? 1.5 : 0.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Stage Info Card
+    private func stageInfoCard(stage: Stage) -> some View {
+        HStack(spacing: 14) {
+            Text(stage.theme.emoji)
+                .font(.system(size: 36))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Stage \(stage.id) · \(stage.title)")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Text(stage.description)
+                    .font(.caption)
+                    .foregroundStyle(AppColors.secondText)
+                    .lineLimit(2)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(stage.theme.startColor.opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(stage.theme.startColor.opacity(0.2), lineWidth: 1)
+                )
+        )
+    }
+
+    // MARK: - Upsell Banner
+    private var upsellBanner: some View {
+        Button {
+            withAnimation(.spring(response: 0.3)) { purchaseMode = .subscribe }
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("订阅 PRO 解锁全部阶段")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppColors.primaryText)
+                    if let weekly = subscription.weeklyProduct {
+                        Text("低至 \(weekly.displayPrice)/周")
+                            .font(.caption)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(accent.opacity(0.04))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(accent.opacity(0.15), lineWidth: 1)
                     )
             )
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - CTA Button
-    private var ctaButton: some View {
-        VStack(spacing: 10) {
+    // MARK: - Purchase Button
+    private func purchaseButton(title: String, product: Product?) -> some View {
+        VStack(spacing: 0) {
             Button {
-                guard let product = selectedProduct else { return }
+                guard let product else { return }
                 Task { await subscription.purchase(product) }
             } label: {
                 HStack(spacing: 8) {
                     if subscription.isLoading {
-                        ProgressView()
-                            .tint(.white)
+                        ProgressView().tint(.white)
                     } else {
-                        Text("立即订阅")
+                        Text(title)
                             .font(.system(size: 18, weight: .bold))
                     }
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)
-                .background(
-                    LinearGradient(
-                        colors: [accent, accentLight],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .background(LinearGradient(colors: [accent, accentLight], startPoint: .leading, endPoint: .trailing))
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 6)
             }
             .buttonStyle(.plain)
-            .disabled(selectedProduct == nil || subscription.isLoading)
-            .opacity(selectedProduct == nil ? 0.5 : 1)
+            .disabled(product == nil || subscription.isLoading)
+            .opacity(product == nil ? 0.5 : 1)
 
             if subscription.products.isEmpty {
                 HStack(spacing: 6) {
-                    ProgressView()
-                        .scaleEffect(0.7)
+                    ProgressView().scaleEffect(0.7)
                     Text("加载中…")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
+                        .font(.caption).foregroundStyle(AppColors.tertiaryText)
                 }
+                .padding(.top, 8)
             }
-
-            Text("可随时取消 · 自动续费")
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.tertiaryText)
         }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 20)
-        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.6), value: appeared)
     }
 
     // MARK: - Trust Footer
@@ -432,6 +515,31 @@ struct PaywallPlaceholderView: View {
     }
 
     // MARK: - Helpers
+
+    private func subProduct(for plan: SubPlan) -> Product? {
+        switch plan {
+        case .weekly:  return subscription.weeklyProduct
+        case .monthly: return subscription.monthlyProduct
+        case .yearly:  return subscription.yearlyProduct
+        }
+    }
+
+    private func planTitle(_ plan: SubPlan) -> String {
+        switch plan {
+        case .weekly:  return "周订阅"
+        case .monthly: return "月订阅"
+        case .yearly:  return "年订阅"
+        }
+    }
+
+    private func periodLabel(_ plan: SubPlan) -> String {
+        switch plan {
+        case .weekly:  return "/周"
+        case .monthly: return "/月"
+        case .yearly:  return "/年"
+        }
+    }
+
     private func monthlyEquivalent(_ yearly: Product) -> String {
         let monthly = yearly.price / 12
         let formatted = String(format: "%.2f", NSDecimalNumber(decimal: monthly).doubleValue)
@@ -440,6 +548,6 @@ struct PaywallPlaceholderView: View {
 }
 
 #Preview {
-    PaywallPlaceholderView()
+    PaywallPlaceholderView(targetStageId: 3)
         .environment(SubscriptionManager())
 }

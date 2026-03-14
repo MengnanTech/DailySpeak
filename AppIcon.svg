@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161f78"/>
+      <stop offset="50%" stop-color="#3044b9"/>
+      <stop offset="100%" stop-color="#4F6BED"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="28%" cy="22%" r="55%">
+      <stop offset="0%" stop-color="#6482F5" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#6482F5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="78%" cy="82%" r="38%">
+      <stop offset="0%" stop-color="#7B5CF6" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#7B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="barGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2236AC"/>
+      <stop offset="100%" stop-color="#2E44B4"/>
+    </linearGradient>
+    <filter id="shadow" x="-15%" y="-10%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="14" stdDeviation="28" flood-color="#0a1032" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow1)"/>
+  <rect width="1024" height="1024" fill="url(#glow2)"/>
+
+  <!-- Speech bubble -->
+  <g filter="url(#shadow)">
+    <rect x="222" y="192" width="580" height="436" rx="88" fill="white" fill-opacity="0.98"/>
+    <path d="
+      M330,622 Q302,678 262,742 Q372,678 445,622 Z
+    " fill="white" fill-opacity="0.98"/>
+  </g>
+
+  <!-- Voice waveform bars -->
+  <g transform="translate(512,415)">
+    <rect x="-180" y="-40" width="38" height="80"  rx="19" fill="url(#barGrad)" opacity="0.72"/>
+    <rect x="-98"  y="-76" width="38" height="152" rx="19" fill="url(#barGrad)" opacity="0.85"/>
+    <rect x="-18"  y="-100" width="38" height="200" rx="19" fill="url(#barGrad)"/>
+    <rect x="62"   y="-66" width="38" height="132" rx="19" fill="url(#barGrad)" opacity="0.85"/>
+    <rect x="142"  y="-35" width="38" height="70"  rx="19" fill="url(#barGrad)" opacity="0.72"/>
+  </g>
+</svg>

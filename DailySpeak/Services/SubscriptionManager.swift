@@ -5,16 +5,41 @@ import StoreKit
 @MainActor
 final class SubscriptionManager {
 
-    // MARK: - State
+    // MARK: - Published State
 
+    /// All loaded products
     private(set) var products: [Product] = []
+    /// Active subscription → all stages unlocked
     private(set) var isPro: Bool = false
-    private(set) var currentSubscription: StoreKit.Transaction? = nil
+    /// Set of individually purchased stage IDs (2-9)
+    private(set) var purchasedStageIDs: Set<Int> = []
+    /// Error message from last purchase attempt
     private(set) var purchaseError: String? = nil
+    /// Loading indicator
     private(set) var isLoading: Bool = false
 
-    var monthlyProduct: Product? { products.first { $0.id == Constants.SubscriptionProductIDs.monthly } }
-    var yearlyProduct: Product? { products.first { $0.id == Constants.SubscriptionProductIDs.yearly } }
+    // MARK: - Product Accessors
+
+    var weeklyProduct: Product?  { products.first { $0.id == Constants.ProductIDs.weekly } }
+    var monthlyProduct: Product? { products.first { $0.id == Constants.ProductIDs.monthly } }
+    var yearlyProduct: Product?  { products.first { $0.id == Constants.ProductIDs.yearly } }
+
+    /// Subscription products sorted by price ascending
+    var subscriptionProducts: [Product] {
+        products.filter { Constants.ProductIDs.subscriptions.contains($0.id) }
+            .sorted { $0.price < $1.price }
+    }
+
+    /// Get the Product for a specific stage
+    func stageProduct(for stageId: Int) -> Product? {
+        products.first { $0.id == Constants.ProductIDs.stage(stageId) }
+    }
+
+    /// Whether a specific stage is accessible (subscription OR purchased)
+    func isStageAccessible(_ stageId: Int) -> Bool {
+        if stageId == 1 { return true }
+        return isPro || purchasedStageIDs.contains(stageId)
+    }
 
     private var transactionListener: Task<Void, Never>?
 
@@ -24,7 +49,7 @@ final class SubscriptionManager {
         transactionListener = listenForTransactions()
         Task { [weak self] in
             await self?.loadProducts()
-            await self?.updateSubscriptionStatus()
+            await self?.refreshPurchaseState()
         }
     }
 
@@ -32,14 +57,14 @@ final class SubscriptionManager {
 
     func loadProducts() async {
         do {
-            let storeProducts = try await Product.products(for: Constants.SubscriptionProductIDs.all)
-            products = storeProducts.sorted { $0.price < $1.price }
+            let loaded = try await Product.products(for: Constants.ProductIDs.all)
+            products = loaded.sorted { $0.price < $1.price }
         } catch {
             print("[SubscriptionManager] Failed to load products: \(error)")
         }
     }
 
-    // MARK: - Purchase
+    // MARK: - Purchase (subscription or stage)
 
     func purchase(_ product: Product) async {
         isLoading = true
@@ -52,7 +77,7 @@ final class SubscriptionManager {
             case .success(let verification):
                 let transaction = try checkVerified(verification)
                 await transaction.finish()
-                await updateSubscriptionStatus()
+                await refreshPurchaseState()
 
             case .userCancelled:
                 break
@@ -77,27 +102,30 @@ final class SubscriptionManager {
         defer { isLoading = false }
 
         try? await AppStore.sync()
-        await updateSubscriptionStatus()
+        await refreshPurchaseState()
     }
 
-    // MARK: - Subscription Status
+    // MARK: - Refresh All Purchase State
 
-    func updateSubscriptionStatus() async {
-        var foundActive = false
-        var latestTransaction: StoreKit.Transaction?
+    func refreshPurchaseState() async {
+        var hasActiveSub = false
+        var stages = Set<Int>()
 
-        for productID in Constants.SubscriptionProductIDs.all {
-            guard let result = await Transaction.currentEntitlement(for: productID) else { continue }
-            if let transaction = try? checkVerified(result) {
-                foundActive = true
-                if latestTransaction == nil || transaction.purchaseDate > latestTransaction!.purchaseDate {
-                    latestTransaction = transaction
+        for await result in Transaction.currentEntitlements {
+            guard let transaction = try? checkVerified(result) else { continue }
+
+            if Constants.ProductIDs.subscriptions.contains(transaction.productID) {
+                hasActiveSub = true
+            } else if Constants.ProductIDs.stages.contains(transaction.productID) {
+                // Extract stage number from product ID
+                if let stageId = stageIdFromProductID(transaction.productID) {
+                    stages.insert(stageId)
                 }
             }
         }
 
-        isPro = foundActive
-        currentSubscription = latestTransaction
+        isPro = hasActiveSub
+        purchasedStageIDs = stages
     }
 
     // MARK: - Transaction Listener
@@ -108,20 +136,24 @@ final class SubscriptionManager {
                 guard let self else { return }
                 if let transaction = try? self.checkVerified(result) {
                     await transaction.finish()
-                    await self.updateSubscriptionStatus()
+                    await self.refreshPurchaseState()
                 }
             }
         }
     }
 
-    // MARK: - Verification
+    // MARK: - Helpers
 
     private nonisolated func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
-        case .unverified(_, let error):
-            throw error
-        case .verified(let value):
-            return value
+        case .unverified(_, let error): throw error
+        case .verified(let value): return value
         }
+    }
+
+    private nonisolated func stageIdFromProductID(_ productID: String) -> Int? {
+        // "com.levi.dailyspeak.stage.5" → 5
+        guard let last = productID.split(separator: ".").last else { return nil }
+        return Int(last)
     }
 }

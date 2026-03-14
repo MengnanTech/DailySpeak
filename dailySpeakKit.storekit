@@ -14,7 +14,166 @@
 
   ],
   "products" : [
-
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_2",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 2: Events & Early Reflection",
+          "displayName" : "Stage 2",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 2：事件叙述与初级认知",
+          "displayName" : "阶段 2",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.2",
+      "referenceName" : "Stage 2 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_3",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 3: Process, Problems & Judgment",
+          "displayName" : "Stage 3",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 3：过程、问题与判断",
+          "displayName" : "阶段 3",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.3",
+      "referenceName" : "Stage 3 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_4",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 4: Opinions & Comparisons",
+          "displayName" : "Stage 4",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 4：观点、比较与不确定性",
+          "displayName" : "阶段 4",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.4",
+      "referenceName" : "Stage 4 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_5",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 5: Real-life Communication",
+          "displayName" : "Stage 5",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 5：现实情境与沟通策略",
+          "displayName" : "阶段 5",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.5",
+      "referenceName" : "Stage 5 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_6",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 6: Workplace Responsibility",
+          "displayName" : "Stage 6",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 6：职场表达与责任意识",
+          "displayName" : "阶段 6",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.6",
+      "referenceName" : "Stage 6 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_7",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 7: Relationships & Emotions",
+          "displayName" : "Stage 7",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 7：人际关系与情感沟通",
+          "displayName" : "阶段 7",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.7",
+      "referenceName" : "Stage 7 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_8",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 8: Abstract Topics & Values",
+          "displayName" : "Stage 8",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 8：抽象话题与价值判断",
+          "displayName" : "阶段 8",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.8",
+      "referenceName" : "Stage 8 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "6",
+      "familyShareable" : false,
+      "internalID" : "STAGE_9",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 9: Reflection & Self-Positioning",
+          "displayName" : "Stage 9",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 9：反思、整合与自我定位",
+          "displayName" : "阶段 9",
+          "locale" : "zh_CN"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.9",
+      "referenceName" : "Stage 9 Unlock",
+      "type" : "NonConsumable"
+    }
   ],
   "settings" : {
     "_askToBuyEnabled" : false,
@@ -54,17 +213,44 @@
           "codeOffers" : [
 
           ],
+          "displayPrice" : "6",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "E1F2A3B4",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Weekly access to all PRO content",
+              "displayName" : "PRO Weekly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "按周订阅，畅享所有 PRO 内容",
+              "displayName" : "PRO 周订阅",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "com.levi.dailyspeak.pro.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "PRO Weekly",
+          "subscriptionGroupID" : "B8A3F201",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
           "displayPrice" : "18",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "C1D2E3F4",
-          "introductoryOffer" : {
-            "displayPrice" : "1",
-            "internalID" : "INT_OFFER_MONTHLY",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "payAsYouGo",
-            "subscriptionPeriod" : "P1M"
-          },
+          "introductoryOffer" : null,
           "localizations" : [
             {
               "description" : "Monthly access to all PRO content",
@@ -97,13 +283,7 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "A5B6C7D8",
-          "introductoryOffer" : {
-            "displayPrice" : "6",
-            "internalID" : "INT_OFFER_YEARLY",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "payAsYouGo",
-            "subscriptionPeriod" : "P1M"
-          },
+          "introductoryOffer" : null,
           "localizations" : [
             {
               "description" : "Yearly access to all PRO content, save 55%",

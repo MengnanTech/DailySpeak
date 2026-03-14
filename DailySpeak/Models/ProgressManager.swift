@@ -8,21 +8,29 @@ final class ProgressManager {
     private let tasksKey = "completedTasks"
     private let activityDaysKey = "learningActivityDays"
     private let taskCompletionDatesKey = "taskCompletionDates"
+    private let studyTimeKey = "dailyStudySeconds"
 
     private(set) var completedSteps: Set<String>
     private(set) var completedTasks: Set<String>
     private(set) var learningActivityDays: Set<String>
     private(set) var taskCompletionDates: [String: String]
+    /// Daily study seconds: ["2026-03-14": 1234.5]
+    private(set) var dailyStudySeconds: [String: Double]
+
+    // Active session tracking
+    private var sessionStartTime: Date?
 
     init() {
         let steps = UserDefaults.standard.stringArray(forKey: "completedSteps") ?? []
         let tasks = UserDefaults.standard.stringArray(forKey: "completedTasks") ?? []
         let activityDays = UserDefaults.standard.stringArray(forKey: "learningActivityDays") ?? []
         let completionDates = UserDefaults.standard.dictionary(forKey: "taskCompletionDates") as? [String: String] ?? [:]
+        let studyTime = UserDefaults.standard.dictionary(forKey: "dailyStudySeconds") as? [String: Double] ?? [:]
         self.completedSteps = Set(steps)
         self.completedTasks = Set(tasks)
         self.learningActivityDays = Set(activityDays)
         self.taskCompletionDates = completionDates
+        self.dailyStudySeconds = studyTime
     }
 
     // MARK: - Step Progress
@@ -80,9 +88,8 @@ final class ProgressManager {
         return Double(completedTaskCount(for: stage)) / Double(stage.taskCount)
     }
 
-    func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage, isPro: Bool = false) -> Bool {
-        // All tasks within an unlocked stage are accessible in any order
-        return isStageUnlocked(stageId: stageId, isPro: isPro)
+    func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage, subscription: SubscriptionManager) -> Bool {
+        return isStageUnlocked(stageId: stageId, subscription: subscription)
     }
 
     // MARK: - Stage Progress
@@ -91,15 +98,15 @@ final class ProgressManager {
         stage.tasks.allSatisfy { isTaskCompleted(stageId: stage.id, taskId: $0.id) }
     }
 
-    func isStageUnlocked(stageId: Int, isPro: Bool = false) -> Bool {
+    /// Stage is unlocked if: stage 1 (free), or subscription active, or stage individually purchased
+    func isStageUnlocked(stageId: Int, subscription: SubscriptionManager) -> Bool {
         if stageId == 1 { return true }
-        // PRO unlocks all stages immediately
-        return isPro
+        return subscription.isStageAccessible(stageId)
     }
 
-    /// Whether a stage is locked specifically due to missing PRO subscription
-    func isStageProLocked(stageId: Int, isPro: Bool) -> Bool {
-        stageId > 1 && !isPro
+    /// Whether a stage needs payment (not accessible via subscription or purchase)
+    func isStageLocked(stageId: Int, subscription: SubscriptionManager) -> Bool {
+        stageId > 1 && !subscription.isStageAccessible(stageId)
     }
 
     // MARK: - Daily Motivation
@@ -134,12 +141,55 @@ final class ProgressManager {
         max(0, recommendedDailyGoal() - todayCompletedTaskCount(referenceDate: referenceDate))
     }
 
+    // MARK: - Study Time Tracking
+
+    /// Call when a learning session begins (e.g. LearningFlowView appears)
+    func startStudySession() {
+        sessionStartTime = Date()
+    }
+
+    /// Call when a learning session ends (e.g. LearningFlowView disappears)
+    func endStudySession() {
+        guard let start = sessionStartTime else { return }
+        let elapsed = Date().timeIntervalSince(start)
+        sessionStartTime = nil
+        // Only count sessions > 3 seconds (filter accidental opens)
+        guard elapsed > 3 else { return }
+        let key = dayKey(for: Date())
+        dailyStudySeconds[key, default: 0] += elapsed
+        learningActivityDays.insert(key)
+        save()
+    }
+
+    /// Today's study time in seconds
+    func todayStudySeconds(referenceDate: Date = Date()) -> Double {
+        dailyStudySeconds[dayKey(for: referenceDate)] ?? 0
+    }
+
+    /// Total study time across all days in seconds
+    func totalStudySeconds() -> Double {
+        dailyStudySeconds.values.reduce(0, +)
+    }
+
+    /// Formatted study time string, e.g. "12 min" or "1h 23min"
+    static func formatStudyTime(seconds: Double) -> String {
+        let totalMinutes = Int(seconds) / 60
+        if totalMinutes < 1 { return "<1 min" }
+        let hours = totalMinutes / 60
+        let mins = totalMinutes % 60
+        if hours > 0 {
+            return mins > 0 ? "\(hours)h \(mins)min" : "\(hours)h"
+        }
+        return "\(mins) min"
+    }
+
     // MARK: - Persistence
     private func save() {
         defaults.set(Array(completedSteps), forKey: stepsKey)
         defaults.set(Array(completedTasks), forKey: tasksKey)
         defaults.set(Array(learningActivityDays), forKey: activityDaysKey)
         defaults.set(taskCompletionDates, forKey: taskCompletionDatesKey)
+        defaults.set(dailyStudySeconds, forKey: studyTimeKey)
     }
 
     func resetAll() {
@@ -147,6 +197,7 @@ final class ProgressManager {
         completedTasks.removeAll()
         learningActivityDays.removeAll()
         taskCompletionDates.removeAll()
+        dailyStudySeconds.removeAll()
         save()
     }
 

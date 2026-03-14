@@ -49,8 +49,14 @@ struct LearningFlowView: View {
                 }
             }
         }
-        .onAppear { syncCurrentStep() }
-        .onDisappear { EnglishSpeechPlayer.shared.stopPlayback() }
+        .onAppear {
+            syncCurrentStep()
+            progress.startStudySession()
+        }
+        .onDisappear {
+            EnglishSpeechPlayer.shared.stopPlayback()
+            progress.endStudySession()
+        }
         .onChange(of: currentStep) { _, _ in
             stepCanComplete = false
             stepProgressHint = nil
