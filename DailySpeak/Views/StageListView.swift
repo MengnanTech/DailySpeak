@@ -369,7 +369,8 @@ struct StageListView: View {
                             Image(systemName: "chevron.right")
                                 .font(.caption2).foregroundStyle(AppColors.border)
                         }
-                        .padding(.horizontal, 16).padding(.vertical, 12)
+                        .padding(.horizontal, 16).padding(.vertical, 14)
+                        .contentShape(Rectangle())
                         .background(isCurrent ? theme.startColor.opacity(0.03) : Color.clear)
                     }
                     .buttonStyle(.plain)

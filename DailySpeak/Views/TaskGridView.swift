@@ -196,6 +196,7 @@ struct TimelineRow: View {
                 // Right: content
                 contentColumn
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(state == .locked)

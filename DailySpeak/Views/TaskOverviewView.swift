@@ -688,7 +688,7 @@ struct TaskOverviewView: View {
                     .foregroundStyle(AppColors.tertiaryText)
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 12)
         .contentShape(Rectangle())
         .onTapGesture {
             if isTappable {
