@@ -79,13 +79,19 @@ struct PersonalCenterView: View {
                     proBanner
                         .staggeredEntrance(index: 1)
 
+                    // Login Prompt
+                    if !appState.isLoggedIn {
+                        loginPromptCard
+                            .staggeredEntrance(index: 2)
+                    }
+
                     // Learning Stats
                     learningStatsCard
-                        .staggeredEntrance(index: 2)
+                        .staggeredEntrance(index: 3)
 
                     // Quick Actions
                     actionsCard
-                        .staggeredEntrance(index: 3)
+                        .staggeredEntrance(index: 4)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
@@ -156,6 +162,52 @@ struct PersonalCenterView: View {
             .shadow(color: gold.opacity(0.3), radius: 16, x: 0, y: 8)
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Login Prompt
+    private var loginPromptCard: some View {
+        SettingsCard {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("登录后可同步学习进度、接收消息通知和解锁更多功能。")
+                    .font(.subheadline)
+                    .foregroundColor(.textSecondary)
+
+                HStack(spacing: 10) {
+                    NavigationLink {
+                        AuthLoginRegisterView(initialMode: .login)
+                            .environmentObject(appState)
+                    } label: {
+                        Text("登录")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.backgroundSecondary)
+                            )
+                    }
+                    .buttonStyle(.plain)
+
+                    NavigationLink {
+                        AuthLoginRegisterView(initialMode: .register)
+                            .environmentObject(appState)
+                    } label: {
+                        Text("注册")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.textMuted.opacity(0.45), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(16)
+        }
     }
 
     // MARK: - Learning Stats

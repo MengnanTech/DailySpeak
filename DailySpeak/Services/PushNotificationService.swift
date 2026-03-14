@@ -8,6 +8,7 @@ final class PushNotificationService {
     static let shared = PushNotificationService()
 
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.levi.DailySpeak", category: "Push")
+    private var uploadTask: Task<Void, Never>?
     private init() {}
 
     private let deviceTokenKey = "dailyspeak.push.deviceToken"
@@ -30,9 +31,7 @@ final class PushNotificationService {
 
     func syncDeviceRegistrationIfPossible() {
         if let token = currentDeviceToken, !token.isEmpty {
-            Task {
-                await uploadDeviceTokenIfConfigured(token)
-            }
+            scheduleUpload(token: token)
         } else {
             print("⚠️ [PUSH] skip upload: missing device token, requesting APNs registration")
             logger.warning("skip upload: missing device token, requesting APNs registration")
@@ -50,9 +49,7 @@ final class PushNotificationService {
 #if DEBUG
         logger.info("APNs device token: \(token, privacy: .public)")
 #endif
-        Task {
-            await uploadDeviceTokenIfConfigured(token)
-        }
+        scheduleUpload(token: token)
     }
 
     func didFailToRegisterForRemoteNotifications(error: Error) {
@@ -71,6 +68,16 @@ final class PushNotificationService {
         let message = PushInboxMessage(title: title, body: body, kind: kind, remoteID: remoteID, rawPayloadJSON: Self.prettyJSONString(from: userInfo))
         Task {
             await PushInboxStore.shared.append(message)
+        }
+    }
+
+    /// Coalesce rapid-fire upload calls into a single request.
+    private func scheduleUpload(token: String) {
+        uploadTask?.cancel()
+        uploadTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            await uploadDeviceTokenIfConfigured(token)
         }
     }
 

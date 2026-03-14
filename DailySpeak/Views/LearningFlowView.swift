@@ -1961,7 +1961,7 @@ struct SamplesStepView: View {
             .staggerIn(index: 1, appeared: appeared)
 
             if selectedBand < task.sampleAnswers.count, let bandGuide = task.sampleAnswers[selectedBand].bandGuide {
-                GradientAccentCard(color: bandColors[selectedBand], spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         StepSectionLabel(
                             icon: "list.bullet.rectangle.portrait",
@@ -1972,10 +1972,6 @@ struct SamplesStepView: View {
                         Text(bandGuide.focus)
                             .font(.caption.bold())
                             .foregroundStyle(bandColors[selectedBand])
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(bandColors[selectedBand].opacity(0.1))
-                            .clipShape(Capsule())
                     }
 
                     frameworkGuideSection(
@@ -1994,6 +1990,8 @@ struct SamplesStepView: View {
                         tint: bandColors[selectedBand]
                     )
                 }
+                .padding(18)
+                .cardStyle()
                 .staggerIn(index: 2, appeared: appeared)
             }
 
@@ -2002,7 +2000,7 @@ struct SamplesStepView: View {
                 let sample = task.sampleAnswers[selectedBand]
                 let bandColor = bandColors[selectedBand]
 
-                GradientAccentCard(color: bandColor, spacing: 14) {
+                VStack(alignment: .leading, spacing: 14) {
                     HStack {
                         Text(sample.band)
                             .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -2020,10 +2018,6 @@ struct SamplesStepView: View {
                     // Highlighted sample content
                     highlightedSampleText(sample.content)
                         .lineSpacing(6)
-                        .padding(14)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(bandColor.opacity(0.04))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
 
                     InlineAudioPlayerControl(
                         text: sample.content,
@@ -2038,20 +2032,13 @@ struct SamplesStepView: View {
                     )
 
                     if !sample.nativeFeatures.isEmpty {
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
-                                    startPoint: .leading, endPoint: .trailing
-                                )
-                            )
-                            .frame(height: 1)
+                        Divider().background(AppColors.border)
 
                         VStack(alignment: .leading, spacing: 8) {
                             StepSectionLabel(icon: "sparkles", title: "Native Features", color: bandColor)
 
                             ForEach(sample.nativeFeatures, id: \.self) { feature in
-                                HStack(alignment: .top, spacing: 10) {
+                                HStack(alignment: .top, spacing: 8) {
                                     Image(systemName: "star.fill")
                                         .font(.system(size: 9))
                                         .foregroundStyle(bandColor)
@@ -2061,50 +2048,33 @@ struct SamplesStepView: View {
                                         .foregroundStyle(AppColors.secondText)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .padding(10)
-                                .background(bandColor.opacity(0.04))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
                         }
                     }
 
                     if !sample.upgrades.isEmpty {
-                        Rectangle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
-                                    startPoint: .leading, endPoint: .trailing
-                                )
-                            )
-                            .frame(height: 1)
+                        Divider().background(AppColors.border)
 
                         VStack(alignment: .leading, spacing: 10) {
                             StepSectionLabel(icon: "arrow.up.circle.fill", title: "Expression Upgrades", color: bandColor)
 
                             ForEach(Array(sample.upgrades.enumerated()), id: \.offset) { _, item in
-                                VStack(alignment: .leading, spacing: 10) {
+                                VStack(alignment: .leading, spacing: 8) {
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("Original")
                                             .font(.system(size: 9, weight: .bold, design: .rounded))
-                                            .foregroundStyle(.white)
-                                            .padding(.horizontal, 7)
-                                            .padding(.vertical, 3)
-                                            .background(AppColors.tertiaryText)
-                                            .clipShape(Capsule())
+                                            .foregroundStyle(Color(hex: "EF4444"))
                                         Text(item.original)
                                             .font(.subheadline)
                                             .foregroundStyle(AppColors.tertiaryText)
+                                            .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
 
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("Improved")
                                             .font(.system(size: 9, weight: .bold, design: .rounded))
-                                            .foregroundStyle(.white)
-                                            .padding(.horizontal, 7)
-                                            .padding(.vertical, 3)
-                                            .background(bandColor)
-                                            .clipShape(Capsule())
+                                            .foregroundStyle(bandColor)
                                         Text(item.improved)
                                             .font(.subheadline.bold())
                                             .foregroundStyle(AppColors.primaryText)
@@ -2115,7 +2085,6 @@ struct SamplesStepView: View {
                                         .font(.caption)
                                         .foregroundStyle(AppColors.secondText)
                                         .fixedSize(horizontal: false, vertical: true)
-                                        .lineSpacing(2)
 
                                     if !item.note.isEmpty {
                                         Text(item.note)
@@ -2124,14 +2093,16 @@ struct SamplesStepView: View {
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
                                 }
-                                .padding(14)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(AppColors.surface.opacity(0.5))
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                                if item.original != sample.upgrades.last?.original {
+                                    Divider().background(AppColors.border.opacity(0.5))
+                                }
                             }
                         }
                     }
                 }
+                .padding(18)
+                .cardStyle()
                 .transition(.asymmetric(
                     insertion: .opacity.combined(with: .move(edge: .trailing)),
                     removal: .opacity.combined(with: .move(edge: .leading))
@@ -2592,13 +2563,12 @@ struct PracticePromptView: View {
     }
 
     private func resultCard(title: String, subtitle: String, text: String, tint: Color) -> some View {
-        GradientAccentCard(color: tint, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
             StepSectionLabel(icon: "text.bubble.fill", title: title, color: tint)
 
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
-                .lineSpacing(2)
 
             InlineAudioPlayerControl(
                 text: text,
@@ -2617,15 +2587,13 @@ struct PracticePromptView: View {
                 .foregroundStyle(AppColors.primaryText)
                 .lineSpacing(5)
                 .textSelection(.enabled)
-                .padding(14)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(tint.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(tint.opacity(0.15), lineWidth: 1)
-                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .padding(18)
+        .cardStyle()
     }
 
     private func modeSelector<Item: Identifiable>(

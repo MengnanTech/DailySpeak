@@ -36,6 +36,21 @@ struct APIEnvelope<T: Decodable>: Decodable {
     let requestId: String?
     let msg: String?
     let data: T?
+
+    enum CodingKeys: String, CodingKey {
+        case code, msg, data
+        case requestId = "requestId"
+        case requestIdSnake = "request_id"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        code = try container.decode(Int.self, forKey: .code)
+        msg = try container.decodeIfPresent(String.self, forKey: .msg)
+        data = try container.decodeIfPresent(T.self, forKey: .data)
+        requestId = try container.decodeIfPresent(String.self, forKey: .requestId)
+            ?? container.decodeIfPresent(String.self, forKey: .requestIdSnake)
+    }
 }
 
 struct APIConfig {
@@ -65,9 +80,21 @@ final class APIClient {
     ) async throws -> APIEnvelope<T> {
         let data = try await send(path, method: method, queryItems: queryItems, body: body, requiresAuth: requiresAuth)
         do {
-            return try JSONDecoder().decode(APIEnvelope<T>.self, from: data)
-        } catch {
-            throw APIError.decoding
+            let decoder = JSONDecoder()
+            return try decoder.decode(APIEnvelope<T>.self, from: data)
+        } catch let firstError {
+            // Retry with snake_case key strategy in case the server changed naming convention.
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                return try decoder.decode(APIEnvelope<T>.self, from: data)
+            } catch {
+                #if DEBUG
+                let raw = String(data: data, encoding: .utf8) ?? "<non-utf8, \(data.count) bytes>"
+                print("❌ [API] decoding failed for \(path): \(firstError)\n   raw response: \(raw.prefix(500))")
+                #endif
+                throw APIError.decoding
+            }
         }
     }
 
