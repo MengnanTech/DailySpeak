@@ -13,6 +13,7 @@ struct PersonalCenterView: View {
     @State private var showResetAlert = false
     @State private var showFeedbackFallbackAlert = false
     @State private var showOnboarding = false
+    @State private var showPaywall = false
 
     private var totalCompleted: Int {
         CourseData.stages.reduce(0) { $0 + progress.completedTaskCount(for: $1) }
@@ -117,13 +118,14 @@ struct PersonalCenterView: View {
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView(isPresented: $showOnboarding)
         }
+        .sheet(isPresented: $showPaywall) {
+            PaywallPlaceholderView()
+        }
     }
 
     // MARK: - PRO Banner
     private var proBanner: some View {
-        NavigationLink {
-            PaywallPlaceholderView()
-        } label: {
+        Button { showPaywall = true } label: {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()

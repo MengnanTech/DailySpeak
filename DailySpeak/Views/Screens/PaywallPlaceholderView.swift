@@ -5,360 +5,357 @@ struct PaywallPlaceholderView: View {
     @Environment(SubscriptionManager.self) private var subscription
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPlan: PlanType = .yearly
+    @State private var appeared = false
+    @State private var glowPhase = false
 
     private enum PlanType { case monthly, yearly }
 
-    private let gold = Color(hex: "C89B3C")
-    private let goldLight = Color(hex: "DCBC6A")
-    private let goldDark = Color(hex: "9A7B2E")
+    // Brand
+    private let accent = Color(hex: "4F6BED")
+    private let accentLight = Color(hex: "7B8FF5")
+    private let gold = Color(hex: "D4A844")
 
     private var proTaskCount: Int {
         CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
     }
 
-    private let benefits: [(icon: String, title: String, subtitle: String)] = [
-        ("lock.open.fill", "All 9 Stages", "Unlock premium speaking lessons across 8 advanced stages"),
-        ("waveform.path.ecg", "AI Speaking Coach", "Real-time pronunciation feedback and personalized drills"),
-        ("arrow.triangle.2.circlepath", "Smart Review", "Adaptive review sessions that target your weak points"),
-        ("icloud.fill", "Cloud Sync", "Seamlessly sync your progress across all devices"),
-    ]
-
     private var selectedProduct: Product? {
         selectedPlan == .monthly ? subscription.monthlyProduct : subscription.yearlyProduct
     }
 
+    private let features: [(icon: String, color: String, text: String)] = [
+        ("book.fill", "4F6BED", "解锁全部 9 个阶段的口语课程"),
+        ("waveform.path", "8B5CF6", "AI 发音指导与个性化练习"),
+        ("arrow.triangle.2.circlepath", "10B981", "智能复习，针对薄弱环节强化"),
+        ("icloud.and.arrow.up.fill", "0EA5E9", "跨设备同步学习进度"),
+    ]
+
     var body: some View {
-        ZStack {
-            AppColors.background.ignoresSafeArea()
+        ZStack(alignment: .topTrailing) {
+            // Background
+            LinearGradient(
+                colors: [
+                    accent.opacity(0.03),
+                    AppColors.background,
+                    AppColors.background,
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
-                    heroSection
-                        .staggeredEntrance(index: 0)
+                    // Hero
+                    heroArea
+                        .padding(.top, 50)
 
-                    VStack(spacing: 20) {
-                        // Already PRO banner
-                        if subscription.isPro {
-                            proActiveBanner
-                                .staggeredEntrance(index: 1)
-                        }
-
-                        ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
-                            benefitCard(icon: benefit.icon, title: benefit.title, subtitle: benefit.subtitle)
-                                .staggeredEntrance(index: index + (subscription.isPro ? 2 : 1))
-                        }
-
-                        if !subscription.isPro {
-                            planSection
-                                .staggeredEntrance(index: benefits.count + 1)
-
-                            ctaSection
-                                .staggeredEntrance(index: benefits.count + 2)
-
-                            footerSection
-                                .staggeredEntrance(index: benefits.count + 3)
-                        }
+                    if subscription.isPro {
+                        proActiveBanner
+                            .padding(.horizontal, 24)
+                            .padding(.top, 24)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 28)
-                    .padding(.bottom, 40)
+
+                    // Features
+                    featureList
+                        .padding(.horizontal, 24)
+                        .padding(.top, 28)
+
+                    if !subscription.isPro {
+                        // Plans
+                        planSelector
+                            .padding(.horizontal, 24)
+                            .padding(.top, 32)
+
+                        // CTA
+                        ctaButton
+                            .padding(.horizontal, 24)
+                            .padding(.top, 24)
+
+                        // Trust
+                        trustFooter
+                            .padding(.horizontal, 24)
+                            .padding(.top, 20)
+                            .padding(.bottom, 40)
+                    } else {
+                        Spacer(minLength: 40)
+                    }
                 }
             }
+
+            // Close button
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppColors.tertiaryText)
+                    .frame(width: 32, height: 32)
+                    .background(.ultraThinMaterial, in: Circle())
+            }
+            .padding(.trailing, 20)
+            .padding(.top, 12)
         }
-        .navigationTitle("Premium")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarHidden(true)
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.8)) { appeared = true }
+            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                glowPhase = true
+            }
+        }
         .onChange(of: subscription.isPro) { _, isPro in
             if isPro { dismiss() }
         }
     }
 
-    // MARK: - Already PRO Banner
-    private var proActiveBanner: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 24))
-                .foregroundStyle(gold)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("PRO 已激活")
-                    .font(.subheadline.bold())
-                    .foregroundStyle(AppColors.primaryText)
-                Text("您已解锁所有高级内容")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondText)
-            }
-
-            Spacer()
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(gold.opacity(0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(gold.opacity(0.3), lineWidth: 1)
-        )
-    }
-
-    // MARK: - Hero Section
-    private var heroSection: some View {
-        ZStack {
-            LinearGradient(
-                colors: [goldDark, gold, goldLight, gold.opacity(0.9)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            RadialGradient(
-                colors: [.white.opacity(0.15), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 300
-            )
-
-            GeometryReader { geo in
-                Circle()
-                    .fill(.white.opacity(0.08))
-                    .frame(width: 180)
-                    .blur(radius: 3)
-                    .offset(x: geo.size.width - 70, y: -50)
-
-                Circle()
-                    .fill(.white.opacity(0.05))
-                    .frame(width: 120)
-                    .offset(x: -30, y: geo.size.height - 40)
-            }
-
-            VStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(.white.opacity(0.15))
-                        .frame(width: 72, height: 72)
-
-                    Circle()
-                        .stroke(.white.opacity(0.25), lineWidth: 1.5)
-                        .frame(width: 72, height: 72)
-
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 32, weight: .bold))
-                        .foregroundStyle(.white)
-                        .symbolEffect(.pulse, options: .repeating.speed(0.3))
-                }
-
-                VStack(spacing: 6) {
-                    Text("DAILYSPEAK")
-                        .font(.system(size: 11, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
-                        .tracking(3)
-
-                    Text("PRO")
-                        .font(.system(size: 40, weight: .black, design: .rounded))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-                }
-
-                Text("Unlock the complete speaking journey\nwith \(proTaskCount)+ premium lessons")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-            }
-            .padding(.vertical, 36)
-            .padding(.horizontal, 24)
-        }
-        .frame(minHeight: 280)
-        .clipShape(
-            UnevenRoundedRectangle(
-                cornerRadii: .init(bottomLeading: 32, bottomTrailing: 32)
-            )
-        )
-        .overlay(
-            UnevenRoundedRectangle(
-                cornerRadii: .init(bottomLeading: 32, bottomTrailing: 32)
-            )
-            .stroke(
-                LinearGradient(
-                    colors: [.white.opacity(0.3), .white.opacity(0.05)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                lineWidth: 0.5
-            )
-        )
-        .shadow(color: gold.opacity(0.3), radius: 20, x: 0, y: 10)
-    }
-
-    // MARK: - Benefit Card
-    private func benefitCard(icon: String, title: String, subtitle: String) -> some View {
-        HStack(alignment: .top, spacing: 14) {
+    // MARK: - Hero
+    private var heroArea: some View {
+        VStack(spacing: 20) {
+            // Animated icon
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                // Outer glow ring
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [accent.opacity(0.12), accent.opacity(0)],
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: 70
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+                    .scaleEffect(glowPhase ? 1.1 : 0.9)
+
+                // Inner circle
+                Circle()
                     .fill(
                         LinearGradient(
-                            colors: [gold.opacity(0.15), gold.opacity(0.06)],
+                            colors: [accent, accentLight],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 44, height: 44)
+                    .frame(width: 80, height: 80)
+                    .shadow(color: accent.opacity(0.3), radius: 20, x: 0, y: 10)
 
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(gold)
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 34, weight: .medium))
+                    .foregroundStyle(.white)
+                    .offset(y: -1)
             }
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : 0.6)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline.bold())
+            VStack(spacing: 10) {
+                Text("解锁完整口语之旅")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundStyle(AppColors.primaryText)
 
-                Text(subtitle)
-                    .font(.caption)
+                Text("\(proTaskCount)+ 节精品课程，系统提升你的口语表达")
+                    .font(.subheadline)
                     .foregroundStyle(AppColors.secondText)
-                    .lineSpacing(2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
             }
-
-            Spacer(minLength: 0)
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 20)
         }
-        .padding(18)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(AppColors.border.opacity(0.4), lineWidth: 0.5)
-        )
-        .cardShadow()
     }
 
-    // MARK: - Plan Selection
-    private var planSection: some View {
-        VStack(spacing: 14) {
-            HStack(spacing: 6) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(gold)
-                Text("CHOOSE YOUR PLAN")
-                    .font(.system(size: 11, weight: .heavy, design: .rounded))
-                    .foregroundStyle(AppColors.tertiaryText)
-                    .tracking(1)
+    // MARK: - PRO Active
+    private var proActiveBanner: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "10B981").opacity(0.12))
+                    .frame(width: 44, height: 44)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Color(hex: "10B981"))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("PRO 已激活")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(AppColors.primaryText)
+                Text("你已解锁所有高级内容")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.secondText)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(hex: "10B981").opacity(0.06))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "10B981").opacity(0.2), lineWidth: 1)
+                )
+        )
+    }
 
-            HStack(spacing: 12) {
-                if let monthly = subscription.monthlyProduct {
-                    planCard(
-                        title: "Monthly",
-                        price: monthly.displayPrice,
-                        period: "/month",
-                        badge: nil,
-                        isSelected: selectedPlan == .monthly
-                    ) {
-                        withAnimation(.spring(response: 0.3)) {
-                            selectedPlan = .monthly
-                        }
-                    }
+    // MARK: - Feature List
+    private var featureList: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(features.enumerated()), id: \.offset) { index, feature in
+                HStack(spacing: 14) {
+                    Image(systemName: feature.icon)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color(hex: feature.color))
+                        .frame(width: 36, height: 36)
+                        .background(Color(hex: feature.color).opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                    Text(feature.text)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppColors.primaryText)
+
+                    Spacer(minLength: 0)
                 }
+                .padding(.vertical, 12)
+                .opacity(appeared ? 1 : 0)
+                .offset(x: appeared ? 0 : -30)
+                .animation(
+                    .spring(response: 0.6, dampingFraction: 0.8).delay(0.1 + Double(index) * 0.08),
+                    value: appeared
+                )
 
-                if let yearly = subscription.yearlyProduct {
-                    planCard(
-                        title: "Yearly",
-                        price: yearly.displayPrice,
-                        period: "/year",
-                        badge: "SAVE 55%",
-                        isSelected: selectedPlan == .yearly
-                    ) {
-                        withAnimation(.spring(response: 0.3)) {
-                            selectedPlan = .yearly
-                        }
-                    }
+                if index < features.count - 1 {
+                    Divider()
+                        .background(AppColors.border.opacity(0.5))
+                        .padding(.leading, 50)
+                }
+            }
+        }
+    }
+
+    // MARK: - Plan Selector
+    private var planSelector: some View {
+        VStack(spacing: 10) {
+            // Yearly plan (recommended)
+            if let yearly = subscription.yearlyProduct {
+                planRow(
+                    product: yearly,
+                    title: "年度订阅",
+                    subtitle: monthlyEquivalent(yearly),
+                    badge: "推荐",
+                    isSelected: selectedPlan == .yearly
+                ) {
+                    withAnimation(.spring(response: 0.3)) { selectedPlan = .yearly }
                 }
             }
 
-            // Error message
+            // Monthly plan
+            if let monthly = subscription.monthlyProduct {
+                planRow(
+                    product: monthly,
+                    title: "月度订阅",
+                    subtitle: nil,
+                    badge: nil,
+                    isSelected: selectedPlan == .monthly
+                ) {
+                    withAnimation(.spring(response: 0.3)) { selectedPlan = .monthly }
+                }
+            }
+
+            // Error
             if let error = subscription.purchaseError {
                 Text(error)
                     .font(.caption)
                     .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
             }
         }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 20)
+        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.5), value: appeared)
     }
 
-    private func planCard(
+    private func planRow(
+        product: Product,
         title: String,
-        price: String,
-        period: String,
+        subtitle: String?,
         badge: String?,
         isSelected: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(spacing: 10) {
-                if let badge {
-                    Text(badge)
-                        .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule().fill(
-                                LinearGradient(
-                                    colors: [gold, goldLight],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        )
-                } else {
-                    Spacer().frame(height: 20)
+            HStack(spacing: 14) {
+                // Radio
+                ZStack {
+                    Circle()
+                        .stroke(isSelected ? accent : AppColors.border, lineWidth: isSelected ? 0 : 1.5)
+                        .frame(width: 22, height: 22)
+
+                    if isSelected {
+                        Circle()
+                            .fill(accent)
+                            .frame(width: 22, height: 22)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
                 }
 
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(isSelected ? AppColors.primaryText : AppColors.tertiaryText)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(AppColors.primaryText)
 
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text(price)
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(isSelected ? gold : AppColors.secondText)
+                        if let badge {
+                            Text(badge)
+                                .font(.system(size: 10, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(
+                                    Capsule().fill(
+                                        LinearGradient(
+                                            colors: [accent, accentLight],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                )
+                        }
+                    }
 
-                    Text(period)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(.caption)
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(product.displayPrice)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(isSelected ? accent : AppColors.secondText)
+                    Text(product.subscription?.subscriptionPeriod.unit == .year ? "/年" : "/月")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(AppColors.tertiaryText)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .padding(.horizontal, 8)
+            .padding(16)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(AppColors.card)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(isSelected ? accent.opacity(0.04) : AppColors.card)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(
-                        isSelected
-                            ? AnyShapeStyle(LinearGradient(
-                                colors: [gold, goldLight],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                              ))
-                            : AnyShapeStyle(AppColors.border.opacity(0.4)),
-                        lineWidth: isSelected ? 2 : 0.5
+                        isSelected ? accent.opacity(0.5) : AppColors.border.opacity(0.4),
+                        lineWidth: isSelected ? 1.5 : 0.5
                     )
-            )
-            .shadow(
-                color: isSelected ? gold.opacity(0.15) : .clear,
-                radius: 12, x: 0, y: 6
             )
         }
         .buttonStyle(.plain)
     }
 
-    // MARK: - CTA
-    private var ctaSection: some View {
-        VStack(spacing: 12) {
+    // MARK: - CTA Button
+    private var ctaButton: some View {
+        VStack(spacing: 10) {
             Button {
                 guard let product = selectedProduct else { return }
                 Task { await subscription.purchase(product) }
@@ -368,84 +365,81 @@ struct PaywallPlaceholderView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 15, weight: .bold))
-                        Text("Subscribe Now")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                        Text("立即订阅")
+                            .font(.system(size: 18, weight: .bold))
                     }
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 56)
+                .frame(height: 54)
                 .background(
                     LinearGradient(
-                        colors: [goldDark, gold, goldLight],
+                        colors: [accent, accentLight],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: gold.opacity(0.35), radius: 16, x: 0, y: 8)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 6)
             }
             .buttonStyle(.plain)
             .disabled(selectedProduct == nil || subscription.isLoading)
-            .opacity(selectedProduct == nil ? 0.6 : 1)
+            .opacity(selectedProduct == nil ? 0.5 : 1)
 
             if subscription.products.isEmpty {
-                Text("正在加载订阅方案…")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.tertiaryText)
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.7)
+                    Text("加载中…")
+                        .font(.caption)
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
             }
+
+            Text("可随时取消 · 自动续费")
+                .font(.system(size: 12))
+                .foregroundStyle(AppColors.tertiaryText)
         }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 20)
+        .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.6), value: appeared)
     }
 
-    // MARK: - Footer
-    private var footerSection: some View {
-        VStack(spacing: 14) {
+    // MARK: - Trust Footer
+    private var trustFooter: some View {
+        VStack(spacing: 16) {
             Button {
                 Task { await subscription.restore() }
             } label: {
-                if subscription.isLoading {
-                    ProgressView()
-                        .tint(AppColors.secondText)
-                } else {
-                    Text("Restore Purchases")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(AppColors.secondText)
-                }
+                Text("恢复购买")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(accent)
             }
             .disabled(subscription.isLoading)
 
-            HStack(spacing: 16) {
-                if let privacyURL = URL(string: Constants.privacyPolicyURL) {
-                    Link("Privacy Policy", destination: privacyURL)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(AppColors.tertiaryText)
+            HStack(spacing: 12) {
+                if let url = URL(string: Constants.privacyPolicyURL) {
+                    Link("隐私政策", destination: url)
                 }
-
                 Text("·")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.tertiaryText)
-
-                if let termsURL = URL(string: Constants.termsOfServiceURL) {
-                    Link("Terms of Service", destination: termsURL)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(AppColors.tertiaryText)
+                if let url = URL(string: Constants.termsOfServiceURL) {
+                    Link("使用条款", destination: url)
                 }
             }
-
-            Text("订阅将自动续费，可随时在系统设置中取消")
-                .font(.system(size: 10))
-                .foregroundStyle(AppColors.tertiaryText)
-                .multilineTextAlignment(.center)
+            .font(.system(size: 12))
+            .foregroundStyle(AppColors.tertiaryText)
         }
-        .padding(.top, 8)
+    }
+
+    // MARK: - Helpers
+    private func monthlyEquivalent(_ yearly: Product) -> String {
+        let monthly = yearly.price / 12
+        let formatted = String(format: "%.2f", NSDecimalNumber(decimal: monthly).doubleValue)
+        return "约 ¥\(formatted)/月，节省 55%"
     }
 }
 
 #Preview {
-    NavigationStack {
-        PaywallPlaceholderView()
-            .environment(SubscriptionManager())
-    }
+    PaywallPlaceholderView()
+        .environment(SubscriptionManager())
 }

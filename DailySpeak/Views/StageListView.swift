@@ -89,9 +89,7 @@ struct StageListView: View {
                 TaskOverviewView(stage: stage, task: task)
             }
             .sheet(isPresented: $showPaywall) {
-                NavigationStack {
-                    PaywallPlaceholderView()
-                }
+                PaywallPlaceholderView()
             }
             .onAppear {
                 if carouselStageId == nil {

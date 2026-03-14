@@ -9,6 +9,7 @@ struct AppSettingsView: View {
     @State private var showResetAlert = false
     @State private var showFeedbackFallbackAlert = false
     @State private var showOnboarding = false
+    @State private var showPaywall = false
 
     var body: some View {
         ZStack {
@@ -55,6 +56,9 @@ struct AppSettingsView: View {
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView(isPresented: $showOnboarding)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallPlaceholderView()
         }
     }
 
@@ -119,9 +123,7 @@ struct AppSettingsView: View {
 
                 Divider().background(AppColors.border).padding(.leading, 64)
 
-                NavigationLink {
-                    PaywallPlaceholderView()
-                } label: {
+                Button { showPaywall = true } label: {
                     NavigationMenuRow(
                         icon: subscription.isPro ? "checkmark.seal.fill" : "crown.fill",
                         title: "Premium",
