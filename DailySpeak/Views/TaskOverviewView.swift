@@ -38,9 +38,6 @@ struct TaskOverviewView: View {
     @State private var heroEntranceScale: CGFloat = 0.5
     @State private var heroRotationX: Double = 45
     @State private var heroEntranceOpacity: Double = 0
-    @State private var heroDockOffsetY: CGFloat = 0
-    @State private var heroDockScale: CGFloat = 1.0
-    @State private var heroDockOpacity: Double = 1.0
     @State private var contentRevealProgress: Double = 0
     @State private var heroTitleOpacity: Double = 0
     @State private var heroPromptChars = 0
@@ -53,29 +50,27 @@ struct TaskOverviewView: View {
     @State private var focusPopupScale: CGFloat = 0.6
     @State private var focusPopupOpacity: Double = 0
     @State private var focusContentOpacity: Double = 0
-    @State private var focusDockOffsetY: CGFloat = 0
-    @State private var focusDockScale: CGFloat = 1.0
-    @State private var focusDockOpacity: Double = 1.0
     // Focus staggered reveal
     @State private var focusTitleOpacity: Double = 0
     @State private var focusGoalOpacity: Double = 0
+    @State private var focusGoalChars: Int = 0
     @State private var focusChipsOpacity: Double = 0
     @State private var focusStatsOpacity: Double = 0
     @State private var focusSuggestionOpacity: Double = 0
+    @State private var focusSuggestionChars: Int = 0
 
     // --- Flow card popup ---
     @State private var showCenteredFlow = false
     @State private var flowPopupScale: CGFloat = 0.6
     @State private var flowPopupOpacity: Double = 0
-    @State private var flowDockOffsetY: CGFloat = 0
-    @State private var flowDockScale: CGFloat = 1.0
-    @State private var flowDockOpacity: Double = 1.0
     @State private var stepDisplayStates: [OverviewStepDisplayState] = []
 
     // --- Docked content ---
     @State private var showDockedHero = false
     @State private var showDockedFocus = false
     @State private var showDockedFlow = false
+
+    @Namespace private var animationNS
 
     private var theme: StageTheme { stage.theme }
     private var lessonContent: LessonContent? { task.lessonContent }
@@ -103,15 +98,18 @@ struct TaskOverviewView: View {
                 VStack(spacing: 16) {
                     if showDockedHero {
                         dockedCardContent
-                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                            .matchedGeometryEffect(id: "heroCard", in: animationNS)
+                            .transition(.scale(scale: 0.95).combined(with: .opacity))
                     }
                     if showDockedFocus {
                         focusSectionCard
-                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                            .matchedGeometryEffect(id: "focusCard", in: animationNS)
+                            .transition(.scale(scale: 0.95).combined(with: .opacity))
                     }
                     if showDockedFlow {
                         flowSectionCard
-                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                            .matchedGeometryEffect(id: "flowCard", in: animationNS)
+                            .transition(.scale(scale: 0.95).combined(with: .opacity))
                     }
                     Color.clear.frame(height: 36)
                 }
@@ -152,10 +150,10 @@ struct TaskOverviewView: View {
                             .padding(.horizontal, 24)
                             .shadow(color: theme.startColor.opacity(0.35 * glowIntensity), radius: 28, x: 0, y: 12)
                     }
-                    .scaleEffect(heroEntranceScale * heroDockScale)
+                    .matchedGeometryEffect(id: "heroCard", in: animationNS)
+                    .scaleEffect(heroEntranceScale)
                     .rotation3DEffect(.degrees(heroRotationX), axis: (x: 1, y: 0, z: 0), perspective: 0.7)
-                    .opacity(heroEntranceOpacity * heroDockOpacity)
-                    .offset(y: heroDockOffsetY)
+                    .opacity(heroEntranceOpacity)
                 }
             }
 
@@ -163,12 +161,12 @@ struct TaskOverviewView: View {
             if showCenteredFocus {
                 popupOverlay {
                     focusSectionCard
+                        .matchedGeometryEffect(id: "focusCard", in: animationNS)
                         .padding(.horizontal, 24)
                         .opacity(focusContentOpacity)
                         .shadow(color: theme.startColor.opacity(0.2), radius: 20, x: 0, y: 8)
-                        .scaleEffect(focusPopupScale * focusDockScale)
-                        .opacity(focusPopupOpacity * focusDockOpacity)
-                        .offset(y: focusDockOffsetY)
+                        .scaleEffect(focusPopupScale)
+                        .opacity(focusPopupOpacity)
                 }
             }
 
@@ -176,11 +174,11 @@ struct TaskOverviewView: View {
             if showCenteredFlow {
                 popupOverlay {
                     flowSectionCard
+                        .matchedGeometryEffect(id: "flowCard", in: animationNS)
                         .padding(.horizontal, 24)
                         .shadow(color: theme.startColor.opacity(0.2), radius: 20, x: 0, y: 8)
-                        .scaleEffect(flowPopupScale * flowDockScale)
-                        .opacity(flowPopupOpacity * flowDockOpacity)
-                        .offset(y: flowDockOffsetY)
+                        .scaleEffect(flowPopupScale)
+                        .opacity(flowPopupOpacity)
                 }
             }
 
@@ -483,7 +481,7 @@ struct TaskOverviewView: View {
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
-            // Learning goal with accent bar
+            // Learning goal with accent bar + typewriter
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(
@@ -491,28 +489,26 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                Text(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
-                    .font(.subheadline).foregroundStyle(AppColors.secondText)
-                    .fixedSize(horizontal: false, vertical: true)
+                focusGoalText(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
 
-            // Angle chips — improved style
+            // Angle chips — prominent style
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(lesson.strategy.angles, id: \.title) { angle in
-                        HStack(spacing: 5) {
+                        HStack(spacing: 6) {
                             Circle()
                                 .fill(theme.startColor)
-                                .frame(width: 5, height: 5)
+                                .frame(width: 6, height: 6)
                             Text(angle.title)
-                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundStyle(theme.startColor)
                         }
-                        .padding(.horizontal, 12).padding(.vertical, 8)
-                        .background(theme.startColor.opacity(0.08))
-                        .clipShape(Capsule())
+                        .padding(.horizontal, 14).padding(.vertical, 10)
+                        .background(theme.startColor.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
                 }
             }
@@ -526,25 +522,34 @@ struct TaskOverviewView: View {
                 miniStatDivider
                 lessonMiniStat(title: "范文", value: "\(task.sampleAnswers.count)", icon: "doc.text")
             }
-            .padding(.vertical, 10)
-            .background(AppColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppColors.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(theme.startColor.opacity(0.1), lineWidth: 0.5)
+                    )
+            )
             .opacity(isPopup ? focusStatsOpacity : 1)
 
-            // Suggestion section
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(theme.startColor)
-                    .padding(.top, 1)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("建议顺序")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+            // Suggestion section with typewriter — highlighted card
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(theme.startColor)
-                    Text("先看答题思路，再学词汇和框架，最后对照范文开口练。")
-                        .font(.subheadline).foregroundStyle(AppColors.primaryText)
+                    Text("建议顺序")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(theme.startColor)
                 }
+                focusSuggestionText("先看答题思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
             }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(theme.startColor.opacity(0.06))
+            )
             .opacity(isPopup ? focusSuggestionOpacity : 1)
         }
         .padding(20).cardStyle()
@@ -554,6 +559,50 @@ struct TaskOverviewView: View {
         Rectangle()
             .fill(AppColors.border)
             .frame(width: 0.5, height: 28)
+    }
+
+    // Typewriter text views for focus card
+    @ViewBuilder
+    private func focusGoalText(_ fullText: String, isPopup: Bool) -> some View {
+        if isPopup {
+            ZStack(alignment: .topLeading) {
+                Text(fullText)
+                    .font(.subheadline).foregroundStyle(AppColors.secondText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .hidden()
+                Text(String(fullText.prefix(focusGoalChars)))
+                    .font(.subheadline).foregroundStyle(AppColors.secondText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(focusGoalChars > 0 ? 1 : 0)
+            }
+        } else {
+            Text(fullText)
+                .font(.subheadline).foregroundStyle(AppColors.secondText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private func focusSuggestionText(_ fullText: String, isPopup: Bool) -> some View {
+        if isPopup {
+            ZStack(alignment: .topLeading) {
+                Text(fullText)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .hidden()
+                Text(String(fullText.prefix(focusSuggestionChars)))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(focusSuggestionChars > 0 ? 1 : 0)
+            }
+        } else {
+            Text(fullText)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(AppColors.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private func lessonMiniStat(title: String, value: String, icon: String) -> some View {
@@ -599,7 +648,7 @@ struct TaskOverviewView: View {
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
-            // Description with accent bar
+            // Description with accent bar + typewriter
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(
@@ -607,9 +656,7 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                Text("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。")
-                    .font(.subheadline).foregroundStyle(AppColors.secondText)
-                    .fixedSize(horizontal: false, vertical: true)
+                focusGoalText("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。", isPopup: isPopup)
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
@@ -678,10 +725,13 @@ struct TaskOverviewView: View {
 
     @ViewBuilder
     private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState) -> some View {
-        let isTappable = phase == .ready && !showCenteredFlow && (state == .unlocked || progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index))
+        let isAnimating = phase != .ready
+        let isCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index)
+        let isTappable = phase == .ready && !showCenteredFlow && (state == .unlocked || isCompleted)
         HStack(alignment: .top, spacing: 12) {
             ZStack {
-                if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) {
+                // During animation, always use stepDisplayState; only shortcut to green checkmark when settled
+                if isCompleted && !isAnimating {
                     Circle().fill(AppColors.success).frame(width: 30, height: 30)
                     Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
                 } else {
@@ -794,16 +844,16 @@ struct TaskOverviewView: View {
         await pause(0.6)
         guard !Task.isCancelled else { return }
 
-        // Hero dock — simultaneous crossfade
+        // Hero dock — card flies to docked position
         phase = .heroDockToTop
-        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
-            heroDockOffsetY = -300; heroDockScale = 0.6; heroDockOpacity = 0; glowIntensity = 0
+        withAnimation(.spring(duration: 0.7, bounce: 0.1)) {
+            showCenteredHero = false
             showDockedHero = true
+            glowIntensity = 0
         }
         withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
         await pause(0.7)
         guard !Task.isCancelled else { return }
-        showCenteredHero = false
 
         // ========== FOCUS CARD POPUP ==========
         phase = .focusPopup
@@ -825,9 +875,10 @@ struct TaskOverviewView: View {
         withAnimation(.easeOut(duration: 0.5)) { focusTitleOpacity = 1 }
         await pause(0.4)
         guard !Task.isCancelled else { return }
-        // Goal / description
-        withAnimation(.easeOut(duration: 0.6)) { focusGoalOpacity = 1 }
-        await pause(0.45)
+        // Goal / description — typewriter reveal
+        focusGoalOpacity = 1
+        await typeFocusGoal()
+        await pause(0.25)
         guard !Task.isCancelled else { return }
         // Angle chips
         withAnimation(.easeOut(duration: 0.5)) { focusChipsOpacity = 1 }
@@ -837,22 +888,22 @@ struct TaskOverviewView: View {
         withAnimation(.easeOut(duration: 0.5)) { focusStatsOpacity = 1 }
         await pause(0.35)
         guard !Task.isCancelled else { return }
-        // Suggestion
-        withAnimation(.easeOut(duration: 0.5)) { focusSuggestionOpacity = 1 }
+        // Suggestion — typewriter reveal
+        focusSuggestionOpacity = 1
+        await typeFocusSuggestion()
         // Stabilization pause — give user time to read
-        await pause(2.5)
+        await pause(1.8)
         guard !Task.isCancelled else { return }
 
-        // Focus dock — simultaneous crossfade
+        // Focus dock — card flies to docked position
         phase = .focusDock
-        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
-            focusDockOffsetY = -280; focusDockScale = 0.65; focusDockOpacity = 0
+        withAnimation(.spring(duration: 0.7, bounce: 0.1)) {
+            showCenteredFocus = false
             showDockedFocus = true
         }
         withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
         await pause(0.7)
         guard !Task.isCancelled else { return }
-        showCenteredFocus = false
 
         // ========== FLOW CARD POPUP (with step spinning) ==========
         phase = .flowPopup
@@ -893,16 +944,15 @@ struct TaskOverviewView: View {
         await pause(0.8)
         guard !Task.isCancelled else { return }
 
-        // Flow dock — simultaneous crossfade
+        // Flow dock — card flies to docked position
         phase = .flowDock
-        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
-            flowDockOffsetY = -280; flowDockScale = 0.65; flowDockOpacity = 0
+        withAnimation(.spring(duration: 0.7, bounce: 0.1)) {
+            showCenteredFlow = false
             showDockedFlow = true
         }
         withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
         await pause(0.7)
         guard !Task.isCancelled else { return }
-        showCenteredFlow = false
         // Switch from checkmarks to actual progress (locked/unlocked)
         withAnimation(.spring(duration: 0.45, bounce: 0.15)) {
             for index in task.steps.indices {
@@ -935,25 +985,55 @@ struct TaskOverviewView: View {
         }
     }
 
+    @MainActor
+    private func typeFocusGoal() async {
+        let text: String
+        if let lessonContent {
+            text = lessonContent.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。"
+        } else {
+            text = "打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。"
+        }
+        let characters = Array(text)
+        guard !characters.isEmpty else { return }
+        let totalDuration = min(1.5, max(0.6, Double(characters.count) * 0.035))
+        let interval = totalDuration / Double(characters.count)
+        for index in characters.indices {
+            guard !Task.isCancelled else { return }
+            focusGoalChars = index + 1
+            await pause(interval)
+        }
+    }
+
+    @MainActor
+    private func typeFocusSuggestion() async {
+        let text = "先看答题思路，再学词汇和框架，最后对照范文开口练。"
+        let characters = Array(text)
+        guard !characters.isEmpty else { return }
+        let totalDuration = min(1.2, max(0.5, Double(characters.count) * 0.035))
+        let interval = totalDuration / Double(characters.count)
+        for index in characters.indices {
+            guard !Task.isCancelled else { return }
+            focusSuggestionChars = index + 1
+            await pause(interval)
+        }
+    }
+
     private func resetRevealState() {
         phase = .idle
         darkOverlayOpacity = 0
         // Hero
         showCenteredHero = false
         heroEntranceScale = 0.5; heroRotationX = 45; heroEntranceOpacity = 0
-        heroDockOffsetY = 0; heroDockScale = 1.0; heroDockOpacity = 1.0
         contentRevealProgress = 0; heroTitleOpacity = 0; heroPromptChars = 0; heroMetaOpacity = 0
         glowIntensity = 0; shimmerOffset = -200
         // Focus
         showCenteredFocus = false
         focusPopupScale = 0.6; focusPopupOpacity = 0; focusContentOpacity = 0
-        focusDockOffsetY = 0; focusDockScale = 1.0; focusDockOpacity = 1.0
-        focusTitleOpacity = 0; focusGoalOpacity = 0; focusChipsOpacity = 0
-        focusStatsOpacity = 0; focusSuggestionOpacity = 0
+        focusTitleOpacity = 0; focusGoalOpacity = 0; focusGoalChars = 0; focusChipsOpacity = 0
+        focusStatsOpacity = 0; focusSuggestionOpacity = 0; focusSuggestionChars = 0
         // Flow
         showCenteredFlow = false
         flowPopupScale = 0.6; flowPopupOpacity = 0
-        flowDockOffsetY = 0; flowDockScale = 1.0; flowDockOpacity = 1.0
         stepDisplayStates = Array(repeating: .hidden, count: task.steps.count)
         // Docked
         showDockedHero = false; showDockedFocus = false; showDockedFlow = false
