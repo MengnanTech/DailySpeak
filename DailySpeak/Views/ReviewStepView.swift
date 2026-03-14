@@ -8,8 +8,13 @@ struct ReviewStepView: View {
 
     @State private var appeared = false
     @State private var checkedItems: Set<Int> = []
+    @State private var listenedExamples: Set<Int> = []
     private var lesson: LessonContent? { task.lessonContent }
     private let reviewColor = Color(hex: "F97316")
+
+    private var totalLanguageExamples: Int {
+        lesson?.strategy.commonMistakes.language.count ?? 0
+    }
 
     private var totalCheckItems: Int {
         if let lesson {
@@ -56,14 +61,22 @@ struct ReviewStepView: View {
         .onChange(of: checkedItems.count) { _, _ in
             updateReviewProgress()
         }
+        .onChange(of: listenedExamples.count) { _, _ in
+            updateReviewProgress()
+        }
     }
 
     private func updateReviewProgress() {
         let total = totalCheckItems
         let checked = checkedItems.count
-        if checked >= total {
+        let langTotal = totalLanguageExamples
+        let langListened = listenedExamples.count
+        if checked >= total && langListened >= langTotal {
             canComplete = true
             progressHint = nil
+        } else if langListened < langTotal {
+            canComplete = false
+            progressHint = "还剩 \(langTotal - langListened) 个语言修正未听"
         } else {
             canComplete = false
             progressHint = "还剩 \(total - checked) 项未勾选"
@@ -271,6 +284,19 @@ struct ReviewStepView: View {
                                     .font(.subheadline.bold())
                                     .foregroundStyle(AppColors.primaryText)
                                     .fixedSize(horizontal: false, vertical: true)
+                                Spacer()
+                                Button {
+                                    WordPronouncer.shared.speak(mistake.betterExample, locale: "en-US", rate: 0.46, sourceLabel: "Review")
+                                    listenedExamples.insert(index)
+                                } label: {
+                                    Image(systemName: "speaker.wave.2.fill")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(AppColors.success)
+                                        .frame(width: 26, height: 26)
+                                        .background(AppColors.success.opacity(0.1))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(.plain)
                             }
                             .padding(.leading, 26)
 

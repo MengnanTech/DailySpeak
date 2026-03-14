@@ -669,19 +669,19 @@ struct TaskOverviewView: View {
                 if !isLast {
                     Rectangle()
                         .fill(connectorColor(for: index))
-                        .frame(width: 2, height: 18)
+                        .frame(width: 2, height: 24)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Image(systemName: step.icon).font(.system(size: 10, weight: .bold))
+                    Image(systemName: step.icon).font(.system(size: 12, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
                     Text(stepTitleText(for: step, at: index))
-                        .font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+                        .font(.system(size: 16, weight: .bold)).foregroundStyle(AppColors.primaryText)
                 }
                 Text(stepSubtitleText(for: step, at: index, state: state))
-                    .font(.caption).foregroundStyle(AppColors.tertiaryText)
+                    .font(.system(size: 13)).foregroundStyle(AppColors.tertiaryText)
             }
             .opacity(state == .spinning ? 0.92 : 1)
             Spacer()

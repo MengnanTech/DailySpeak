@@ -519,7 +519,17 @@ struct StrategyStepView: View {
     @Binding var progressHint: String?
 
     @State private var appeared = false
+    @State private var listenedAudioIds: Set<String> = []
     private var lesson: LessonContent? { task.lessonContent }
+
+    // The prompt is the main English content to listen to
+    private var promptPlaybackId: String {
+        EnglishSpeechPlayer.playbackID(for: task.prompt)
+    }
+
+    private var requiredAudioIds: Set<String> {
+        [promptPlaybackId]
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -543,22 +553,40 @@ struct StrategyStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
+            // Prompt audio — listen to the topic question
+            InlineAudioPlayerControl(
+                text: task.prompt,
+                playbackID: promptPlaybackId,
+                sourceLabel: "Topic",
+                accentColor: stepColor,
+                title: "听题目发音",
+                onPlay: { listenedAudioIds.insert(promptPlaybackId) }
+            )
+            .staggerIn(index: 1, appeared: appeared)
+
             if let lesson {
                 lessonStrategyContent(lesson)
             } else {
                 standardStrategyContent
             }
-
-            // Scroll-to-bottom gate sentinel
-            Color.clear.frame(height: 1)
-                .onAppear {
-                    canComplete = true
-                    progressHint = nil
-                }
         }
         .onAppear {
             appeared = true
-            progressHint = "滚动到底部以继续"
+            updateStrategyProgress()
+        }
+        .onChange(of: listenedAudioIds.count) { _, _ in
+            updateStrategyProgress()
+        }
+    }
+
+    private func updateStrategyProgress() {
+        let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
+        if remaining == 0 {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "听完题目语音以继续"
         }
     }
 
@@ -805,6 +833,7 @@ struct VocabularyStepView: View {
     @State private var flashcardFlipped = false
     @State private var appeared = false
     @State private var revealedWords: Set<String> = []
+    @State private var listenedWords: Set<String> = []
     private var hasLessonContent: Bool { task.lessonContent != nil }
 
     private var coreItems: [VocabItem] {
@@ -900,6 +929,9 @@ struct VocabularyStepView: View {
         .onChange(of: revealedWords.count) { _, _ in
             updateVocabProgress()
         }
+        .onChange(of: listenedWords.count) { _, _ in
+            updateVocabProgress()
+        }
     }
 
     private var allCoreWords: Set<String> {
@@ -909,9 +941,13 @@ struct VocabularyStepView: View {
     private func updateVocabProgress() {
         let total = allCoreWords.count
         let revealed = allCoreWords.intersection(revealedWords).count
-        if revealed >= total {
+        let listened = allCoreWords.intersection(listenedWords).count
+        if revealed >= total && listened >= total {
             canComplete = true
             progressHint = nil
+        } else if listened < total {
+            canComplete = false
+            progressHint = "还剩 \(total - listened) 个核心词发音未听"
         } else {
             canComplete = false
             progressHint = "还剩 \(total - revealed) 个核心词汇未学习"
@@ -981,6 +1017,7 @@ struct VocabularyStepView: View {
                                     Spacer()
                                     Button {
                                         WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary")
+                                        listenedWords.insert(item.word)
                                     } label: {
                                         Image(systemName: "speaker.wave.2.fill")
                                             .font(.system(size: 14))
@@ -1198,7 +1235,7 @@ struct VocabularyStepView: View {
                         selectedItem = item
                         revealedWords.insert(item.word)
                     },
-                    onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary") }
+                    onPronounce: { WordPronouncer.shared.speak(item.word, locale: "en-US", rate: 0.48, sourceLabel: "Vocabulary"); listenedWords.insert(item.word) }
                 )
             }
         }
@@ -1686,8 +1723,11 @@ struct FrameworkStepView: View {
     @Binding var progressHint: String?
 
     @State private var appeared = false
+    @State private var listenedSentences: Set<Int> = []
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
     private var lesson: LessonContent? { task.lessonContent }
+
+    private var totalSentences: Int { task.frameworkSentences.count }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -1716,17 +1756,29 @@ struct FrameworkStepView: View {
             } else {
                 standardFrameworkContent
             }
-
-            // Scroll-to-bottom gate sentinel
-            Color.clear.frame(height: 1)
-                .onAppear {
-                    canComplete = true
-                    progressHint = nil
-                }
         }
         .onAppear {
             appeared = true
-            progressHint = "滚动到底部以继续"
+            updateFrameworkProgress()
+        }
+        .onChange(of: listenedSentences.count) { _, _ in
+            updateFrameworkProgress()
+        }
+    }
+
+    private func updateFrameworkProgress() {
+        if totalSentences == 0 {
+            canComplete = true
+            progressHint = nil
+            return
+        }
+        let remaining = totalSentences - listenedSentences.count
+        if remaining <= 0 {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "还剩 \(remaining) 个框架句子未听"
         }
     }
 
@@ -1742,7 +1794,8 @@ struct FrameworkStepView: View {
                             label: index < labels.count ? labels[index] : "要点",
                             sentence: sentence,
                             accentColor: frameworkColor,
-                            isLast: index == task.frameworkSentences.count - 1
+                            isLast: index == task.frameworkSentences.count - 1,
+                            onListen: { listenedSentences.insert(index) }
                         )
                     }
                 }
@@ -1927,6 +1980,11 @@ struct FrameworkSentenceCard: View {
     let sentence: String
     let accentColor: Color
     let isLast: Bool
+    var onListen: (() -> Void)? = nil
+
+    private var playbackId: String {
+        EnglishSpeechPlayer.playbackID(for: sentence, category: "framework")
+    }
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -1960,10 +2018,25 @@ struct FrameworkSentenceCard: View {
             .frame(width: 30)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(label)
-                    .font(.system(size: 11, weight: .heavy, design: .rounded))
-                    .foregroundStyle(accentColor)
-                    .tracking(0.5)
+                HStack {
+                    Text(label)
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(accentColor)
+                        .tracking(0.5)
+                    Spacer()
+                    Button {
+                        WordPronouncer.shared.speak(sentence, locale: "en-US", rate: 0.46, sourceLabel: "Framework")
+                        onListen?()
+                    } label: {
+                        Image(systemName: "speaker.wave.2.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(accentColor)
+                            .frame(width: 28, height: 28)
+                            .background(accentColor.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 highlightedSentence(sentence)
                     .font(.subheadline)

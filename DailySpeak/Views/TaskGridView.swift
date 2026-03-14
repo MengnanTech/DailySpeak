@@ -34,7 +34,7 @@ struct TaskGridView: View {
             }
         }
         .navigationDestination(item: $selectedTask) { task in
-            TaskOverviewView(stage: stage, task: task)
+            TaskLoadingContainerView(stage: stage, task: task)
         }
         .onAppear {
             withAnimation(.easeOut(duration: 0.5)) { appearAnimations = true }
