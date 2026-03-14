@@ -1,0 +1,135 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "615F2849",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "zh_CN",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "CHN",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "B8A3F201",
+      "localizations" : [
+        {
+          "description" : "Unlock all 9 stages and 47+ speaking lessons",
+          "displayName" : "DailySpeak PRO",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁全部 9 个阶段和 47+ 口语课程",
+          "displayName" : "DailySpeak PRO",
+          "locale" : "zh_CN"
+        }
+      ],
+      "name" : "DailySpeak PRO",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "18",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C1D2E3F4",
+          "introductoryOffer" : {
+            "displayPrice" : "1",
+            "internalID" : "INT_OFFER_MONTHLY",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1M"
+          },
+          "localizations" : [
+            {
+              "description" : "Monthly access to all PRO content",
+              "displayName" : "PRO Monthly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "按月订阅，畅享所有 PRO 内容",
+              "displayName" : "PRO 月度订阅",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "com.levi.dailyspeak.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "PRO Monthly",
+          "subscriptionGroupID" : "B8A3F201",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "98",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A5B6C7D8",
+          "introductoryOffer" : {
+            "displayPrice" : "6",
+            "internalID" : "INT_OFFER_YEARLY",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "payAsYouGo",
+            "subscriptionPeriod" : "P1M"
+          },
+          "localizations" : [
+            {
+              "description" : "Yearly access to all PRO content, save 55%",
+              "displayName" : "PRO Yearly",
+              "locale" : "en_US"
+            },
+            {
+              "description" : "按年订阅，节省 55%，畅享所有 PRO 内容",
+              "displayName" : "PRO 年度订阅",
+              "locale" : "zh_CN"
+            }
+          ],
+          "productID" : "com.levi.dailyspeak.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "PRO Yearly",
+          "subscriptionGroupID" : "B8A3F201",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

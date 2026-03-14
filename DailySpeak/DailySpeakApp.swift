@@ -13,6 +13,7 @@ struct DailySpeakApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     @State private var progressManager = ProgressManager()
+    @State private var subscriptionManager = SubscriptionManager()
     @StateObject private var appState = AppState()
     @State private var showSplash = true
     @State private var showOnboarding = false
@@ -27,6 +28,7 @@ struct DailySpeakApp: App {
                     } else {
                         ContentView()
                             .environment(progressManager)
+                            .environment(subscriptionManager)
                             .environmentObject(appState)
                     }
                 }

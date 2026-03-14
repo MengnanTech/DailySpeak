@@ -80,9 +80,9 @@ final class ProgressManager {
         return Double(completedTaskCount(for: stage)) / Double(stage.taskCount)
     }
 
-    func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage) -> Bool {
+    func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage, isPro: Bool = false) -> Bool {
         // All tasks within an unlocked stage are accessible in any order
-        return isStageUnlocked(stageId: stageId)
+        return isStageUnlocked(stageId: stageId, isPro: isPro)
     }
 
     // MARK: - Stage Progress
@@ -91,12 +91,15 @@ final class ProgressManager {
         stage.tasks.allSatisfy { isTaskCompleted(stageId: stage.id, taskId: $0.id) }
     }
 
-    func isStageUnlocked(stageId: Int) -> Bool {
+    func isStageUnlocked(stageId: Int, isPro: Bool = false) -> Bool {
         if stageId == 1 { return true }
-        // Previous stage must be fully completed
-        let stages = CourseData.stages
-        guard let prevStage = stages.first(where: { $0.id == stageId - 1 }) else { return false }
-        return isStageCompleted(prevStage)
+        // PRO unlocks all stages immediately
+        return isPro
+    }
+
+    /// Whether a stage is locked specifically due to missing PRO subscription
+    func isStageProLocked(stageId: Int, isPro: Bool) -> Bool {
+        stageId > 1 && !isPro
     }
 
     // MARK: - Daily Motivation

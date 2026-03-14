@@ -23,7 +23,7 @@ struct InitialAuthChoiceView: View {
                             .font(.title3.weight(.bold))
                             .foregroundColor(.textPrimary)
 
-                        Text("参考 ReSelf 的入口流程。你可以先游客进入，也可以直接绑定 Apple 或邮箱账号。")
+                        Text("你可以先游客进入，也可以直接绑定 Apple 或邮箱账号。")
                             .font(.subheadline)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)

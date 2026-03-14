@@ -49,7 +49,11 @@ final class VoiceManager {
     }
 
     func selectVoice(_ voiceId: String) {
+        guard voiceId != selectedVoiceId else { return }
         selectedVoiceId = voiceId
         defaults.set(voiceId, forKey: selectedVoiceKey)
+        Task { @MainActor in
+            EnglishSpeechPlayer.shared.clearAudioCache()
+        }
     }
 }

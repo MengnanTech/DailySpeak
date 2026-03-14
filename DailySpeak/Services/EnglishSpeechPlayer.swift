@@ -37,6 +37,10 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
         return "\(category)-\(AppleSignInNonce.sha256(normalized))"
     }
 
+    func clearAudioCache() {
+        cachedAudioURLs.removeAll()
+    }
+
     var hasVisiblePlayback: Bool {
         playbackContext != nil && (activePlaybackID != nil || loadingPlaybackID != nil || pausedPlaybackID != nil)
     }

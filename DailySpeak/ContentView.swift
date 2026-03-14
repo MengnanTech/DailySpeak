@@ -102,4 +102,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(AppState())
         .environment(ProgressManager())
+        .environment(SubscriptionManager())
 }

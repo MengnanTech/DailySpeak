@@ -1,6 +1,9 @@
 import SwiftUI
+import StoreKit
 
 struct PaywallPlaceholderView: View {
+    @Environment(SubscriptionManager.self) private var subscription
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedPlan: PlanType = .yearly
 
     private enum PlanType { case monthly, yearly }
@@ -20,6 +23,10 @@ struct PaywallPlaceholderView: View {
         ("icloud.fill", "Cloud Sync", "Seamlessly sync your progress across all devices"),
     ]
 
+    private var selectedProduct: Product? {
+        selectedPlan == .monthly ? subscription.monthlyProduct : subscription.yearlyProduct
+    }
+
     var body: some View {
         ZStack {
             AppColors.background.ignoresSafeArea()
@@ -30,19 +37,27 @@ struct PaywallPlaceholderView: View {
                         .staggeredEntrance(index: 0)
 
                     VStack(spacing: 20) {
-                        ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
-                            benefitCard(icon: benefit.icon, title: benefit.title, subtitle: benefit.subtitle)
-                                .staggeredEntrance(index: index + 1)
+                        // Already PRO banner
+                        if subscription.isPro {
+                            proActiveBanner
+                                .staggeredEntrance(index: 1)
                         }
 
-                        planSection
-                            .staggeredEntrance(index: benefits.count + 1)
+                        ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
+                            benefitCard(icon: benefit.icon, title: benefit.title, subtitle: benefit.subtitle)
+                                .staggeredEntrance(index: index + (subscription.isPro ? 2 : 1))
+                        }
 
-                        ctaSection
-                            .staggeredEntrance(index: benefits.count + 2)
+                        if !subscription.isPro {
+                            planSection
+                                .staggeredEntrance(index: benefits.count + 1)
 
-                        footerSection
-                            .staggeredEntrance(index: benefits.count + 3)
+                            ctaSection
+                                .staggeredEntrance(index: benefits.count + 2)
+
+                            footerSection
+                                .staggeredEntrance(index: benefits.count + 3)
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 28)
@@ -52,6 +67,38 @@ struct PaywallPlaceholderView: View {
         }
         .navigationTitle("Premium")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: subscription.isPro) { _, isPro in
+            if isPro { dismiss() }
+        }
+    }
+
+    // MARK: - Already PRO Banner
+    private var proActiveBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 24))
+                .foregroundStyle(gold)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("PRO 已激活")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppColors.primaryText)
+                Text("您已解锁所有高级内容")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.secondText)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(gold.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(gold.opacity(0.3), lineWidth: 1)
+        )
     }
 
     // MARK: - Hero Section
@@ -199,29 +246,41 @@ struct PaywallPlaceholderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 12) {
-                planCard(
-                    title: "Monthly",
-                    price: "¥18",
-                    period: "/month",
-                    badge: nil,
-                    isSelected: selectedPlan == .monthly
-                ) {
-                    withAnimation(.spring(response: 0.3)) {
-                        selectedPlan = .monthly
+                if let monthly = subscription.monthlyProduct {
+                    planCard(
+                        title: "Monthly",
+                        price: monthly.displayPrice,
+                        period: "/month",
+                        badge: nil,
+                        isSelected: selectedPlan == .monthly
+                    ) {
+                        withAnimation(.spring(response: 0.3)) {
+                            selectedPlan = .monthly
+                        }
                     }
                 }
 
-                planCard(
-                    title: "Yearly",
-                    price: "¥98",
-                    period: "/year",
-                    badge: "SAVE 55%",
-                    isSelected: selectedPlan == .yearly
-                ) {
-                    withAnimation(.spring(response: 0.3)) {
-                        selectedPlan = .yearly
+                if let yearly = subscription.yearlyProduct {
+                    planCard(
+                        title: "Yearly",
+                        price: yearly.displayPrice,
+                        period: "/year",
+                        badge: "SAVE 55%",
+                        isSelected: selectedPlan == .yearly
+                    ) {
+                        withAnimation(.spring(response: 0.3)) {
+                            selectedPlan = .yearly
+                        }
                     }
                 }
+            }
+
+            // Error message
+            if let error = subscription.purchaseError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
             }
         }
     }
@@ -300,12 +359,20 @@ struct PaywallPlaceholderView: View {
     // MARK: - CTA
     private var ctaSection: some View {
         VStack(spacing: 12) {
-            Button {} label: {
+            Button {
+                guard let product = selectedProduct else { return }
+                Task { await subscription.purchase(product) }
+            } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "crown.fill")
-                        .font(.system(size: 15, weight: .bold))
-                    Text("Subscribe Now")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                    if subscription.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 15, weight: .bold))
+                        Text("Subscribe Now")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                    }
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
@@ -321,24 +388,33 @@ struct PaywallPlaceholderView: View {
                 .shadow(color: gold.opacity(0.35), radius: 16, x: 0, y: 8)
             }
             .buttonStyle(.plain)
-            .disabled(true)
-            .opacity(0.85)
+            .disabled(selectedProduct == nil || subscription.isLoading)
+            .opacity(selectedProduct == nil ? 0.6 : 1)
 
-            Text("Subscription coming soon")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
+            if subscription.products.isEmpty {
+                Text("正在加载订阅方案…")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
         }
     }
 
     // MARK: - Footer
     private var footerSection: some View {
         VStack(spacing: 14) {
-            Button {} label: {
-                Text("Restore Purchases")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(AppColors.secondText)
+            Button {
+                Task { await subscription.restore() }
+            } label: {
+                if subscription.isLoading {
+                    ProgressView()
+                        .tint(AppColors.secondText)
+                } else {
+                    Text("Restore Purchases")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(AppColors.secondText)
+                }
             }
-            .disabled(true)
+            .disabled(subscription.isLoading)
 
             HStack(spacing: 16) {
                 if let privacyURL = URL(string: Constants.privacyPolicyURL) {
@@ -357,6 +433,11 @@ struct PaywallPlaceholderView: View {
                         .foregroundStyle(AppColors.tertiaryText)
                 }
             }
+
+            Text("订阅将自动续费，可随时在系统设置中取消")
+                .font(.system(size: 10))
+                .foregroundStyle(AppColors.tertiaryText)
+                .multilineTextAlignment(.center)
         }
         .padding(.top, 8)
     }
@@ -365,5 +446,6 @@ struct PaywallPlaceholderView: View {
 #Preview {
     NavigationStack {
         PaywallPlaceholderView()
+            .environment(SubscriptionManager())
     }
 }

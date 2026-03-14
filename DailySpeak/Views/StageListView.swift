@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StageListView: View {
     @Environment(ProgressManager.self) private var progress
+    @Environment(SubscriptionManager.self) private var subscription
     let unreadCount: Int
     let onProfileTap: () -> Void
     let onInboxTap: () -> Void
@@ -11,6 +12,7 @@ struct StageListView: View {
     @State private var displayedTaskStageId: Int?
     @State private var taskListInsertionEdge: Edge = .trailing
     @State private var taskListStageVisibility: [Int: Bool] = [:]
+    @State private var showPaywall = false
 
     private let stages = CourseData.stages
 
@@ -85,6 +87,11 @@ struct StageListView: View {
             .navigationDestination(item: $selectedTask) { task in
                 let stage = stages.first { s in s.tasks.contains { $0.id == task.id } } ?? currentStage
                 TaskOverviewView(stage: stage, task: task)
+            }
+            .sheet(isPresented: $showPaywall) {
+                NavigationStack {
+                    PaywallPlaceholderView()
+                }
             }
             .onAppear {
                 if carouselStageId == nil {
@@ -217,11 +224,19 @@ struct StageListView: View {
                         CarouselStageCard(
                             stage: stage,
                             onStageTap: {
-                                guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                                if progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) {
+                                    showPaywall = true
+                                    return
+                                }
+                                guard progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) else { return }
                                 selectedStage = stage
                             },
                             onTaskTap: { task in
-                                guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                                if progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) {
+                                    showPaywall = true
+                                    return
+                                }
+                                guard progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) else { return }
                                 selectedTask = task
                             }
                         )
@@ -299,7 +314,11 @@ struct StageListView: View {
                     .foregroundStyle(AppColors.primaryText)
                 Spacer()
                 Button {
-                    guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                    if progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) {
+                        showPaywall = true
+                        return
+                    }
+                    guard progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) else { return }
                     selectedStage = stage
                 } label: {
                     Text("View all")
@@ -326,7 +345,11 @@ struct StageListView: View {
 
                 VStack(spacing: 0) {
                     Button {
-                        guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                        if progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) {
+                            showPaywall = true
+                            return
+                        }
+                        guard progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) else { return }
                         selectedTask = task
                     } label: {
                         HStack(spacing: 12) {
@@ -390,7 +413,11 @@ struct StageListView: View {
                 VStack(spacing: 0) {
                     Divider().background(AppColors.border).padding(.leading, 52)
                     Button {
-                        guard progress.isStageUnlocked(stageId: stage.id) else { return }
+                        if progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) {
+                            showPaywall = true
+                            return
+                        }
+                        guard progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) else { return }
                         selectedStage = stage
                     } label: {
                         HStack {
@@ -490,6 +517,7 @@ struct StatChip: View {
 // MARK: - Carousel Hero Card (Pseudo-3D depth style)
 struct CarouselStageCard: View {
     @Environment(ProgressManager.self) private var progress
+    @Environment(SubscriptionManager.self) private var subscription
     let stage: Stage
     var onStageTap: () -> Void
     var onTaskTap: (SpeakingTask) -> Void
@@ -502,7 +530,8 @@ struct CarouselStageCard: View {
     private var completedCount: Int { progress.completedTaskCount(for: stage) }
     private var prog: Double { progress.stageProgress(for: stage) }
     private var theme: StageTheme { stage.theme }
-    private var isStageLocked: Bool { !progress.isStageUnlocked(stageId: stage.id) }
+    private var isProLocked: Bool { progress.isStageProLocked(stageId: stage.id, isPro: subscription.isPro) }
+    private var isStageLocked: Bool { !progress.isStageUnlocked(stageId: stage.id, isPro: subscription.isPro) }
     private var nextTask: SpeakingTask? {
         stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
     }
@@ -572,7 +601,7 @@ struct CarouselStageCard: View {
                                 .clipShape(Capsule())
                             if stage.id > 1 {
                                 HStack(spacing: 3) {
-                                    Image(systemName: "lock.fill")
+                                    Image(systemName: subscription.isPro ? "crown.fill" : "lock.fill")
                                         .font(.system(size: 8, weight: .bold))
                                     Text("PRO")
                                         .font(.system(size: 9, weight: .heavy, design: .rounded))
@@ -588,7 +617,7 @@ struct CarouselStageCard: View {
                                 HStack(spacing: 3) {
                                     Image(systemName: "lock.fill")
                                         .font(.system(size: 8, weight: .bold))
-                                    Text("完成上一阶段解锁")
+                                    Text(isProLocked ? "订阅 PRO 解锁" : "完成上一阶段解锁")
                                         .font(.system(size: 9, weight: .heavy, design: .rounded))
                                 }
                                 .foregroundStyle(.white.opacity(0.9))
@@ -657,12 +686,12 @@ struct CarouselStageCard: View {
                                     .font(.system(size: 14, weight: .bold, design: .rounded))
                                     .foregroundStyle(AppColors.success)
                             } else if isStageLocked {
-                                Image(systemName: "lock.fill")
+                                Image(systemName: isProLocked ? "crown.fill" : "lock.fill")
                                     .font(.system(size: 11, weight: .bold))
-                                    .foregroundStyle(AppColors.tertiaryText)
-                                Text("Locked")
+                                    .foregroundStyle(isProLocked ? Color(hex: "C89B3C") : AppColors.tertiaryText)
+                                Text(isProLocked ? "Get PRO" : "Locked")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                                    .foregroundStyle(AppColors.tertiaryText)
+                                    .foregroundStyle(isProLocked ? Color(hex: "C89B3C") : AppColors.tertiaryText)
                             } else {
                                 Text("Continue")
                                     .font(.system(size: 14, weight: .bold, design: .rounded))

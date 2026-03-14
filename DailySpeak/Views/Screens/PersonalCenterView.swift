@@ -3,6 +3,7 @@ import SwiftUI
 struct PersonalCenterView: View {
     @EnvironmentObject var appState: AppState
     @Environment(ProgressManager.self) private var progress
+    @Environment(SubscriptionManager.self) private var subscription
     @Environment(\.openURL) private var openURL
 
     private let dividerInset: CGFloat = 52
@@ -55,7 +56,7 @@ struct PersonalCenterView: View {
                         secondaryStatTitle: "已完成阶段",
                         secondaryStatValue: "\(completedStages)",
                         themeColor: Color(hex: "4F6BED"),
-                        showsVIPCrown: false
+                        showsVIPCrown: subscription.isPro
                     )
                     .padding(.top, 8)
                     .staggeredEntrance(index: 0)
@@ -129,26 +130,30 @@ struct PersonalCenterView: View {
                         .fill(.white.opacity(0.2))
                         .frame(width: 46, height: 46)
 
-                    Image(systemName: "crown.fill")
+                    Image(systemName: subscription.isPro ? "checkmark.seal.fill" : "crown.fill")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundStyle(.white)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("升级到 DailySpeak PRO")
+                    Text(subscription.isPro ? "DailySpeak PRO" : "升级到 DailySpeak PRO")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
 
-                    Text("解锁全部 \(CourseData.stages.count) 个阶段和 \(proTaskCount)+ 口语课程")
+                    Text(subscription.isPro
+                         ? "已解锁全部高级内容"
+                         : "解锁全部 \(CourseData.stages.count) 个阶段和 \(proTaskCount)+ 口语课程")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.8))
                 }
 
                 Spacer(minLength: 0)
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.white.opacity(0.6))
+                if !subscription.isPro {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
             }
             .padding(18)
             .background(
@@ -506,5 +511,6 @@ struct PersonalCenterView: View {
         PersonalCenterView()
             .environmentObject(AppState())
             .environment(ProgressManager())
+            .environment(SubscriptionManager())
     }
 }

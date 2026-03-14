@@ -116,7 +116,7 @@ struct AuthLoginRegisterView: View {
                     .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.textPrimary)
 
-                Text("和 ReSelf 一样先确认邮箱，再进入密码或验证码步骤。游客模式仍然可用，登录只影响账号和后端能力。")
+                Text("输入邮箱开始登录或注册")
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TaskGridView: View {
     @Environment(ProgressManager.self) private var progress
+    @Environment(SubscriptionManager.self) private var subscription
     let stage: Stage
 
     @State private var selectedTask: SpeakingTask?
@@ -162,7 +163,7 @@ struct TaskGridView: View {
             return .completed
         } else if task.id == nextTask?.id {
             return .current
-        } else if progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage) {
+        } else if progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, isPro: subscription.isPro) {
             return .unlocked
         } else {
             return .locked

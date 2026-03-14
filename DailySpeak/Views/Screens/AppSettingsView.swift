@@ -3,6 +3,7 @@ import SwiftUI
 struct AppSettingsView: View {
     @EnvironmentObject var appState: AppState
     @Environment(ProgressManager.self) private var progress
+    @Environment(SubscriptionManager.self) private var subscription
     @Environment(\.openURL) private var openURL
 
     @State private var showResetAlert = false
@@ -122,9 +123,9 @@ struct AppSettingsView: View {
                     PaywallPlaceholderView()
                 } label: {
                     NavigationMenuRow(
-                        icon: "crown.fill",
+                        icon: subscription.isPro ? "checkmark.seal.fill" : "crown.fill",
                         title: "Premium",
-                        subtitle: "Unlock advanced features",
+                        subtitle: subscription.isPro ? "PRO Active" : "Unlock advanced features",
                         iconColor: Color(hex: "C89B3C")
                     )
                 }
@@ -265,5 +266,6 @@ struct AppSettingsView: View {
         AppSettingsView()
             .environmentObject(AppState())
             .environment(ProgressManager())
+            .environment(SubscriptionManager())
     }
 }

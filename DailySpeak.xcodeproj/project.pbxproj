@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DB43710D2F65915B0092C286 /* dailySpeakKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = DB43710C2F65915B0092C286 /* dailySpeakKit.storekit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		DB43710C2F65915B0092C286 /* dailySpeakKit.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = dailySpeakKit.storekit; sourceTree = "<group>"; };
 		DB64CAAA2F52B47A00FE806A /* DailySpeak.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DailySpeak.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		DB64CAA12F52B47A00FE806A = {
 			isa = PBXGroup;
 			children = (
+				DB43710C2F65915B0092C286 /* dailySpeakKit.storekit */,
 				DB64CAAC2F52B47A00FE806A /* DailySpeak */,
 				DB64CAAB2F52B47A00FE806A /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB43710D2F65915B0092C286 /* dailySpeakKit.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

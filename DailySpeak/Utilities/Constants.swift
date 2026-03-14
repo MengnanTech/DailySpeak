@@ -14,6 +14,12 @@ struct Constants {
     struct StorageKeys {
         static let hasLaunchedBefore = "dailyspeak.hasLaunchedBefore"
     }
+
+    struct SubscriptionProductIDs {
+        static let monthly = "com.levi.dailyspeak.pro.monthly"
+        static let yearly = "com.levi.dailyspeak.pro.yearly"
+        static let all: Set<String> = [monthly, yearly]
+    }
 }
 
 enum AppleSignInNonce {
