@@ -8,6 +8,7 @@ struct PaywallPlaceholderView: View {
     @State private var purchaseMode: PurchaseMode
     @State private var appeared = false
     @State private var glowPhase = false
+    @State private var stageUnlocked = false
 
     /// Optional: which stage the user tried to access (nil = generic paywall)
     let targetStageId: Int?
@@ -63,33 +64,37 @@ struct PaywallPlaceholderView: View {
             )
             .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 0) {
-                    heroArea
-                        .padding(.top, 50)
+            if stageUnlocked, let stage = targetStage {
+                stageUnlockedOverlay(stage: stage)
+            } else {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        heroArea
+                            .padding(.top, 50)
 
-                    if subscription.isPro {
-                        proActiveBanner
-                            .padding(.horizontal, 24)
-                            .padding(.top, 24)
-                    } else {
-                        // Purchase mode picker (only if we have a target stage)
-                        if targetStageId != nil {
-                            modePicker
+                        if subscription.isPro {
+                            proActiveBanner
                                 .padding(.horizontal, 24)
-                                .padding(.top, 28)
-                        }
-
-                        if purchaseMode == .subscribe || targetStageId == nil {
-                            subscribeSection
+                                .padding(.top, 24)
                         } else {
-                            stageSection
-                        }
+                            // Purchase mode picker (only if we have a target stage)
+                            if targetStageId != nil {
+                                modePicker
+                                    .padding(.horizontal, 24)
+                                    .padding(.top, 28)
+                            }
 
-                        trustFooter
-                            .padding(.horizontal, 24)
-                            .padding(.top, 20)
-                            .padding(.bottom, 40)
+                            if purchaseMode == .subscribe || targetStageId == nil {
+                                subscribeSection
+                            } else {
+                                stageSection
+                            }
+
+                            trustFooter
+                                .padding(.horizontal, 24)
+                                .padding(.top, 20)
+                                .padding(.bottom, 40)
+                        }
                     }
                 }
             }
@@ -112,6 +117,16 @@ struct PaywallPlaceholderView: View {
         }
         .onChange(of: subscription.isPro) { _, isPro in
             if isPro { dismiss() }
+        }
+        .onChange(of: subscription.purchasedStageIDs) { _, newIDs in
+            if let stageId = targetStageId, newIDs.contains(stageId) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                    stageUnlocked = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
+                    dismiss()
+                }
+            }
         }
     }
 
@@ -515,6 +530,55 @@ struct PaywallPlaceholderView: View {
             .font(.system(size: 12))
             .foregroundStyle(AppColors.tertiaryText)
         }
+    }
+
+    // MARK: - Stage Unlocked Overlay
+    private func stageUnlockedOverlay(stage: Stage) -> some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [stage.theme.startColor.opacity(0.15), stage.theme.startColor.opacity(0)],
+                            center: .center, startRadius: 30, endRadius: 90
+                        )
+                    )
+                    .frame(width: 180, height: 180)
+
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [stage.theme.startColor, stage.theme.endColor],
+                            startPoint: .topLeading, endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 90, height: 90)
+                    .shadow(color: stage.theme.startColor.opacity(0.35), radius: 24, x: 0, y: 12)
+
+                Image(systemName: "checkmark")
+                    .font(.system(size: 38, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            .transition(.scale(scale: 0.3).combined(with: .opacity))
+
+            VStack(spacing: 10) {
+                Text("解锁成功!")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppColors.primaryText)
+
+                Text("「\(stage.chineseTitle)」已解锁，开始练习吧")
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.secondText)
+                    .multilineTextAlignment(.center)
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+
+            Spacer()
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Helpers

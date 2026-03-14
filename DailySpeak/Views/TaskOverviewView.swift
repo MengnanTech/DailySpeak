@@ -686,6 +686,7 @@ struct TaskOverviewView: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(AppColors.tertiaryText)
+                    .frame(maxHeight: .infinity)
             }
         }
         .padding(.vertical, 12)
