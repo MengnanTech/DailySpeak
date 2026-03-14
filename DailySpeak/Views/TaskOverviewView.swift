@@ -457,94 +457,188 @@ struct TaskOverviewView: View {
 
     private func lessonSummaryCard(_ lesson: LessonContent) -> some View {
         let isPopup = showCenteredFocus
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("学习重点").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+        return VStack(alignment: .leading, spacing: 18) {
+            // Header with icon badge
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            LinearGradient(colors: [theme.startColor, theme.endColor],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "lightbulb.max.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("学习重点")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                    Text(lesson.practice.targetLength)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
                 Spacer()
-                Text(lesson.practice.targetLength)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
-            Text(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
-                .font(.subheadline).foregroundStyle(AppColors.secondText)
-                .fixedSize(horizontal: false, vertical: true)
-                .opacity(isPopup ? focusGoalOpacity : 1)
+            // Learning goal with accent bar
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(
+                        LinearGradient(colors: [theme.startColor, theme.endColor],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(width: 3)
+                Text(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。")
+                    .font(.subheadline).foregroundStyle(AppColors.secondText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .opacity(isPopup ? focusGoalOpacity : 1)
 
+            // Angle chips — improved style
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(lesson.strategy.angles, id: \.title) { angle in
-                        Text(angle.title).font(.caption.bold()).foregroundStyle(theme.startColor)
-                            .padding(.horizontal, 12).padding(.vertical, 8)
-                            .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
+                        HStack(spacing: 5) {
+                            Circle()
+                                .fill(theme.startColor)
+                                .frame(width: 5, height: 5)
+                            Text(angle.title)
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundStyle(theme.startColor)
+                        }
+                        .padding(.horizontal, 12).padding(.vertical, 8)
+                        .background(theme.startColor.opacity(0.08))
+                        .clipShape(Capsule())
                     }
                 }
             }
             .opacity(isPopup ? focusChipsOpacity : 1)
 
-            HStack(spacing: 8) {
-                lessonMiniStat(title: "Angles", value: "\(lesson.strategy.angles.count)")
-                lessonMiniStat(title: "Bands", value: "\(task.sampleAnswers.count)")
-                lessonMiniStat(title: "Vocab", value: "\(task.vocabulary.count)")
-                lessonMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)")
+            // Stats row — card-style mini stats
+            HStack(spacing: 0) {
+                lessonMiniStat(title: "思路", value: "\(lesson.strategy.angles.count)", icon: "sparkles")
+                miniStatDivider
+                lessonMiniStat(title: "词汇", value: "\(task.vocabulary.count)", icon: "textformat.abc")
+                miniStatDivider
+                lessonMiniStat(title: "范文", value: "\(task.sampleAnswers.count)", icon: "doc.text")
             }
+            .padding(.vertical, 10)
+            .background(AppColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .opacity(isPopup ? focusStatsOpacity : 1)
 
-            Divider().background(AppColors.border)
-                .opacity(isPopup ? focusSuggestionOpacity : 1)
-
-            VStack(alignment: .leading, spacing: 8) {
-                Text("建议顺序").font(.caption.bold()).foregroundStyle(theme.startColor)
-                Text("先看答题思路，再学词汇和框架，最后对照范文开口练。")
-                    .font(.subheadline).foregroundStyle(AppColors.primaryText)
+            // Suggestion section
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(theme.startColor)
+                    .padding(.top, 1)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("建议顺序")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(theme.startColor)
+                    Text("先看答题思路，再学词汇和框架，最后对照范文开口练。")
+                        .font(.subheadline).foregroundStyle(AppColors.primaryText)
+                }
             }
             .opacity(isPopup ? focusSuggestionOpacity : 1)
         }
-        .padding(16).cardStyle()
+        .padding(20).cardStyle()
     }
 
-    private func lessonMiniStat(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(.caption2.bold()).foregroundStyle(AppColors.tertiaryText)
-            Text(value).font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(AppColors.primaryText)
+    private var miniStatDivider: some View {
+        Rectangle()
+            .fill(AppColors.border)
+            .frame(width: 0.5, height: 28)
+    }
+
+    private func lessonMiniStat(title: String, value: String, icon: String) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(theme.startColor.opacity(0.7))
+            Text(value)
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(AppColors.primaryText)
+            Text(title)
+                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .foregroundStyle(AppColors.tertiaryText)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 
     private var fallbackFocusCard: some View {
         let isPopup = showCenteredFocus
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text("学习重点").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+        return VStack(alignment: .leading, spacing: 18) {
+            // Header with icon badge
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            LinearGradient(colors: [theme.startColor, theme.endColor],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .frame(width: 38, height: 38)
+                    Image(systemName: "lightbulb.max.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("学习重点")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+                    Text(task.suggestedTime)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
                 Spacer()
-                Text(task.suggestedTime)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
-            Text("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。")
-                .font(.subheadline).foregroundStyle(AppColors.secondText)
-                .opacity(isPopup ? focusGoalOpacity : 1)
-            VStack(spacing: 12) {
+
+            // Description with accent bar
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(
+                        LinearGradient(colors: [theme.startColor, theme.endColor],
+                                       startPoint: .top, endPoint: .bottom)
+                    )
+                    .frame(width: 3)
+                Text("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。")
+                    .font(.subheadline).foregroundStyle(AppColors.secondText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            .opacity(isPopup ? focusGoalOpacity : 1)
+
+            // Tips list
+            VStack(spacing: 14) {
                 ForEach(Array(task.tips.prefix(3).enumerated()), id: \.offset) { index, tip in
-                    HStack(alignment: .top, spacing: 10) {
+                    HStack(alignment: .top, spacing: 12) {
                         ZStack {
-                            Circle().fill(theme.startColor.opacity(0.12)).frame(width: 26, height: 26)
-                            Text("\(index + 1)").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(theme.startColor)
+                            Circle()
+                                .fill(
+                                    LinearGradient(colors: [theme.startColor, theme.endColor],
+                                                   startPoint: .topLeading, endPoint: .bottomTrailing)
+                                )
+                                .frame(width: 28, height: 28)
+                            Text("\(index + 1)")
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
                         }
-                        Text(tip).font(.subheadline).foregroundStyle(AppColors.primaryText).fixedSize(horizontal: false, vertical: true)
+                        Text(tip)
+                            .font(.subheadline).foregroundStyle(AppColors.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
                         Spacer()
                     }
                 }
             }
             .opacity(isPopup ? focusChipsOpacity : 1)
         }
-        .padding(16).cardStyle()
+        .padding(20).cardStyle()
     }
 
     // MARK: - Flow Section Card
@@ -700,16 +794,14 @@ struct TaskOverviewView: View {
         await pause(0.6)
         guard !Task.isCancelled else { return }
 
-        // Hero dock
+        // Hero dock — simultaneous crossfade
         phase = .heroDockToTop
-        withAnimation(.spring(duration: 0.7, bounce: 0.08)) {
-            heroDockOffsetY = -300; heroDockScale = 0.65; heroDockOpacity = 0; glowIntensity = 0
+        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
+            heroDockOffsetY = -300; heroDockScale = 0.6; heroDockOpacity = 0; glowIntensity = 0
+            showDockedHero = true
         }
-        withAnimation(.easeOut(duration: 0.45)) { darkOverlayOpacity = 0 }
-        await pause(0.25)
-        guard !Task.isCancelled else { return }
-        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedHero = true }
-        await pause(0.4)
+        withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
+        await pause(0.7)
         guard !Task.isCancelled else { return }
         showCenteredHero = false
 
@@ -747,20 +839,18 @@ struct TaskOverviewView: View {
         guard !Task.isCancelled else { return }
         // Suggestion
         withAnimation(.easeOut(duration: 0.5)) { focusSuggestionOpacity = 1 }
-        // Stabilization pause
-        await pause(1.2)
+        // Stabilization pause — give user time to read
+        await pause(2.5)
         guard !Task.isCancelled else { return }
 
-        // Focus dock
+        // Focus dock — simultaneous crossfade
         phase = .focusDock
-        withAnimation(.spring(duration: 0.65, bounce: 0.08)) {
-            focusDockOffsetY = -280; focusDockScale = 0.7; focusDockOpacity = 0
+        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
+            focusDockOffsetY = -280; focusDockScale = 0.65; focusDockOpacity = 0
+            showDockedFocus = true
         }
-        withAnimation(.easeOut(duration: 0.4)) { darkOverlayOpacity = 0 }
-        await pause(0.2)
-        guard !Task.isCancelled else { return }
-        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedFocus = true }
-        await pause(0.35)
+        withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
+        await pause(0.7)
         guard !Task.isCancelled else { return }
         showCenteredFocus = false
 
@@ -803,16 +893,14 @@ struct TaskOverviewView: View {
         await pause(0.8)
         guard !Task.isCancelled else { return }
 
-        // Flow dock
+        // Flow dock — simultaneous crossfade
         phase = .flowDock
-        withAnimation(.spring(duration: 0.65, bounce: 0.08)) {
-            flowDockOffsetY = -280; flowDockScale = 0.7; flowDockOpacity = 0
+        withAnimation(.spring(duration: 0.75, bounce: 0.06)) {
+            flowDockOffsetY = -280; flowDockScale = 0.65; flowDockOpacity = 0
+            showDockedFlow = true
         }
-        withAnimation(.easeOut(duration: 0.4)) { darkOverlayOpacity = 0 }
-        await pause(0.2)
-        guard !Task.isCancelled else { return }
-        withAnimation(.spring(duration: 0.5, bounce: 0.12)) { showDockedFlow = true }
-        await pause(0.2)
+        withAnimation(.easeOut(duration: 0.5)) { darkOverlayOpacity = 0 }
+        await pause(0.7)
         guard !Task.isCancelled else { return }
         showCenteredFlow = false
         // Switch from checkmarks to actual progress (locked/unlocked)

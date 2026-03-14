@@ -102,13 +102,19 @@ actor PushInboxStore {
         if let data = try? encoder.encode(messages.sorted { $0.createdAt > $1.createdAt }) {
             defaults.set(data, forKey: storageKey)
         }
-        NotificationCenter.default.post(name: .pushInboxDidUpdate, object: nil)
+        notifyInboxDidUpdate()
     }
 
     private func persistIfNeeded(_ merged: [PushInboxMessage], original: [PushInboxMessage]) {
         guard merged != original else { return }
         if let data = try? encoder.encode(merged.sorted { $0.createdAt > $1.createdAt }) {
             defaults.set(data, forKey: storageKey)
+        }
+    }
+
+    private nonisolated func notifyInboxDidUpdate() {
+        Task { @MainActor in
+            NotificationCenter.default.post(name: .pushInboxDidUpdate, object: nil)
         }
     }
 
