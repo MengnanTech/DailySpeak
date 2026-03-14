@@ -91,6 +91,7 @@ struct StageListView: View {
             }
             .sheet(isPresented: $showPaywall) {
                 PaywallPlaceholderView(targetStageId: paywallTargetStageId)
+                    .id(paywallTargetStageId)
             }
             .onAppear {
                 if carouselStageId == nil {

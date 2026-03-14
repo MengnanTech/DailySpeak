@@ -5,12 +5,17 @@ struct PaywallPlaceholderView: View {
     @Environment(SubscriptionManager.self) private var subscription
     @Environment(\.dismiss) private var dismiss
     @State private var selectedSubPlan: SubPlan = .yearly
-    @State private var purchaseMode: PurchaseMode = .subscribe
+    @State private var purchaseMode: PurchaseMode
     @State private var appeared = false
     @State private var glowPhase = false
 
     /// Optional: which stage the user tried to access (nil = generic paywall)
-    var targetStageId: Int? = nil
+    let targetStageId: Int?
+
+    init(targetStageId: Int? = nil) {
+        self.targetStageId = targetStageId
+        self._purchaseMode = State(initialValue: targetStageId != nil ? .stage : .subscribe)
+    }
 
     private enum SubPlan: String, CaseIterable { case weekly, monthly, yearly }
     private enum PurchaseMode: String, CaseIterable {
@@ -102,8 +107,6 @@ struct PaywallPlaceholderView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            // If we have a target stage, default to single stage mode
-            if targetStageId != nil { purchaseMode = .stage }
             withAnimation(.easeOut(duration: 0.8)) { appeared = true }
             withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) { glowPhase = true }
         }
