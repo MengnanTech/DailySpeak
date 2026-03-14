@@ -3,10 +3,15 @@ import SwiftUI
 struct PersonalCenterView: View {
     @EnvironmentObject var appState: AppState
     @Environment(ProgressManager.self) private var progress
+    @Environment(\.openURL) private var openURL
 
     private let dividerInset: CGFloat = 52
     private let gold = Color(hex: "C89B3C")
     private let goldLight = Color(hex: "DCBC6A")
+
+    @State private var showResetAlert = false
+    @State private var showFeedbackFallbackAlert = false
+    @State private var showOnboarding = false
 
     private var totalCompleted: Int {
         CourseData.stages.reduce(0) { $0 + progress.completedTaskCount(for: $1) }
@@ -37,41 +42,21 @@ struct PersonalCenterView: View {
 
     var body: some View {
         ZStack {
-            Color.backgroundDark.ignoresSafeArea()
+            AppColors.background.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
                     // Profile Header
-                    ZStack(alignment: .topTrailing) {
-                        ProfileHeaderCard(
-                            displayName: headerDisplayName,
-                            subtitle: headerSubtitle,
-                            primaryStatTitle: "已完成任务",
-                            primaryStatValue: "\(totalCompleted)",
-                            secondaryStatTitle: "已完成阶段",
-                            secondaryStatValue: "\(completedStages)",
-                            themeColor: .primaryCyan,
-                            showsVIPCrown: false
-                        )
-
-                        NavigationLink {
-                            AppSettingsView()
-                                .environmentObject(appState)
-                        } label: {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.textPrimary)
-                                .padding(10)
-                                .background(
-                                    Circle()
-                                        .fill(Color.backgroundSecondary.opacity(0.9))
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, 14)
-                        .padding(.trailing, 14)
-                        .accessibilityLabel(Text("设置"))
-                    }
+                    ProfileHeaderCard(
+                        displayName: headerDisplayName,
+                        subtitle: headerSubtitle,
+                        primaryStatTitle: "已完成任务",
+                        primaryStatValue: "\(totalCompleted)",
+                        secondaryStatTitle: "已完成阶段",
+                        secondaryStatValue: "\(completedStages)",
+                        themeColor: .primaryCyan,
+                        showsVIPCrown: false
+                    )
                     .padding(.top, 8)
                     .staggeredEntrance(index: 0)
 
@@ -89,9 +74,21 @@ struct PersonalCenterView: View {
                     learningStatsCard
                         .staggeredEntrance(index: 3)
 
-                    // Quick Actions
-                    actionsCard
+                    // Preferences (Voice, Notifications, Premium)
+                    preferencesSection
                         .staggeredEntrance(index: 4)
+
+                    // Quick Actions (Messages, Account, Logout)
+                    actionsCard
+                        .staggeredEntrance(index: 5)
+
+                    // Support (Guide, Feedback, Rate)
+                    supportSection
+                        .staggeredEntrance(index: 6)
+
+                    // Legal + Danger
+                    legalAndDangerSection
+                        .staggeredEntrance(index: 7)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
@@ -102,6 +99,22 @@ struct PersonalCenterView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             appState.refreshAppleCredentialStateIfNeeded()
+        }
+        .alert("Reset local progress?", isPresented: $showResetAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reset", role: .destructive) {
+                progress.resetAll()
+            }
+        } message: {
+            Text("This clears completed task and step state stored on this device.")
+        }
+        .alert("Unable to open mail", isPresented: $showFeedbackFallbackAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("No email app is available for feedback.")
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView(isPresented: $showOnboarding)
         }
     }
 
@@ -170,7 +183,7 @@ struct PersonalCenterView: View {
             VStack(alignment: .leading, spacing: 14) {
                 Text("登录后可同步学习进度、接收消息通知和解锁更多功能。")
                     .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+                    .foregroundStyle(AppColors.secondText)
 
                 HStack(spacing: 10) {
                     NavigationLink {
@@ -179,12 +192,12 @@ struct PersonalCenterView: View {
                     } label: {
                         Text("登录")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
+                            .foregroundStyle(AppColors.primaryText)
                             .frame(maxWidth: .infinity)
                             .frame(height: 44)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.backgroundSecondary)
+                                    .fill(AppColors.surface)
                             )
                     }
                     .buttonStyle(.plain)
@@ -195,12 +208,12 @@ struct PersonalCenterView: View {
                     } label: {
                         Text("注册")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
+                            .foregroundStyle(AppColors.primaryText)
                             .frame(maxWidth: .infinity)
                             .frame(height: 44)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.textMuted.opacity(0.45), lineWidth: 1)
+                                    .stroke(AppColors.border, lineWidth: 1)
                             )
                     }
                     .buttonStyle(.plain)
@@ -214,11 +227,7 @@ struct PersonalCenterView: View {
     private var learningStatsCard: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 14) {
-                Text("学习概览")
-                    .font(.headline)
-                    .foregroundColor(.textPrimary)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
+                sectionHeader(title: "学习概览", icon: "chart.bar.fill", color: Color(hex: "4F6BED"))
 
                 HStack(spacing: 12) {
                     metricView(value: "\(totalCompleted)", label: "已完成")
@@ -238,10 +247,47 @@ struct PersonalCenterView: View {
         }
     }
 
+    // MARK: - Preferences
+    private var preferencesSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "偏好设置", icon: "slider.horizontal.3", color: Color(hex: "8B5CF6"))
+
+                NavigationLink {
+                    VoiceSettingsView()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "waveform.circle.fill",
+                        title: "语音选择",
+                        subtitle: VoiceManager.shared.selectedVoice.name,
+                        iconColor: Color(hex: "4F6BED")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
+                NavigationLink {
+                    NotificationSettingsView()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "bell.badge.fill",
+                        title: "通知设置",
+                        subtitle: "提醒和通知",
+                        iconColor: Color(hex: "10B981")
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     // MARK: - Actions Card
     private var actionsCard: some View {
         SettingsCard {
             VStack(spacing: 0) {
+                sectionHeader(title: "账号", icon: "person.circle.fill", color: Color(hex: "4A90D9"))
+
                 NavigationLink {
                     NotificationsView()
                         .environmentObject(appState)
@@ -255,8 +301,7 @@ struct PersonalCenterView: View {
                 }
                 .buttonStyle(.plain)
 
-                Divider()
-                    .padding(.leading, dividerInset)
+                Divider().padding(.leading, dividerInset)
 
                 ActionMenuRow(
                     icon: appState.isLoggedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle",
@@ -266,8 +311,7 @@ struct PersonalCenterView: View {
                 )
 
                 if appState.isLoggedIn {
-                    Divider()
-                        .padding(.leading, dividerInset)
+                    Divider().padding(.leading, dividerInset)
 
                     Button {
                         appState.signOut()
@@ -285,26 +329,136 @@ struct PersonalCenterView: View {
         }
     }
 
+    // MARK: - Support
+    private var supportSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "支持", icon: "questionmark.circle.fill", color: Color(hex: "4A90D9"))
+
+                Button { showOnboarding = true } label: {
+                    NavigationMenuRow(
+                        icon: "hand.wave.fill",
+                        title: "新手引导",
+                        subtitle: "重新查看使用教程",
+                        iconColor: Color(hex: "8B5CF6")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
+                Button { sendFeedback() } label: {
+                    NavigationMenuRow(
+                        icon: "envelope.open.fill",
+                        title: "意见反馈",
+                        subtitle: "帮助我们改进 DailySpeak",
+                        iconColor: Color(hex: "4A90D9")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
+                Button {
+                    ReviewPromptService.shared.requestReviewManually()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "star.fill",
+                        title: "给个好评",
+                        subtitle: "在 App Store 上评价",
+                        iconColor: Color(hex: "F59E0B")
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Legal + Danger
+    private var legalAndDangerSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "其他", icon: "ellipsis.circle.fill", color: AppColors.tertiaryText)
+
+                if let privacy = URL(string: Constants.privacyPolicyURL) {
+                    Link(destination: privacy) {
+                        NavigationMenuRow(
+                            icon: "hand.raised.fill",
+                            title: "隐私政策",
+                            subtitle: nil,
+                            iconColor: Color(hex: "10B981")
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
+                if let terms = URL(string: Constants.termsOfServiceURL) {
+                    Link(destination: terms) {
+                        NavigationMenuRow(
+                            icon: "doc.plaintext.fill",
+                            title: "用户协议",
+                            subtitle: nil,
+                            iconColor: AppColors.tertiaryText
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
+                Button {
+                    showResetAlert = true
+                } label: {
+                    ActionMenuRow(
+                        icon: "trash.fill",
+                        title: "重置学习进度",
+                        subtitle: "清除所有已完成的任务和步骤",
+                        isDestructive: true
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     // MARK: - Helpers
     private var unreadSubtitle: String {
         let unread = appState.unreadNotificationCount
         return unread == 0 ? "目前没有未读消息" : "还有 \(unread) 条未读消息"
     }
 
+    private func sectionHeader(title: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(color)
+            Text(title)
+                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppColors.tertiaryText)
+                .tracking(1)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 4)
+    }
+
     private func metricView(value: String, label: String) -> some View {
         VStack(spacing: 6) {
             Text(value)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundColor(.textPrimary)
+                .foregroundStyle(AppColors.primaryText)
             Text(label)
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundStyle(AppColors.secondText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.backgroundSecondary.opacity(0.6))
+                .fill(AppColors.surface.opacity(0.6))
         )
     }
 
@@ -316,24 +470,34 @@ struct PersonalCenterView: View {
             HStack {
                 Text("Stage \(stage.id) · \(stage.title)")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.textPrimary)
+                    .foregroundStyle(AppColors.primaryText)
                 Spacer()
                 Text("\(completed)/\(stage.taskCount)")
                     .font(.caption.weight(.semibold))
-                    .foregroundColor(.textSecondary)
+                    .foregroundStyle(AppColors.secondText)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 999)
-                        .fill(Color.backgroundSecondary)
+                        .fill(AppColors.surface)
                     RoundedRectangle(cornerRadius: 999)
-                        .fill(LinearGradient.primaryGradient)
+                        .fill(stage.theme.gradient)
                         .frame(width: geometry.size.width * progressValue)
                 }
             }
             .frame(height: 10)
         }
+    }
+
+    private func sendFeedback() {
+        let payload = FeedbackService.buildPayload(appState: appState)
+        guard let recipient = payload.recipients.first,
+              let url = FeedbackService.mailtoURL(to: recipient, subject: payload.subject, body: payload.body) else {
+            showFeedbackFallbackAlert = true
+            return
+        }
+        openURL(url)
     }
 }
 
