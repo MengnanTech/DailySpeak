@@ -54,7 +54,7 @@ struct PersonalCenterView: View {
                         primaryStatValue: "\(totalCompleted)",
                         secondaryStatTitle: "已完成阶段",
                         secondaryStatValue: "\(completedStages)",
-                        themeColor: .primaryCyan,
+                        themeColor: Color(hex: "4F6BED"),
                         showsVIPCrown: false
                     )
                     .padding(.top, 8)
@@ -296,7 +296,7 @@ struct PersonalCenterView: View {
                         icon: "bell.fill",
                         title: "消息通知",
                         subtitle: unreadSubtitle,
-                        iconColor: .primaryCyan
+                        iconColor: Color(hex: "4A90D9")
                     )
                 }
                 .buttonStyle(.plain)
