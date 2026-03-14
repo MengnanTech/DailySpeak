@@ -227,6 +227,9 @@ struct TaskOverviewView: View {
         .task(id: task.id) {
             await runRevealSequence()
         }
+        .onDisappear {
+            EnglishSpeechPlayer.shared.stopPlayback()
+        }
     }
 
     // Shared popup container
@@ -372,23 +375,24 @@ struct TaskOverviewView: View {
 
     private func lessonSummaryCard(_ lesson: LessonContent) -> some View {
         let isPopup = showCenteredFocus
+        let goalText = lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。"
+        let goalPlaybackId = EnglishSpeechPlayer.playbackID(for: goalText, category: "focus-goal")
+        let accent = theme.startColor
+
         return VStack(alignment: .leading, spacing: 18) {
-            // Header with icon badge
-            HStack(spacing: 12) {
+            // ── Header ──
+            HStack(spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(
-                            LinearGradient(colors: [theme.startColor, theme.endColor],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                        )
-                        .frame(width: 38, height: 38)
+                    Circle()
+                        .fill(accent.opacity(0.12))
+                        .frame(width: 34, height: 34)
                     Image(systemName: "lightbulb.max.fill")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(accent)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("学习重点")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                     Text(lesson.practice.targetLength)
                         .font(.system(size: 11, weight: .medium, design: .rounded))
@@ -398,83 +402,87 @@ struct TaskOverviewView: View {
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
-            // Learning goal with accent bar + typewriter
+            // ── Learning goal with accent bar + audio ──
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(
-                        LinearGradient(colors: [theme.startColor, theme.endColor],
-                                       startPoint: .top, endPoint: .bottom)
-                    )
+                    .fill(accent)
                     .frame(width: 3)
-                focusGoalText(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
+
+                VStack(alignment: .leading, spacing: 10) {
+                    focusGoalText(goalText, isPopup: isPopup)
+
+                    // Audio — tap to play
+                    HStack(spacing: 5) {
+                        Image(systemName: EnglishSpeechPlayer.shared.isPlaying(id: goalPlaybackId) ? "speaker.wave.2.fill" : "speaker.wave.2")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(accent)
+                            .symbolEffect(.variableColor.iterative, isActive: EnglishSpeechPlayer.shared.isPlaying(id: goalPlaybackId))
+                        Text(EnglishSpeechPlayer.shared.isPlaying(id: goalPlaybackId) ? "Playing..." : "Tap to listen")
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundStyle(accent.opacity(0.8))
+                    }
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .background(accent.opacity(0.08))
+                    .clipShape(Capsule())
+                    .onTapGesture {
+                        EnglishSpeechPlayer.shared.togglePlayback(
+                            id: goalPlaybackId, text: goalText, sourceLabel: "学习重点"
+                        )
+                    }
+                }
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
 
-            // Angle chips — prominent style
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(lesson.strategy.angles, id: \.title) { angle in
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(theme.startColor)
-                                .frame(width: 6, height: 6)
-                            Text(angle.title)
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(theme.startColor)
-                        }
-                        .padding(.horizontal, 14).padding(.vertical, 10)
-                        .background(theme.startColor.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            // ── Angle chips ──
+            FlowLayout(spacing: 8) {
+                ForEach(lesson.strategy.angles, id: \.title) { angle in
+                    HStack(spacing: 5) {
+                        Circle()
+                            .fill(accent)
+                            .frame(width: 5, height: 5)
+                        Text(angle.title)
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            .foregroundStyle(accent)
                     }
+                    .padding(.horizontal, 12).padding(.vertical, 8)
+                    .background(accent.opacity(0.08))
+                    .clipShape(Capsule())
                 }
             }
             .opacity(isPopup ? focusChipsOpacity : 1)
 
-            // Stats row — card-style mini stats
+            // ── Stats row ──
             HStack(spacing: 0) {
-                lessonMiniStat(title: "思路", value: "\(lesson.strategy.angles.count)", icon: "sparkles")
-                miniStatDivider
-                lessonMiniStat(title: "词汇", value: "\(task.vocabulary.count)", icon: "textformat.abc")
-                miniStatDivider
-                lessonMiniStat(title: "范文", value: "\(task.sampleAnswers.count)", icon: "doc.text")
+                lessonMiniStat(title: "思路", value: "\(lesson.strategy.angles.count)", icon: "sparkles", accent: accent)
+                focusStatDivider(accent: accent)
+                lessonMiniStat(title: "词汇", value: "\(task.vocabulary.count)", icon: "textformat.abc", accent: accent)
+                focusStatDivider(accent: accent)
+                lessonMiniStat(title: "范文", value: "\(task.sampleAnswers.count)", icon: "doc.text", accent: accent)
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppColors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(theme.startColor.opacity(0.1), lineWidth: 0.5)
-                    )
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(accent.opacity(0.04))
             )
             .opacity(isPopup ? focusStatsOpacity : 1)
 
-            // Suggestion section with typewriter — highlighted card
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(theme.startColor)
-                    Text("建议顺序")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(theme.startColor)
-                }
+            // ── Suggestion ──
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(accent)
+                    .padding(.top, 2)
                 focusSuggestionText("先看答题思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(theme.startColor.opacity(0.06))
-            )
             .opacity(isPopup ? focusSuggestionOpacity : 1)
         }
         .padding(20).cardStyle()
     }
 
-    private var miniStatDivider: some View {
+    private func focusStatDivider(accent: Color) -> some View {
         Rectangle()
-            .fill(AppColors.border)
+            .fill(accent.opacity(0.12))
             .frame(width: 0.5, height: 28)
     }
 
@@ -522,11 +530,11 @@ struct TaskOverviewView: View {
         }
     }
 
-    private func lessonMiniStat(title: String, value: String, icon: String) -> some View {
+    private func lessonMiniStat(title: String, value: String, icon: String, accent: Color) -> some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(theme.startColor.opacity(0.7))
+                .foregroundStyle(accent.opacity(0.6))
             Text(value)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(AppColors.primaryText)
@@ -607,8 +615,10 @@ struct TaskOverviewView: View {
 
     // MARK: - Flow Section Card
 
+    private let flowBadgeSize: CGFloat = 28
+
     private var flowSectionCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("学习流程").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
@@ -618,78 +628,84 @@ struct TaskOverviewView: View {
                     .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
             }
-            .padding(.bottom, 2)
 
             VStack(spacing: 0) {
                 ForEach(Array(task.steps.enumerated()), id: \.element.id) { index, step in
                     let state = stepDisplayState(at: index)
                     if state != .hidden {
-                        flowStepRow(step: step, index: index, state: state)
+                        flowStepRow(step: step, index: index, state: state, isLast: index == task.steps.count - 1)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-                        if index < task.steps.count - 1 {
-                            Rectangle()
-                                .fill(connectorColor(for: index))
-                                .frame(width: 2, height: 18)
-                                .padding(.leading, 15).padding(.vertical, 2)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
                     }
                 }
             }
         }
-        .padding(18).cardStyle()
+        .padding(16).cardStyle()
     }
 
     @ViewBuilder
-    private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState) -> some View {
+    private func flowStepRow(step: LearningStep, index: Int, state: OverviewStepDisplayState, isLast: Bool) -> some View {
         let isAnimating = phase != .ready
         let isCompleted = progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index)
         let isTappable = phase == .ready && !showCenteredFlow && (state == .unlocked || isCompleted)
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                // During animation, always use stepDisplayState; only shortcut to green checkmark when settled
-                if isCompleted && !isAnimating {
-                    Circle().fill(AppColors.success).frame(width: 30, height: 30)
-                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-                } else {
-                    switch state {
-                    case .hidden: EmptyView()
-                    case .spinning:
-                        StepSpinnerBadge(number: index + 1, color: step.type.color).frame(width: 30, height: 30)
-                    case .checked:
-                        Circle().fill(AppColors.success).frame(width: 30, height: 30)
+
+        HStack(alignment: .center, spacing: 12) {
+            // Badge with connector line below, all in one column
+            VStack(spacing: 0) {
+                ZStack {
+                    Circle().fill(AppColors.card).frame(width: flowBadgeSize + 2, height: flowBadgeSize + 2)
+                    if isCompleted && !isAnimating {
+                        Circle().fill(AppColors.success).frame(width: flowBadgeSize, height: flowBadgeSize)
                         Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
-                    case .unlocked:
-                        Circle().fill(step.type.color.opacity(0.14)).frame(width: 30, height: 30)
-                        Text("\(index + 1)").font(.system(size: 12, weight: .bold, design: .rounded)).foregroundStyle(step.type.color)
-                    case .locked:
-                        Circle().fill(AppColors.surface).frame(width: 30, height: 30)
-                        Image(systemName: "lock.fill").font(.system(size: 10, weight: .bold)).foregroundStyle(AppColors.tertiaryText)
+                    } else {
+                        switch state {
+                        case .hidden: EmptyView()
+                        case .spinning:
+                            StepSpinnerBadge(number: index + 1, color: step.type.color).frame(width: flowBadgeSize, height: flowBadgeSize)
+                        case .checked:
+                            Circle().fill(AppColors.success).frame(width: flowBadgeSize, height: flowBadgeSize)
+                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+                        case .unlocked:
+                            Circle().fill(step.type.color.opacity(0.14)).frame(width: flowBadgeSize, height: flowBadgeSize)
+                            Text("\(index + 1)").font(.system(size: 11, weight: .bold, design: .rounded)).foregroundStyle(step.type.color)
+                        case .locked:
+                            Circle().fill(AppColors.surface).frame(width: flowBadgeSize, height: flowBadgeSize)
+                            Image(systemName: "lock.fill").font(.system(size: 10)).foregroundStyle(AppColors.tertiaryText)
+                        }
                     }
                 }
-            }
-            .animation(.spring(duration: 0.4, bounce: 0.2), value: stepDisplayStates)
+                .animation(.spring(duration: 0.4, bounce: 0.2), value: stepDisplayStates)
 
-            VStack(alignment: .leading, spacing: 4) {
+                // Connector line — part of the same VStack, no gap
+                if !isLast {
+                    Rectangle()
+                        .fill(connectorColor(for: index))
+                        .frame(width: 2, height: 14)
+                }
+            }
+
+            // Text content — vertically centered with badge
+            VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Image(systemName: step.icon).font(.system(size: 10, weight: .bold))
+                    Image(systemName: step.icon)
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
                     Text(stepTitleText(for: step, at: index))
-                        .font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+                        .font(.system(size: 14, weight: .semibold)).foregroundStyle(AppColors.primaryText)
                 }
                 Text(stepSubtitleText(for: step, at: index, state: state))
-                    .font(.caption).foregroundStyle(AppColors.tertiaryText)
+                    .font(.system(size: 11)).foregroundStyle(AppColors.tertiaryText)
+                    .lineLimit(1)
             }
             .opacity(state == .spinning ? 0.92 : 1)
+
             Spacer()
+
             if isTappable {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppColors.tertiaryText)
-                    .frame(maxHeight: .infinity)
             }
         }
-        .padding(.vertical, 12)
         .contentShape(Rectangle())
         .onTapGesture {
             if isTappable {
@@ -985,7 +1001,12 @@ struct TaskOverviewView: View {
         }
         let characters = Array(text)
         guard !characters.isEmpty else { return }
-        let totalDuration = min(1.5, max(0.6, Double(characters.count) * 0.035))
+
+        // Start TTS playback of the learning goal while typing
+        let playbackId = EnglishSpeechPlayer.playbackID(for: text, category: "focus-goal")
+        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: text, sourceLabel: "学习重点")
+
+        let totalDuration = min(2.5, max(1.0, Double(characters.count) * 0.045))
         let interval = totalDuration / Double(characters.count)
         for index in characters.indices {
             guard !Task.isCancelled else { return }
@@ -1047,6 +1068,87 @@ struct TaskOverviewView: View {
         try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
     }
 
+}
+
+// MARK: - Focus Audio Wave
+
+private struct FocusAudioWaveView: View {
+    let isActive: Bool
+    let color: Color
+
+    @State private var animating = false
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<3, id: \.self) { i in
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(color)
+                    .frame(width: 2, height: isActive && animating ? barHeight(i) : 4)
+                    .animation(
+                        isActive
+                            ? .easeInOut(duration: 0.4 + Double(i) * 0.15)
+                                .repeatForever(autoreverses: true)
+                                .delay(Double(i) * 0.1)
+                            : .easeOut(duration: 0.2),
+                        value: animating
+                    )
+            }
+        }
+        .frame(width: 12, height: 14)
+        .onChange(of: isActive) { _, active in
+            animating = active
+        }
+        .onAppear { animating = isActive }
+    }
+
+    private func barHeight(_ index: Int) -> CGFloat {
+        switch index {
+        case 0: return 8
+        case 1: return 14
+        default: return 10
+        }
+    }
+}
+
+// MARK: - Flow Layout
+
+private struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        for (index, origin) in result.origins.enumerated() {
+            subviews[index].place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y), proposal: .unspecified)
+        }
+    }
+
+    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, origins: [CGPoint]) {
+        let maxWidth = proposal.width ?? .infinity
+        var origins: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var totalHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > maxWidth, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            origins.append(CGPoint(x: x, y: y))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+            totalHeight = y + rowHeight
+        }
+        return (CGSize(width: maxWidth, height: totalHeight), origins)
+    }
 }
 
 // MARK: - Step Spinner Badge
