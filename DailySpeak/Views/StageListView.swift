@@ -23,6 +23,13 @@ struct StageListView: View {
     private var totalTasks: Int {
         stages.reduce(0) { $0 + $1.taskCount }
     }
+    private var allCompleted: Bool { totalCompleted >= totalTasks && totalTasks > 0 }
+
+    private static let headerDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f
+    }()
 
     var body: some View {
         NavigationStack {
@@ -37,7 +44,13 @@ struct StageListView: View {
 
                         statsRow
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 28)
+                            .padding(.bottom, allCompleted ? 16 : 28)
+
+                        if allCompleted {
+                            completionCelebration
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 28)
+                        }
 
                         sectionHeader
                             .padding(.horizontal, 20)
@@ -165,13 +178,16 @@ struct StageListView: View {
 
     // MARK: - Stats Row
     private var statsRow: some View {
-        HStack(spacing: 12) {
+        let streak = progress.currentStreakDays()
+        let todayDone = progress.todayCompletedTaskCount()
+        let dailyGoal = progress.recommendedDailyGoal()
+        return HStack(spacing: 10) {
             StatChip(icon: "flame.fill", iconColor: Color(hex: "F97316"),
-                     value: "\(totalCompleted)", label: "completed")
-            StatChip(icon: "book.fill", iconColor: Color(hex: "5B9BF0"),
-                     value: "\(totalTasks - totalCompleted)", label: "remaining")
-            StatChip(icon: "chart.line.uptrend.xyaxis", iconColor: Color(hex: "10B981"),
-                     value: "S\(currentStage.id)", label: "current")
+                     value: "\(streak)", label: "day streak")
+            StatChip(icon: "target", iconColor: Color(hex: "10B981"),
+                     value: "\(todayDone)/\(dailyGoal)", label: "today")
+            StatChip(icon: "chart.bar.fill", iconColor: Color(hex: "5B9BF0"),
+                     value: "\(totalCompleted)/\(totalTasks)", label: "total")
         }
     }
 
@@ -311,7 +327,7 @@ struct StageListView: View {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
                                 } else {
-                                    Text("\(idx + 1)")
+                                    Text("\(task.id)")
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundStyle(isCurrent ? theme.startColor : AppColors.tertiaryText)
                                 }
@@ -398,9 +414,31 @@ struct StageListView: View {
     }
 
     private func dateString() -> String {
-        let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
-        return f.string(from: Date())
+        Self.headerDateFormatter.string(from: Date())
+    }
+
+    // MARK: - Completion Celebration
+    private var completionCelebration: some View {
+        VStack(spacing: 12) {
+            Text("🎉").font(.system(size: 44))
+            Text("All Tasks Completed!")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(AppColors.primaryText)
+            Text("You've finished all \(totalTasks) speaking tasks. Amazing work!")
+                .font(.caption)
+                .foregroundStyle(AppColors.secondText)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+        .padding(.horizontal, 20)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(AppColors.success.opacity(0.2), lineWidth: 1)
+        )
+        .cardShadow()
     }
 }
 
@@ -440,6 +478,11 @@ struct CarouselStageCard: View {
     var onStageTap: () -> Void
     var onTaskTap: (SpeakingTask) -> Void
 
+    // Micro-animations
+    @State private var emojiFloat = false
+    @State private var progressGlow = false
+    @State private var shimmerOffset: CGFloat = -120
+
     private var completedCount: Int { progress.completedTaskCount(for: stage) }
     private var prog: Double { progress.stageProgress(for: stage) }
     private var theme: StageTheme { stage.theme }
@@ -475,40 +518,65 @@ struct CarouselStageCard: View {
                         )
                     )
 
-                // Decorative depth circles with layered opacity
+                // Decorative depth circles with parallax
                 GeometryReader { geo in
+                    let midX = geo.frame(in: .global).midX
+                    let screenMid = UIScreen.main.bounds.width / 2
+                    let p = (midX - screenMid) / screenMid
+
                     Circle()
                         .fill(.white.opacity(0.1))
                         .frame(width: 150)
                         .blur(radius: 2)
-                        .offset(x: geo.size.width - 80, y: -50)
+                        .offset(x: geo.size.width - 80 + p * 20, y: -50 + p * 8)
                     Circle()
                         .fill(.white.opacity(0.07))
                         .frame(width: 100)
                         .blur(radius: 1)
-                        .offset(x: geo.size.width - 15, y: 65)
+                        .offset(x: geo.size.width - 15 + p * 30, y: 65 - p * 12)
                     Circle()
                         .fill(theme.startColor.opacity(0.3))
                         .frame(width: 60)
                         .blur(radius: 20)
-                        .offset(x: -20, y: geo.size.height - 40)
+                        .offset(x: -20 + p * 15, y: geo.size.height - 40 + p * 6)
                 }
 
                 // Content
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
-                        Text("STAGE \(stage.id)")
-                            .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.85))
-                            .tracking(2.0)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(.white.opacity(0.12))
-                            .clipShape(Capsule())
+                        HStack(spacing: 6) {
+                            Text("STAGE \(stage.id)")
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.85))
+                                .tracking(2.0)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(.white.opacity(0.12))
+                                .clipShape(Capsule())
+                            if stage.id > 1 {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 8, weight: .bold))
+                                    Text("PRO")
+                                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                        .tracking(1.0)
+                                }
+                                .foregroundStyle(.white.opacity(0.9))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 5)
+                                .background(.white.opacity(0.18))
+                                .clipShape(Capsule())
+                            }
+                        }
                         Spacer()
                         Text(theme.emoji)
                             .font(.system(size: 40))
                             .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
+                            .offset(y: emojiFloat ? -4 : 4)
+                            .animation(
+                                .easeInOut(duration: 2.0).repeatForever(autoreverses: true),
+                                value: emojiFloat
+                            )
                     }
                     .padding(.bottom, 16)
 
@@ -529,11 +597,19 @@ struct CarouselStageCard: View {
                                     Capsule().fill(.white.opacity(0.18)).frame(height: 6)
                                     Capsule().fill(.white)
                                         .frame(width: max(0, geo.size.width * prog), height: 6)
-                                        .shadow(color: .white.opacity(0.4), radius: 4, x: 0, y: 0)
+                                        .shadow(
+                                            color: .white.opacity(progressGlow ? 0.7 : 0.25),
+                                            radius: progressGlow ? 8 : 4,
+                                            x: 0, y: 0
+                                        )
                                 }
                             }
                             .frame(height: 6)
                             .frame(maxWidth: 120)
+                            .animation(
+                                .easeInOut(duration: 1.5).repeatForever(autoreverses: true),
+                                value: progressGlow
+                            )
 
                             Text("\(completedCount)/\(stage.taskCount)")
                                 .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -543,18 +619,39 @@ struct CarouselStageCard: View {
                         Spacer()
 
                         HStack(spacing: 6) {
-                            Text("Continue")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(theme.startColor)
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(theme.startColor)
+                            if prog >= 1.0 {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(AppColors.success)
+                                Text("Completed")
+                                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppColors.success)
+                            } else {
+                                Text("Continue")
+                                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                                    .foregroundStyle(theme.startColor)
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(theme.startColor)
+                            }
                         }
                         .padding(.horizontal, 18)
                         .padding(.vertical, 10)
                         .background(.white)
                         .clipShape(Capsule())
                         .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
+                        .overlay {
+                            if prog < 1.0 {
+                                LinearGradient(
+                                    colors: [.clear, .white.opacity(0.35), .clear],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                                .frame(width: 50)
+                                .offset(x: shimmerOffset)
+                                .clipShape(Capsule())
+                            }
+                        }
                     }
                 }
                 .padding(24)
@@ -576,6 +673,15 @@ struct CarouselStageCard: View {
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
         }
         .buttonStyle(.plain)
+        .onAppear {
+            emojiFloat = true
+            if prog > 0 { progressGlow = true }
+            if prog < 1.0 {
+                withAnimation(.linear(duration: 2.5).repeatForever(autoreverses: false)) {
+                    shimmerOffset = 120
+                }
+            }
+        }
     }
 }
 

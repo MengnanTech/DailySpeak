@@ -5,11 +5,11 @@ struct PersonalCenterView: View {
     @Environment(ProgressManager.self) private var progress
 
     private let dividerInset: CGFloat = 52
+    private let gold = Color(hex: "C89B3C")
+    private let goldLight = Color(hex: "DCBC6A")
 
     private var totalCompleted: Int {
-        CourseData.stages.reduce(0) { partial, stage in
-            partial + progress.completedTaskCount(for: stage)
-        }
+        CourseData.stages.reduce(0) { $0 + progress.completedTaskCount(for: $1) }
     }
 
     private var totalTasks: Int {
@@ -22,20 +22,17 @@ struct PersonalCenterView: View {
 
     private var headerDisplayName: String? {
         let trimmed = appState.authDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let trimmed, !trimmed.isEmpty {
-            return trimmed
-        }
-        if appState.isLoggedIn, let email = appState.authEmail, !email.isEmpty {
-            return email
-        }
+        if let trimmed, !trimmed.isEmpty { return trimmed }
+        if appState.isLoggedIn, let email = appState.authEmail, !email.isEmpty { return email }
         return nil
     }
 
     private var headerSubtitle: String {
-        if appState.isLoggedIn {
-            return appState.authEmail ?? "已连接 DailySpeak 账号"
-        }
-        return "游客模式，本地学习进度仍会保留"
+        "持续练习，提升口语表达能力"
+    }
+
+    private var proTaskCount: Int {
+        CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
     }
 
     var body: some View {
@@ -44,13 +41,14 @@ struct PersonalCenterView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
+                    // Profile Header
                     ZStack(alignment: .topTrailing) {
                         ProfileHeaderCard(
                             displayName: headerDisplayName,
                             subtitle: headerSubtitle,
                             primaryStatTitle: "已完成任务",
                             primaryStatValue: "\(totalCompleted)",
-                            secondaryStatTitle: "通关阶段",
+                            secondaryStatTitle: "已完成阶段",
                             secondaryStatValue: "\(completedStages)",
                             themeColor: .primaryCyan,
                             showsVIPCrown: false
@@ -77,19 +75,17 @@ struct PersonalCenterView: View {
                     .padding(.top, 8)
                     .staggeredEntrance(index: 0)
 
-                    if !appState.isLoggedIn {
-                        guestAuthPromptCard
-                            .staggeredEntrance(index: 1)
-                    }
+                    // PRO Banner
+                    proBanner
+                        .staggeredEntrance(index: 1)
 
-                    accountCard
+                    // Learning Stats
+                    learningStatsCard
                         .staggeredEntrance(index: 2)
 
-                    shortcutCard
+                    // Quick Actions
+                    actionsCard
                         .staggeredEntrance(index: 3)
-
-                    learningStatsCard
-                        .staggeredEntrance(index: 4)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 40)
@@ -103,141 +99,66 @@ struct PersonalCenterView: View {
         }
     }
 
-    private var guestAuthPromptCard: some View {
-        SettingsCard {
-            VStack(alignment: .leading, spacing: 14) {
-                Text("登录后可以同步账号、接收后端消息和恢复设备推送配置。")
-                    .font(.subheadline)
-                    .foregroundColor(.textSecondary)
+    // MARK: - PRO Banner
+    private var proBanner: some View {
+        NavigationLink {
+            PaywallPlaceholderView()
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.2))
+                        .frame(width: 46, height: 46)
 
-                HStack(spacing: 10) {
-                    NavigationLink {
-                        AuthLoginRegisterView(initialMode: .login)
-                            .environmentObject(appState)
-                    } label: {
-                        Text("登录")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color.backgroundSecondary)
-                            )
-                    }
-                    .buttonStyle(.plain)
-
-                    NavigationLink {
-                        AuthLoginRegisterView(initialMode: .register)
-                            .environmentObject(appState)
-                    } label: {
-                        Text("注册")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.textMuted.opacity(0.45), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(.white)
                 }
-            }
-            .padding(16)
-        }
-    }
 
-    private var accountCard: some View {
-        SettingsCard {
-            VStack(spacing: 0) {
-                ActionMenuRow(
-                    icon: appState.isLoggedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle",
-                    title: appState.isLoggedIn ? "当前账号" : "当前身份",
-                    subtitle: appState.isLoggedIn ? (appState.authEmail ?? appState.authMode.rawValue.capitalized) : "游客模式",
-                    iconColor: .primaryCyan
-                )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("升级到 DailySpeak PRO")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
 
-                Divider()
-                    .padding(.leading, dividerInset)
-
-                ActionMenuRow(
-                    icon: "server.rack",
-                    title: "后端用户",
-                    subtitle: appState.backendUserID ?? "尚未绑定",
-                    iconColor: .info
-                )
-
-                if appState.isLoggedIn {
-                    Divider()
-                        .padding(.leading, dividerInset)
-
-                    Button {
-                        appState.signOut()
-                    } label: {
-                        ActionMenuRow(
-                            icon: "rectangle.portrait.and.arrow.right",
-                            title: "退出登录",
-                            subtitle: "退出后回到游客模式",
-                            isDestructive: true
-                        )
-                    }
-                    .buttonStyle(.plain)
+                    Text("解锁全部 \(CourseData.stages.count) 个阶段和 \(proTaskCount)+ 口语课程")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.8))
                 }
-            }
-        }
-    }
 
-    private var shortcutCard: some View {
-        SettingsCard {
-            VStack(spacing: 0) {
-                NavigationLink {
-                    NotificationsView()
-                        .environmentObject(appState)
-                } label: {
-                    NavigationMenuRow(
-                        icon: "bell.fill",
-                        title: "消息通知",
-                        subtitle: unreadSubtitle,
-                        iconColor: .primaryCyan
+                Spacer(minLength: 0)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+            .padding(18)
+            .background(
+                ZStack {
+                    LinearGradient(
+                        colors: [gold, goldLight, gold.opacity(0.9)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+
+                    RadialGradient(
+                        colors: [.white.opacity(0.12), .clear],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: 200
                     )
                 }
-                .buttonStyle(.plain)
-
-                Divider()
-                    .padding(.leading, dividerInset)
-
-                NavigationLink {
-                    PaywallPlaceholderView()
-                } label: {
-                    NavigationMenuRow(
-                        icon: "crown.fill",
-                        title: "会员中心",
-                        subtitle: "先保留入口和页面壳",
-                        iconColor: .primaryAmber
-                    )
-                }
-                .buttonStyle(.plain)
-
-                Divider()
-                    .padding(.leading, dividerInset)
-
-                NavigationLink {
-                    AppSettingsView()
-                        .environmentObject(appState)
-                } label: {
-                    NavigationMenuRow(
-                        icon: "gearshape.fill",
-                        title: "设置",
-                        subtitle: "通知、反馈、评分和法律信息",
-                        iconColor: .info
-                    )
-                }
-                .buttonStyle(.plain)
-            }
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.white.opacity(0.2), lineWidth: 0.5)
+            )
+            .shadow(color: gold.opacity(0.3), radius: 16, x: 0, y: 8)
         }
+        .buttonStyle(.plain)
     }
 
+    // MARK: - Learning Stats
     private var learningStatsCard: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 14) {
@@ -265,6 +186,54 @@ struct PersonalCenterView: View {
         }
     }
 
+    // MARK: - Actions Card
+    private var actionsCard: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                NavigationLink {
+                    NotificationsView()
+                        .environmentObject(appState)
+                } label: {
+                    NavigationMenuRow(
+                        icon: "bell.fill",
+                        title: "消息通知",
+                        subtitle: unreadSubtitle,
+                        iconColor: .primaryCyan
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.leading, dividerInset)
+
+                ActionMenuRow(
+                    icon: appState.isLoggedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle",
+                    title: appState.isLoggedIn ? "当前账号" : "当前身份",
+                    subtitle: appState.isLoggedIn ? (appState.authEmail ?? appState.authMode.rawValue.capitalized) : "游客模式",
+                    iconColor: .primaryCyan
+                )
+
+                if appState.isLoggedIn {
+                    Divider()
+                        .padding(.leading, dividerInset)
+
+                    Button {
+                        appState.signOut()
+                    } label: {
+                        ActionMenuRow(
+                            icon: "rectangle.portrait.and.arrow.right",
+                            title: "退出登录",
+                            subtitle: "退出后将清除登录状态",
+                            isDestructive: true
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    // MARK: - Helpers
     private var unreadSubtitle: String {
         let unread = appState.unreadNotificationCount
         return unread == 0 ? "目前没有未读消息" : "还有 \(unread) 条未读消息"

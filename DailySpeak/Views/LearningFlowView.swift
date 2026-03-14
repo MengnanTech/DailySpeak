@@ -13,9 +13,12 @@ struct LearningFlowView: View {
     private var theme: StageTheme { stage.theme }
     private var steps: [LearningStep] { task.steps }
 
-    init(stage: Stage, task: SpeakingTask) {
+    var initialStep: Int?
+
+    init(stage: Stage, task: SpeakingTask, initialStep: Int? = nil) {
         self.stage = stage
         self.task = task
+        self.initialStep = initialStep
         _currentStep = State(initialValue: 0)
     }
 
@@ -49,12 +52,16 @@ struct LearningFlowView: View {
     }
 
     private func syncCurrentStep() {
-        let saved = progress.currentStepIndex(
-            stageId: stage.id,
-            taskId: task.id,
-            totalSteps: steps.count
-        )
-        currentStep = min(saved, steps.count - 1)
+        if let initial = initialStep, initial >= 0, initial < steps.count {
+            currentStep = initial
+        } else {
+            let saved = progress.currentStepIndex(
+                stageId: stage.id,
+                taskId: task.id,
+                totalSteps: steps.count
+            )
+            currentStep = min(saved, steps.count - 1)
+        }
     }
 
     // MARK: - Step Indicator (Enhanced)

@@ -1,17 +1,23 @@
 import SwiftUI
 
 struct PaywallPlaceholderView: View {
-    @State private var appeared = false
-    @State private var shimmer = false
+    @State private var selectedPlan: PlanType = .yearly
+
+    private enum PlanType { case monthly, yearly }
 
     private let gold = Color(hex: "C89B3C")
     private let goldLight = Color(hex: "DCBC6A")
+    private let goldDark = Color(hex: "9A7B2E")
+
+    private var proTaskCount: Int {
+        CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
+    }
 
     private let benefits: [(icon: String, title: String, subtitle: String)] = [
-        ("waveform.path.ecg", "Speaking Packs", "Unlock premium AI-powered speaking drills and personalized feedback."),
-        ("person.crop.rectangle.stack.fill", "Account Upgrades", "Sync progress across devices and unlock advanced analytics."),
-        ("sparkles", "Smart Review", "AI-driven review sessions that adapt to your weak points."),
-        ("globe", "Native Content", "Access curated native-speaker content and pronunciation guides.")
+        ("lock.open.fill", "All 9 Stages", "Unlock premium speaking lessons across 8 advanced stages"),
+        ("waveform.path.ecg", "AI Speaking Coach", "Real-time pronunciation feedback and personalized drills"),
+        ("arrow.triangle.2.circlepath", "Smart Review", "Adaptive review sessions that target your weak points"),
+        ("icloud.fill", "Cloud Sync", "Seamlessly sync your progress across all devices"),
     ]
 
     var body: some View {
@@ -19,113 +25,121 @@ struct PaywallPlaceholderView: View {
             AppColors.background.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 18) {
-                    premiumHeader
-                        .staggerIn(index: 0, appeared: appeared)
+                VStack(spacing: 0) {
+                    heroSection
+                        .staggeredEntrance(index: 0)
 
-                    ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
-                        benefitCard(icon: benefit.icon, title: benefit.title, subtitle: benefit.subtitle)
-                            .staggerIn(index: index + 1, appeared: appeared)
+                    VStack(spacing: 20) {
+                        ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
+                            benefitCard(icon: benefit.icon, title: benefit.title, subtitle: benefit.subtitle)
+                                .staggeredEntrance(index: index + 1)
+                        }
+
+                        planSection
+                            .staggeredEntrance(index: benefits.count + 1)
+
+                        ctaSection
+                            .staggeredEntrance(index: benefits.count + 2)
+
+                        footerSection
+                            .staggeredEntrance(index: benefits.count + 3)
                     }
-
-                    subscribeButton
-                        .staggerIn(index: benefits.count + 1, appeared: appeared)
-
-                    legalLinks
-                        .staggerIn(index: benefits.count + 2, appeared: appeared)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 28)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
-                .padding(.bottom, 40)
             }
         }
         .navigationTitle("Premium")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { appeared = true }
     }
 
-    // MARK: - Premium Header
-    private var premiumHeader: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [gold, goldLight, gold.opacity(0.85)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+    // MARK: - Hero Section
+    private var heroSection: some View {
+        ZStack {
+            LinearGradient(
+                colors: [goldDark, gold, goldLight, gold.opacity(0.9)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
 
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(
-                    RadialGradient(
-                        colors: [.white.opacity(0.2), .clear],
-                        center: .topLeading,
-                        startRadius: 0,
-                        endRadius: 250
-                    )
-                )
+            RadialGradient(
+                colors: [.white.opacity(0.15), .clear],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: 300
+            )
 
             GeometryReader { geo in
                 Circle()
-                    .fill(.white.opacity(0.1))
-                    .frame(width: 120)
-                    .blur(radius: 2)
-                    .offset(x: geo.size.width - 65, y: -35)
+                    .fill(.white.opacity(0.08))
+                    .frame(width: 180)
+                    .blur(radius: 3)
+                    .offset(x: geo.size.width - 70, y: -50)
+
                 Circle()
-                    .fill(.white.opacity(0.06))
-                    .frame(width: 80)
-                    .offset(x: -20, y: geo.size.height - 30)
+                    .fill(.white.opacity(0.05))
+                    .frame(width: 120)
+                    .offset(x: -30, y: geo.size.height - 40)
             }
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("DAILYSPEAK")
-                            .font(.system(size: 10, weight: .heavy, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.7))
-                            .tracking(2)
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(.white.opacity(0.15))
+                        .frame(width: 72, height: 72)
 
-                        Text("Premium")
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                    }
+                    Circle()
+                        .stroke(.white.opacity(0.25), lineWidth: 1.5)
+                        .frame(width: 72, height: 72)
 
-                    Spacer()
-
-                    ZStack {
-                        Circle()
-                            .fill(.white.opacity(0.15))
-                            .frame(width: 56, height: 56)
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 26, weight: .bold))
-                            .foregroundStyle(.white)
-                            .symbolEffect(.pulse, options: .repeating.speed(0.4))
-                    }
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(.white)
+                        .symbolEffect(.pulse, options: .repeating.speed(0.3))
                 }
 
-                Text("Unlock the full DailySpeak experience with premium features designed to accelerate your speaking journey.")
+                VStack(spacing: 6) {
+                    Text("DAILYSPEAK")
+                        .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .tracking(3)
+
+                    Text("PRO")
+                        .font(.system(size: 40, weight: .black, design: .rounded))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
+                }
+
+                Text("Unlock the complete speaking journey\nwith \(proTaskCount)+ premium lessons")
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.85))
+                    .multilineTextAlignment(.center)
                     .lineSpacing(3)
             }
-            .padding(22)
+            .padding(.vertical, 36)
+            .padding(.horizontal, 24)
         }
-        .frame(minHeight: 180)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [.white.opacity(0.3), .white.opacity(0.05)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+        .frame(minHeight: 280)
+        .clipShape(
+            UnevenRoundedRectangle(
+                cornerRadii: .init(bottomLeading: 32, bottomTrailing: 32)
+            )
         )
-        .shadow(color: gold.opacity(0.25), radius: 20, x: 0, y: 10)
+        .overlay(
+            UnevenRoundedRectangle(
+                cornerRadii: .init(bottomLeading: 32, bottomTrailing: 32)
+            )
+            .stroke(
+                LinearGradient(
+                    colors: [.white.opacity(0.3), .white.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                lineWidth: 0.5
+            )
+        )
+        .shadow(color: gold.opacity(0.3), radius: 20, x: 0, y: 10)
     }
 
     // MARK: - Benefit Card
@@ -135,28 +149,30 @@ struct PaywallPlaceholderView: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [gold.opacity(0.12), gold.opacity(0.06)],
+                            colors: [gold.opacity(0.15), gold.opacity(0.06)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 42, height: 42)
+                    .frame(width: 44, height: 44)
+
                 Image(systemName: icon)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(gold)
             }
 
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
+
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(AppColors.secondText)
                     .lineSpacing(2)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
         .padding(18)
         .background(AppColors.card)
@@ -168,53 +184,181 @@ struct PaywallPlaceholderView: View {
         .cardShadow()
     }
 
-    // MARK: - Subscribe Button
-    private var subscribeButton: some View {
-        VStack(spacing: 10) {
+    // MARK: - Plan Selection
+    private var planSection: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(gold)
+                Text("CHOOSE YOUR PLAN")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppColors.tertiaryText)
+                    .tracking(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 12) {
+                planCard(
+                    title: "Monthly",
+                    price: "¥18",
+                    period: "/month",
+                    badge: nil,
+                    isSelected: selectedPlan == .monthly
+                ) {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedPlan = .monthly
+                    }
+                }
+
+                planCard(
+                    title: "Yearly",
+                    price: "¥98",
+                    period: "/year",
+                    badge: "SAVE 55%",
+                    isSelected: selectedPlan == .yearly
+                ) {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedPlan = .yearly
+                    }
+                }
+            }
+        }
+    }
+
+    private func planCard(
+        title: String,
+        price: String,
+        period: String,
+        badge: String?,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 10) {
+                if let badge {
+                    Text(badge)
+                        .font(.system(size: 9, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule().fill(
+                                LinearGradient(
+                                    colors: [gold, goldLight],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                        )
+                } else {
+                    Spacer().frame(height: 20)
+                }
+
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(isSelected ? AppColors.primaryText : AppColors.tertiaryText)
+
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(price)
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(isSelected ? gold : AppColors.secondText)
+
+                    Text(period)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(AppColors.card)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(
+                        isSelected
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [gold, goldLight],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                              ))
+                            : AnyShapeStyle(AppColors.border.opacity(0.4)),
+                        lineWidth: isSelected ? 2 : 0.5
+                    )
+            )
+            .shadow(
+                color: isSelected ? gold.opacity(0.15) : .clear,
+                radius: 12, x: 0, y: 6
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - CTA
+    private var ctaSection: some View {
+        VStack(spacing: 12) {
             Button {} label: {
                 HStack(spacing: 8) {
                     Image(systemName: "crown.fill")
-                        .font(.system(size: 14, weight: .bold))
-                    Text("Coming Soon")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 15, weight: .bold))
+                    Text("Subscribe Now")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 54)
+                .frame(height: 56)
                 .background(
                     LinearGradient(
-                        colors: [gold, goldLight],
+                        colors: [goldDark, gold, goldLight],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: gold.opacity(0.3), radius: 12, x: 0, y: 6)
+                .shadow(color: gold.opacity(0.35), radius: 16, x: 0, y: 8)
             }
             .buttonStyle(.plain)
             .disabled(true)
-            .opacity(0.7)
+            .opacity(0.85)
 
-            Text("Premium features are under development")
+            Text("Subscription coming soon")
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
         }
     }
 
-    // MARK: - Legal Links
-    private var legalLinks: some View {
-        HStack(spacing: 20) {
-            if let privacyURL = URL(string: Constants.privacyPolicyURL) {
-                Link("Privacy Policy", destination: privacyURL)
-                    .font(.caption.bold())
-                    .foregroundStyle(AppColors.tertiaryText)
+    // MARK: - Footer
+    private var footerSection: some View {
+        VStack(spacing: 14) {
+            Button {} label: {
+                Text("Restore Purchases")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(AppColors.secondText)
             }
-            if let termsURL = URL(string: Constants.termsOfServiceURL) {
-                Link("Terms of Service", destination: termsURL)
-                    .font(.caption.bold())
+            .disabled(true)
+
+            HStack(spacing: 16) {
+                if let privacyURL = URL(string: Constants.privacyPolicyURL) {
+                    Link("Privacy Policy", destination: privacyURL)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
+
+                Text("·")
+                    .font(.caption)
                     .foregroundStyle(AppColors.tertiaryText)
+
+                if let termsURL = URL(string: Constants.termsOfServiceURL) {
+                    Link("Terms of Service", destination: termsURL)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(AppColors.tertiaryText)
+                }
             }
         }
+        .padding(.top, 8)
     }
 }
 

@@ -28,7 +28,20 @@ struct TaskOverviewView: View {
     let task: SpeakingTask
 
     @State private var showLearning = false
+    @State private var tappedStepIndex: Int?
     @State private var phase: OverviewPresentationPhase = .idle
+
+    private static let seenTasksKey = "overviewAnimationSeenTasks"
+    private var hasSeenAnimation: Bool {
+        let seen = UserDefaults.standard.stringArray(forKey: Self.seenTasksKey) ?? []
+        return seen.contains("s\(stage.id)_t\(task.id)")
+    }
+    private func markAnimationSeen() {
+        var seen = UserDefaults.standard.stringArray(forKey: Self.seenTasksKey) ?? []
+        let key = "s\(stage.id)_t\(task.id)"
+        if !seen.contains(key) { seen.append(key) }
+        UserDefaults.standard.set(seen, forKey: Self.seenTasksKey)
+    }
 
     // Dark overlay (shared by all popups)
     @State private var darkOverlayOpacity: Double = 0
@@ -63,6 +76,9 @@ struct TaskOverviewView: View {
     @State private var flowPopupScale: CGFloat = 0.6
     @State private var flowPopupOpacity: Double = 0
     @State private var stepDisplayStates: [OverviewStepDisplayState] = []
+
+    // --- Flow step text typewriter ---
+    @State private var stepTextChars: [Int] = []
 
     // --- Popup fly-up offsets for dock transition ---
     @State private var heroPopupOffsetY: CGFloat = 0
@@ -206,7 +222,7 @@ struct TaskOverviewView: View {
             }
         }
         .navigationDestination(isPresented: $showLearning) {
-            LearningFlowView(stage: stage, task: task)
+            LearningFlowView(stage: stage, task: task, initialStep: tappedStepIndex)
         }
         .task(id: task.id) {
             await runRevealSequence()
@@ -658,9 +674,11 @@ struct TaskOverviewView: View {
                 HStack(spacing: 6) {
                     Image(systemName: step.icon).font(.system(size: 10, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
-                    Text(step.title).font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+                    Text(stepTitleText(for: step, at: index))
+                        .font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 }
-                Text(stepSubtitle(for: step, state: state)).font(.caption).foregroundStyle(AppColors.tertiaryText)
+                Text(stepSubtitleText(for: step, at: index, state: state))
+                    .font(.caption).foregroundStyle(AppColors.tertiaryText)
             }
             .opacity(state == .spinning ? 0.92 : 1)
             Spacer()
@@ -673,7 +691,10 @@ struct TaskOverviewView: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture {
-            if isTappable { showLearning = true }
+            if isTappable {
+                tappedStepIndex = index
+                showLearning = true
+            }
         }
     }
 
@@ -695,6 +716,23 @@ struct TaskOverviewView: View {
         state == .locked ? "完成前一步后解锁" : step.subtitle
     }
 
+    private func stepTitleText(for step: LearningStep, at index: Int) -> String {
+        guard showCenteredFlow, stepTextChars.indices.contains(index) else { return step.title }
+        let chars = stepTextChars[index]
+        guard chars < step.title.count else { return step.title }
+        return chars > 0 ? String(step.title.prefix(chars)) : ""
+    }
+
+    private func stepSubtitleText(for step: LearningStep, at index: Int, state: OverviewStepDisplayState) -> String {
+        let full = stepSubtitle(for: step, state: state)
+        guard showCenteredFlow, stepTextChars.indices.contains(index) else { return full }
+        let titleLen = step.title.count
+        let chars = stepTextChars[index]
+        let subtitleChars = max(0, chars - titleLen)
+        guard subtitleChars < full.count else { return full }
+        return subtitleChars > 0 ? String(full.prefix(subtitleChars)) : ""
+    }
+
     private func connectorColor(for index: Int) -> Color {
         if progress.isStepCompleted(stageId: stage.id, taskId: task.id, stepIndex: index) { return AppColors.success.opacity(0.28) }
         switch stepDisplayState(at: index) {
@@ -711,6 +749,12 @@ struct TaskOverviewView: View {
     @MainActor
     private func runRevealSequence() async {
         resetRevealState()
+
+        // Skip animation for revisited tasks
+        if hasSeenAnimation {
+            skipToReady()
+            return
+        }
 
         // ========== HERO CARD POPUP ==========
         phase = .heroEntrance
@@ -824,6 +868,7 @@ struct TaskOverviewView: View {
         showCenteredFlow = true
         // Pre-init all steps as hidden so the card shell shows
         stepDisplayStates = Array(repeating: .hidden, count: task.steps.count)
+        stepTextChars = Array(repeating: 0, count: task.steps.count)
 
         withAnimation(.easeOut(duration: 0.3)) { darkOverlayOpacity = 0.72 }
         await pause(0.1)
@@ -836,21 +881,29 @@ struct TaskOverviewView: View {
         await pause(0.35)
         guard !Task.isCancelled else { return }
 
-        // Steps spin one by one, each becomes checkmark when done
+        // Steps spin one by one with typewriter text
         phase = .flowStepSpin
         for index in task.steps.indices {
             guard !Task.isCancelled else { return }
-            // Start spinning
+            let step = task.steps[index]
+            let subtitle = stepSubtitle(for: step, state: .spinning)
+            let totalChars = step.title.count + subtitle.count
+
+            // Start spinning + typewriter simultaneously
+            let typeDuration = max(0.8, Double(totalChars) * 0.08)
             withAnimation(.spring(duration: 0.4, bounce: 0.16)) {
                 stepDisplayStates[index] = .spinning
             }
-            await pause(0.6)
+            await typeStepText(index: index, totalChars: totalChars, duration: typeDuration)
+            guard !Task.isCancelled else { return }
+            // Reading pause — let user absorb
+            await pause(0.5)
             guard !Task.isCancelled else { return }
             // Settle to checkmark
             withAnimation(.spring(duration: 0.35, bounce: 0.2)) {
                 stepDisplayStates[index] = .checked
             }
-            await pause(0.2)
+            await pause(0.3)
         }
         guard !Task.isCancelled else { return }
 
@@ -889,6 +942,16 @@ struct TaskOverviewView: View {
         guard !Task.isCancelled else { return }
 
         // ========== READY ==========
+        phase = .ready
+        markAnimationSeen()
+    }
+
+    private func skipToReady() {
+        showDockedHero = true
+        showDockedFocus = true
+        showDockedFlow = true
+        stepDisplayStates = task.steps.indices.map { settledStepState(for: $0) }
+        stepTextChars = task.steps.map { $0.title.count + $0.subtitle.count }
         phase = .ready
     }
 
@@ -944,6 +1007,17 @@ struct TaskOverviewView: View {
         }
     }
 
+    @MainActor
+    private func typeStepText(index: Int, totalChars: Int, duration: Double) async {
+        guard totalChars > 0 else { return }
+        let interval = duration / Double(totalChars)
+        for charIdx in 0..<totalChars {
+            guard !Task.isCancelled else { return }
+            stepTextChars[index] = charIdx + 1
+            await pause(interval)
+        }
+    }
+
     private func resetRevealState() {
         phase = .idle
         darkOverlayOpacity = 0
@@ -963,6 +1037,7 @@ struct TaskOverviewView: View {
         showCenteredFlow = false
         flowPopupScale = 0.6; flowPopupOpacity = 0; flowPopupOffsetY = 0
         stepDisplayStates = Array(repeating: .hidden, count: task.steps.count)
+        stepTextChars = Array(repeating: 0, count: task.steps.count)
         // Docked
         showDockedHero = false; showDockedFocus = false; showDockedFlow = false
     }
