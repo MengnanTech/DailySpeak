@@ -42,14 +42,18 @@ final class DailySpeakAPIService {
         throw APIError.transport("后端当前没有 DailySpeak polish 接口，客户端已停止调用该能力。")
     }
 
-    func generateEnglishAudioURL(id: String, text: String) async throws -> URL {
+    func generateEnglishAudioURL(id: String, text: String, voiceId: String? = nil) async throws -> URL {
+        var body: [String: String] = [
+            "id": id,
+            "text": text
+        ]
+        if let voiceId {
+            body["voiceId"] = voiceId
+        }
         let response: APIEnvelope<EnglishTTSResponseDTO> = try await APIClient.shared.request(
             "tts/english/mp3",
             method: "POST",
-            body: [
-                "id": id,
-                "text": text
-            ],
+            body: body,
             requiresAuth: true
         )
         guard response.code == 200, let data = response.data else {

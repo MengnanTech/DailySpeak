@@ -7,6 +7,7 @@ struct AppSettingsView: View {
 
     @State private var showResetAlert = false
     @State private var showFeedbackFallbackAlert = false
+    @State private var showOnboarding = false
 
     var body: some View {
         ZStack {
@@ -51,6 +52,9 @@ struct AppSettingsView: View {
         } message: {
             Text("No email app is available for feedback.")
         }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView(isPresented: $showOnboarding)
+        }
     }
 
     // MARK: - Account
@@ -87,6 +91,20 @@ struct AppSettingsView: View {
                 sectionHeader(title: "Preferences", icon: "slider.horizontal.3", color: Color(hex: "8B5CF6"))
 
                 NavigationLink {
+                    VoiceSettingsView()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "waveform.circle.fill",
+                        title: "Voice Selection",
+                        subtitle: VoiceManager.shared.selectedVoice.name,
+                        iconColor: Color(hex: "4F6BED")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, 64)
+
+                NavigationLink {
                     NotificationSettingsView()
                 } label: {
                     NavigationMenuRow(
@@ -120,6 +138,18 @@ struct AppSettingsView: View {
         SettingsCard {
             VStack(spacing: 0) {
                 sectionHeader(title: "Support", icon: "questionmark.circle.fill", color: Color(hex: "4A90D9"))
+
+                Button { showOnboarding = true } label: {
+                    NavigationMenuRow(
+                        icon: "hand.wave.fill",
+                        title: "New User Guide",
+                        subtitle: "Review the onboarding tutorial",
+                        iconColor: Color(hex: "8B5CF6")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, 64)
 
                 Button { sendFeedback() } label: {
                     NavigationMenuRow(

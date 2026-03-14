@@ -84,7 +84,8 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
         print("⬆️ [TTS] request english audio: id=\(id) textLength=\(trimmed.count)")
         Task {
             do {
-                let url = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: trimmed)
+                let voiceId = VoiceManager.shared.selectedVoiceId
+                let url = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: trimmed, voiceId: voiceId)
                 await MainActor.run {
                     guard self.requestSequence == currentRequest else { return }
                     self.cachedAudioURLs[id] = url

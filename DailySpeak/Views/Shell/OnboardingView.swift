@@ -13,6 +13,18 @@ struct OnboardingView: View {
             accent: Color(hex: "4F6BED")
         ),
         .init(
+            title: "7 steps to master each topic",
+            subtitle: "Strategy → Vocabulary → Phrases → Framework → Samples → Practice → Review. Complete each step to unlock the next.",
+            icon: "list.number",
+            accent: Color(hex: "8B5CF6")
+        ),
+        .init(
+            title: "Listen with natural AI voices",
+            subtitle: "Choose from 14 premium English voices for sample answers and practice playback. Change anytime in Settings.",
+            icon: "waveform.circle.fill",
+            accent: Color(hex: "EC4899")
+        ),
+        .init(
             title: "Use AI as a speaking partner",
             subtitle: "Translate ideas, polish spoken English, and review clearer answers before you speak them out loud.",
             icon: "sparkles.rectangle.stack.fill",
