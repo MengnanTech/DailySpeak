@@ -9,58 +9,31 @@ struct AppSettingsView: View {
     @State private var showFeedbackFallbackAlert = false
 
     var body: some View {
-        Form {
-            Section("Account") {
-                HStack {
-                    Text("Mode")
-                    Spacer()
-                    Text(appState.authMode.rawValue.capitalized)
-                        .foregroundStyle(.secondary)
-                }
+        ZStack {
+            AppColors.background.ignoresSafeArea()
 
-                if let email = appState.authEmail, !email.isEmpty {
-                    HStack {
-                        Text("Email")
-                        Spacer()
-                        Text(email)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    accountSection
+                        .staggeredEntrance(index: 0)
 
-            Section("Preferences") {
-                NavigationLink("Notification Settings") {
-                    NotificationSettingsView()
-                }
+                    preferencesSection
+                        .staggeredEntrance(index: 1)
 
-                NavigationLink("Premium Placeholder") {
-                    PaywallPlaceholderView()
-                }
-            }
+                    supportSection
+                        .staggeredEntrance(index: 2)
 
-            Section("Support") {
-                Button("Send Feedback") {
-                    sendFeedback()
-                }
+                    legalSection
+                        .staggeredEntrance(index: 3)
 
-                Button("Rate DailySpeak") {
-                    ReviewPromptService.shared.requestReviewManually()
-                }
-            }
+                    dangerSection
+                        .staggeredEntrance(index: 4)
 
-            Section("Legal") {
-                if let privacy = URL(string: Constants.privacyPolicyURL) {
-                    Link("Privacy Policy", destination: privacy)
+                    Spacer(minLength: 30)
                 }
-                if let terms = URL(string: Constants.termsOfServiceURL) {
-                    Link("Terms of Service", destination: terms)
-                }
-            }
-
-            Section("Learning Data") {
-                Button("Reset Local Progress", role: .destructive) {
-                    showResetAlert = true
-                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 40)
             }
         }
         .navigationTitle("Settings")
@@ -78,6 +51,172 @@ struct AppSettingsView: View {
         } message: {
             Text("No email app is available for feedback.")
         }
+    }
+
+    // MARK: - Account
+    private var accountSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "Account", icon: "person.circle.fill", color: Color(hex: "4F6BED"))
+
+                ActionMenuRow(
+                    icon: "person.fill",
+                    title: "Mode",
+                    subtitle: appState.authMode.rawValue.capitalized,
+                    iconColor: Color(hex: "4F6BED")
+                )
+
+                if let email = appState.authEmail, !email.isEmpty {
+                    Divider().background(AppColors.border).padding(.leading, 64)
+
+                    ActionMenuRow(
+                        icon: "envelope.fill",
+                        title: "Email",
+                        subtitle: email,
+                        iconColor: Color(hex: "4A90D9")
+                    )
+                }
+            }
+        }
+    }
+
+    // MARK: - Preferences
+    private var preferencesSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "Preferences", icon: "slider.horizontal.3", color: Color(hex: "8B5CF6"))
+
+                NavigationLink {
+                    NotificationSettingsView()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "bell.badge.fill",
+                        title: "Notification Settings",
+                        subtitle: "Reminders and alerts",
+                        iconColor: Color(hex: "10B981")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, 64)
+
+                NavigationLink {
+                    PaywallPlaceholderView()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "crown.fill",
+                        title: "Premium",
+                        subtitle: "Unlock advanced features",
+                        iconColor: Color(hex: "C89B3C")
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Support
+    private var supportSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "Support", icon: "questionmark.circle.fill", color: Color(hex: "4A90D9"))
+
+                Button { sendFeedback() } label: {
+                    NavigationMenuRow(
+                        icon: "envelope.open.fill",
+                        title: "Send Feedback",
+                        subtitle: "Help us improve DailySpeak",
+                        iconColor: Color(hex: "4A90D9")
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, 64)
+
+                Button {
+                    ReviewPromptService.shared.requestReviewManually()
+                } label: {
+                    NavigationMenuRow(
+                        icon: "star.fill",
+                        title: "Rate DailySpeak",
+                        subtitle: "Leave a review on the App Store",
+                        iconColor: Color(hex: "F59E0B")
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Legal
+    private var legalSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                sectionHeader(title: "Legal", icon: "doc.text.fill", color: AppColors.secondText)
+
+                if let privacy = URL(string: Constants.privacyPolicyURL) {
+                    Link(destination: privacy) {
+                        NavigationMenuRow(
+                            icon: "hand.raised.fill",
+                            title: "Privacy Policy",
+                            subtitle: nil,
+                            iconColor: Color(hex: "10B981")
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Divider().background(AppColors.border).padding(.leading, 64)
+
+                if let terms = URL(string: Constants.termsOfServiceURL) {
+                    Link(destination: terms) {
+                        NavigationMenuRow(
+                            icon: "doc.plaintext.fill",
+                            title: "Terms of Service",
+                            subtitle: nil,
+                            iconColor: AppColors.secondText
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    // MARK: - Danger Zone
+    private var dangerSection: some View {
+        SettingsCard {
+            VStack(spacing: 0) {
+                Button {
+                    showResetAlert = true
+                } label: {
+                    ActionMenuRow(
+                        icon: "trash.fill",
+                        title: "Reset Local Progress",
+                        subtitle: "Clear all completed tasks and steps",
+                        isDestructive: true
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Helpers
+    private func sectionHeader(title: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(color)
+            Text(title)
+                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                .foregroundStyle(AppColors.tertiaryText)
+                .tracking(1)
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 4)
     }
 
     private func sendFeedback() {
