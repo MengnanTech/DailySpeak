@@ -12,8 +12,7 @@ struct StageListView: View {
     @State private var displayedTaskStageId: Int?
     @State private var taskListInsertionEdge: Edge = .trailing
     @State private var taskListStageVisibility: [Int: Bool] = [:]
-    @State private var showPaywall = false
-    @State private var paywallTargetStageId: Int? = nil
+    @State private var paywallTarget: PaywallTarget? = nil
 
     private let stages = CourseData.stages
 
@@ -89,9 +88,8 @@ struct StageListView: View {
                 let stage = stages.first { s in s.tasks.contains { $0.id == task.id } } ?? currentStage
                 TaskOverviewView(stage: stage, task: task)
             }
-            .sheet(isPresented: $showPaywall) {
-                PaywallPlaceholderView(targetStageId: paywallTargetStageId)
-                    .id(paywallTargetStageId)
+            .sheet(item: $paywallTarget) { target in
+                PaywallPlaceholderView(targetStageId: target.stageId)
             }
             .onAppear {
                 if carouselStageId == nil {
@@ -224,8 +222,7 @@ struct StageListView: View {
                             stage: stage,
                             onStageTap: {
                                 if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
-                                    paywallTargetStageId = stage.id
-                                    showPaywall = true
+                                    paywallTarget = PaywallTarget(stageId: stage.id)
                                     return
                                 }
                                 guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
@@ -233,8 +230,7 @@ struct StageListView: View {
                             },
                             onTaskTap: { task in
                                 if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
-                                    paywallTargetStageId = stage.id
-                                    showPaywall = true
+                                    paywallTarget = PaywallTarget(stageId: stage.id)
                                     return
                                 }
                                 guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
@@ -316,8 +312,7 @@ struct StageListView: View {
                 Spacer()
                 Button {
                     if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
-                        paywallTargetStageId = stage.id
-                        showPaywall = true
+                        paywallTarget = PaywallTarget(stageId: stage.id)
                         return
                     }
                     guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
@@ -348,8 +343,7 @@ struct StageListView: View {
                 VStack(spacing: 0) {
                     Button {
                         if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
-                            paywallTargetStageId = stage.id
-                            showPaywall = true
+                            paywallTarget = PaywallTarget(stageId: stage.id)
                             return
                         }
                         guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
@@ -425,8 +419,7 @@ struct StageListView: View {
                     Divider().background(AppColors.border).padding(.leading, 52)
                     Button {
                         if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
-                            paywallTargetStageId = stage.id
-                            showPaywall = true
+                            paywallTarget = PaywallTarget(stageId: stage.id)
                             return
                         }
                         guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
@@ -761,6 +754,12 @@ struct CarouselStageCard: View {
             }
         }
     }
+}
+
+// MARK: - Paywall Target (for .sheet(item:))
+struct PaywallTarget: Identifiable {
+    let stageId: Int
+    var id: Int { stageId }
 }
 
 // MARK: - Stage Identifiable + Hashable
