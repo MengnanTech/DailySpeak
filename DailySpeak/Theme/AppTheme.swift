@@ -27,22 +27,22 @@ extension Color {
     }
 }
 
-// MARK: - App Colors
+// MARK: - App Colors (Dark Mode Adaptive)
 enum AppColors {
-    static let background   = Color(hex: "F5F3EF")
-    static let card         = Color.white
-    static let surface      = Color(hex: "F0EDE8")
-    static let border       = Color(hex: "E8E3DB")
+    static let background   = Color.adaptive(light: "F5F3EF", dark: "1C1C1E")
+    static let card         = Color.adaptive(light: "FFFFFF", dark: "2C2C2E")
+    static let surface      = Color.adaptive(light: "F0EDE8", dark: "3A3A3C")
+    static let border       = Color.adaptive(light: "E8E3DB", dark: "48484A")
 
-    static let primaryText  = Color(hex: "1A1714")
-    static let secondText   = Color(hex: "6B6560")
-    static let tertiaryText = Color(hex: "9E9890")
+    static let primaryText  = Color.adaptive(light: "1A1714", dark: "F2F2F7")
+    static let secondText   = Color.adaptive(light: "6B6560", dark: "AEAEB2")
+    static let tertiaryText = Color.adaptive(light: "9E9890", dark: "636366")
 
     static let success      = Color(hex: "34D399")
     static let warning      = Color(hex: "FBBF24")
 
     // Warm neutral shadow color
-    static let shadowColor  = Color(hex: "B0A89E")
+    static let shadowColor  = Color.adaptive(light: "B0A89E", dark: "000000")
 }
 
 // MARK: - Stage Theme
