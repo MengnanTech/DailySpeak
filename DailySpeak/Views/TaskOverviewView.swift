@@ -73,6 +73,7 @@ struct TaskOverviewView: View {
     @State private var showDockedHero = false
     @State private var showDockedFocus = false
     @State private var showDockedFlow = false
+    @State private var scrollToFlow = false
 
     private var theme: StageTheme { stage.theme }
     private var lessonContent: LessonContent? { task.lessonContent }
@@ -93,36 +94,47 @@ struct TaskOverviewView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Scrollable docked content
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    if showDockedHero {
-                        heroSectionCard
-                            .transition(.asymmetric(
-                                insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
-                                removal: .opacity
-                            ))
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        if showDockedHero {
+                            heroSectionCard
+                                .transition(.asymmetric(
+                                    insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
+                                    removal: .opacity
+                                ))
+                        }
+                        if showDockedFocus {
+                            focusSectionCard
+                                .transition(.asymmetric(
+                                    insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
+                                    removal: .opacity
+                                ))
+                        }
+                        if showDockedFlow {
+                            flowSectionCard
+                                .id("flowCard")
+                                .transition(.asymmetric(
+                                    insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
+                                    removal: .opacity
+                                ))
+                        }
+                        Color.clear.frame(height: 36)
                     }
-                    if showDockedFocus {
-                        focusSectionCard
-                            .transition(.asymmetric(
-                                insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
-                                removal: .opacity
-                            ))
-                    }
-                    if showDockedFlow {
-                        flowSectionCard
-                            .transition(.asymmetric(
-                                insertion: .offset(y: -20).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
-                                removal: .opacity
-                            ))
-                    }
-                    Color.clear.frame(height: 36)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 20)
+                .scrollDisabled(phase != .ready)
+                .onChange(of: scrollToFlow) {
+                    if scrollToFlow {
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo("flowCard", anchor: .center)
+                        }
+                        scrollToFlow = false
+                    }
+                }
             }
-            .scrollDisabled(phase != .ready)
 
             // Cinematic overlay
             if darkOverlayOpacity > 0 {
@@ -869,6 +881,11 @@ struct TaskOverviewView: View {
             }
         }
         await pause(0.3)
+        guard !Task.isCancelled else { return }
+
+        // Scroll flow card to visual center
+        scrollToFlow = true
+        await pause(0.5)
         guard !Task.isCancelled else { return }
 
         // ========== READY ==========
