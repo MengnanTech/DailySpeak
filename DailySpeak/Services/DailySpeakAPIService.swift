@@ -10,24 +10,6 @@ private struct EnglishTTSResponseDTO: Decodable {
     let id: String?
     let audioUrl: String
     let provider: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case audioUrl = "audioUrl"
-        case audioUrlSnake = "audio_url"
-        case provider
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decodeIfPresent(String.self, forKey: .id)
-        provider = try container.decodeIfPresent(String.self, forKey: .provider)
-        if let url = try container.decodeIfPresent(String.self, forKey: .audioUrl) {
-            audioUrl = url
-        } else {
-            audioUrl = try container.decode(String.self, forKey: .audioUrlSnake)
-        }
-    }
 }
 
 final class DailySpeakAPIService {
