@@ -38,6 +38,27 @@ final class DailySpeakAPIService {
         return text
     }
 
+    func translateToChinese(englishText: String) async throws -> String {
+        let response: APIEnvelope<TranslateTextResponseDTO> = try await APIClient.shared.request(
+            "translate/text",
+            method: "POST",
+            body: [
+                "text": englishText,
+                "sourceLang": "en",
+                "targetLang": "zh"
+            ],
+            requiresAuth: true
+        )
+        guard response.code == 200, let data = response.data else {
+            throw APIError.api(response.code, response.msg)
+        }
+        let text = data.translatedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else {
+            throw APIError.decoding
+        }
+        return text
+    }
+
     func polishToSpokenEnglish(englishText _: String, topic _: String) async throws -> String {
         throw APIError.transport("后端当前没有 DailySpeak polish 接口，客户端已停止调用该能力。")
     }

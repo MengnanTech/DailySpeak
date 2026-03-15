@@ -528,7 +528,25 @@ struct StrategyStepView: View {
     }
 
     private var requiredAudioIds: Set<String> {
-        [promptPlaybackId]
+        if let lesson {
+            // Lesson mode: angles + sequence
+            var ids: Set<String> = []
+            for angle in lesson.strategy.angles {
+                let text = angle.title + ". " + angle.content.joined(separator: ". ")
+                ids.insert(EnglishSpeechPlayer.playbackID(for: text, category: "angle"))
+            }
+            for item in lesson.strategy.sequence {
+                let text = "\(item.phase). \(item.focus). \(item.target)"
+                ids.insert(EnglishSpeechPlayer.playbackID(for: text, category: "sequence"))
+            }
+            return ids
+        }
+        // Standard mode: prompt + all tips
+        var ids: Set<String> = [promptPlaybackId]
+        for tip in task.tips {
+            ids.insert(EnglishSpeechPlayer.playbackID(for: tip, category: "tip"))
+        }
+        return ids
     }
 
     var body: some View {
@@ -553,17 +571,6 @@ struct StrategyStepView: View {
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            // Prompt audio — listen to the topic question
-            InlineAudioPlayerControl(
-                text: task.prompt,
-                playbackID: promptPlaybackId,
-                sourceLabel: "Topic",
-                accentColor: stepColor,
-                title: "听题目发音",
-                onPlay: { listenedAudioIds.insert(promptPlaybackId) }
-            )
-            .staggerIn(index: 1, appeared: appeared)
-
             if let lesson {
                 lessonStrategyContent(lesson)
             } else {
@@ -586,7 +593,7 @@ struct StrategyStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "听完题目语音以继续"
+            progressHint = "还剩 \(remaining) 个语音未听"
         }
     }
 
@@ -598,7 +605,21 @@ struct StrategyStepView: View {
                 StepSectionLabel(icon: "lightbulb.fill", title: "答题思路", color: stepColor)
 
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
-                    NumberedItemRow(index: index + 1, text: tip, color: stepColor)
+                    VStack(alignment: .leading, spacing: 8) {
+                        NumberedItemRow(index: index + 1, text: tip, color: stepColor)
+
+                        HStack(spacing: 8) {
+                            InlineAudioPlayerControl(
+                                text: tip,
+                                playbackID: EnglishSpeechPlayer.playbackID(for: tip, category: "tip"),
+                                sourceLabel: "Tip",
+                                accentColor: stepColor,
+                                style: .compact,
+                                onPlay: { listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: tip, category: "tip")) }
+                            )
+                            TranslateButton(englishText: tip, accentColor: stepColor)
+                        }
+                    }
                 }
             }
             .staggerIn(index: 1, appeared: appeared)
@@ -622,6 +643,8 @@ struct StrategyStepView: View {
                     .foregroundStyle(AppColors.primaryText)
                     .italic()
                     .lineSpacing(4)
+
+                TranslateButton(englishText: task.prompt, accentColor: stepColor)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -647,16 +670,20 @@ struct StrategyStepView: View {
                 StepSectionLabel(icon: "target", title: "过关标准", color: Color(hex: "EF4444"))
 
                 ForEach(task.passCriteria, id: \.self) { criteria in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "checkmark.circle")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(AppColors.success)
-                            .padding(.top, 1)
-                        Text(criteria)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(AppColors.success)
+                                .padding(.top, 1)
+                            Text(criteria)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(2)
+                        }
+
+                        TranslateButton(englishText: criteria, accentColor: Color(hex: "EF4444"))
                     }
                     .padding(.vertical, 2)
                 }
@@ -685,26 +712,45 @@ struct StrategyStepView: View {
                                 .background(stepColor)
                                 .clipShape(Circle())
 
-                            Text(angle.title)
-                                .font(.subheadline.bold())
-                                .foregroundStyle(AppColors.primaryText)
-                                .fixedSize(horizontal: false, vertical: true)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(angle.title)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(AppColors.primaryText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                TranslateButton(englishText: angle.title, accentColor: stepColor)
+                            }
                         }
 
                         ForEach(angle.content, id: \.self) { item in
-                            HStack(alignment: .top, spacing: 8) {
-                                Circle()
-                                    .fill(stepColor.opacity(0.35))
-                                    .frame(width: 5, height: 5)
-                                    .padding(.top, 7)
-                                Text(item)
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppColors.secondText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(2)
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Circle()
+                                        .fill(stepColor.opacity(0.35))
+                                        .frame(width: 5, height: 5)
+                                        .padding(.top, 7)
+                                    Text(item)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(2)
+                                }
+                                TranslateButton(englishText: item, accentColor: stepColor)
+                                    .padding(.leading, 13)
                             }
                             .padding(.leading, 36)
                         }
+
+                        // Audio for entire angle
+                        let angleText = angle.title + ". " + angle.content.joined(separator: ". ")
+                        let anglePlaybackId = EnglishSpeechPlayer.playbackID(for: angleText, category: "angle")
+                        InlineAudioPlayerControl(
+                            text: angleText,
+                            playbackID: anglePlaybackId,
+                            sourceLabel: "Strategy Angle",
+                            accentColor: stepColor,
+                            style: .compact,
+                            onPlay: { listenedAudioIds.insert(anglePlaybackId) }
+                        )
 
                         if index < lesson.strategy.angles.count - 1 {
                             Divider().background(AppColors.border.opacity(0.5))
@@ -751,6 +797,18 @@ struct StrategyStepView: View {
                                 .font(.caption)
                                 .foregroundStyle(AppColors.tertiaryText)
                                 .fixedSize(horizontal: false, vertical: true)
+                            TranslateButton(englishText: "\(item.phase): \(item.target)", accentColor: stepColor)
+
+                            let seqText = "\(item.phase). \(item.focus). \(item.target)"
+                            let seqPlaybackId = EnglishSpeechPlayer.playbackID(for: seqText, category: "sequence")
+                            InlineAudioPlayerControl(
+                                text: seqText,
+                                playbackID: seqPlaybackId,
+                                sourceLabel: "Strategy Sequence",
+                                accentColor: stepColor,
+                                style: .compact,
+                                onPlay: { listenedAudioIds.insert(seqPlaybackId) }
+                            )
                         }
                         .padding(.bottom, index < lesson.strategy.sequence.count - 1 ? 10 : 0)
                     }
@@ -1381,6 +1439,17 @@ struct VocabDetailSheet: View {
                             Text(item.englishMeaning)
                                 .font(.subheadline)
                                 .foregroundStyle(AppColors.secondText)
+
+                            HStack(spacing: 8) {
+                                InlineAudioPlayerControl(
+                                    text: item.englishMeaning,
+                                    playbackID: EnglishSpeechPlayer.playbackID(for: item.englishMeaning, category: "vocab-meaning"),
+                                    sourceLabel: "Vocab Meaning",
+                                    accentColor: accentColor,
+                                    style: .compact
+                                )
+                                TranslateButton(englishText: item.englishMeaning, accentColor: accentColor)
+                            }
                         }
 
                         if let sourceBand = item.sourceBand {
@@ -1433,6 +1502,14 @@ struct VocabDetailSheet: View {
                                 Text(item.example)
                                     .font(.body)
                                     .foregroundStyle(AppColors.primaryText)
+
+                                InlineAudioPlayerControl(
+                                    text: item.example,
+                                    playbackID: EnglishSpeechPlayer.playbackID(for: item.example, category: "vocab-example"),
+                                    sourceLabel: "Vocab Example",
+                                    accentColor: accentColor,
+                                    style: .compact
+                                )
                             }
                             if !item.exampleTranslation.isEmpty {
                                 Text(item.exampleTranslation)
@@ -1676,6 +1753,18 @@ struct PhraseCard: View {
                                     insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
                                     removal: .opacity
                                 ))
+
+                            HStack(spacing: 8) {
+                                InlineAudioPlayerControl(
+                                    text: phrase.example,
+                                    playbackID: EnglishSpeechPlayer.playbackID(for: phrase.example, category: "phrase-ex"),
+                                    sourceLabel: "Phrase Example",
+                                    accentColor: accentColor,
+                                    style: .compact
+                                )
+                                TranslateButton(englishText: phrase.example, accentColor: accentColor)
+                            }
+                            .transition(.opacity)
                         }
 
                         if let nativeNote = phrase.nativeNote {
@@ -1831,18 +1920,31 @@ struct FrameworkStepView: View {
                             .background(Color(hex: "EF4444").opacity(0.04))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
 
-                            HStack(alignment: .top, spacing: 8) {
-                                Text("After")
-                                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 7)
-                                    .padding(.vertical, 3)
-                                    .background(AppColors.success)
-                                    .clipShape(Capsule())
-                                Text(pair.upgraded)
-                                    .font(.subheadline.bold())
-                                    .foregroundStyle(AppColors.primaryText)
-                                    .fixedSize(horizontal: false, vertical: true)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("After")
+                                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 7)
+                                        .padding(.vertical, 3)
+                                        .background(AppColors.success)
+                                        .clipShape(Capsule())
+                                    Text(pair.upgraded)
+                                        .font(.subheadline.bold())
+                                        .foregroundStyle(AppColors.primaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                HStack(spacing: 8) {
+                                    InlineAudioPlayerControl(
+                                        text: pair.upgraded,
+                                        playbackID: EnglishSpeechPlayer.playbackID(for: pair.upgraded, category: "fw-upgrade"),
+                                        sourceLabel: "Upgrade",
+                                        accentColor: Color(hex: "F59E0B"),
+                                        style: .compact
+                                    )
+                                    TranslateButton(englishText: pair.upgraded, accentColor: Color(hex: "F59E0B"))
+                                }
                             }
                             .padding(10)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -1868,15 +1970,26 @@ struct FrameworkStepView: View {
                     color: frameworkColor
                 )
 
-                Text(lesson.framework.goal)
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.primaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(3)
-                    .padding(14)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(frameworkColor.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(lesson.framework.goal)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(3)
+
+                    InlineAudioPlayerControl(
+                        text: lesson.framework.goal,
+                        playbackID: EnglishSpeechPlayer.playbackID(for: lesson.framework.goal, category: "fw-goal"),
+                        sourceLabel: "Framework Goal",
+                        accentColor: frameworkColor,
+                        style: .compact
+                    )
+                    TranslateButton(englishText: lesson.framework.goal, accentColor: frameworkColor)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(frameworkColor.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 ForEach(lesson.framework.defaultStructure, id: \.section) { section in
                     VStack(alignment: .leading, spacing: 10) {
@@ -1889,16 +2002,20 @@ struct FrameworkStepView: View {
                             .clipShape(Capsule())
 
                         ForEach(section.moves, id: \.self) { move in
-                            HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(frameworkColor)
-                                    .padding(.top, 3)
-                                Text(move)
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppColors.secondText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(2)
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(frameworkColor)
+                                        .padding(.top, 3)
+                                    Text(move)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(2)
+                                }
+                                TranslateButton(englishText: move, accentColor: frameworkColor)
+                                    .padding(.leading, 22)
                             }
                         }
                     }
@@ -1959,15 +2076,29 @@ struct FrameworkStepView: View {
     private func lessonMarkersContent(_ markers: [String]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             ForEach(markers, id: \.self) { marker in
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "quote.bubble.fill")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: "5B6EF5"))
-                        .padding(.top, 3)
-                    Text(marker)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.primaryText)
-                        .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "quote.bubble.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color(hex: "5B6EF5"))
+                            .padding(.top, 3)
+                        Text(marker)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    HStack(spacing: 8) {
+                        InlineAudioPlayerControl(
+                            text: marker,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: marker, category: "fw-marker"),
+                            sourceLabel: "Delivery Marker",
+                            accentColor: Color(hex: "5B6EF5"),
+                            style: .compact
+                        )
+                        TranslateButton(englishText: marker, accentColor: Color(hex: "5B6EF5"))
+                    }
+                    .padding(.leading, 21)
                 }
             }
         }
@@ -2041,6 +2172,8 @@ struct FrameworkSentenceCard: View {
                 highlightedSentence(sentence)
                     .font(.subheadline)
                     .fixedSize(horizontal: false, vertical: true)
+
+                TranslateButton(englishText: sentence, accentColor: accentColor)
             }
             .padding(.vertical, 3)
             .padding(.bottom, isLast ? 0 : 12)
@@ -2219,16 +2352,14 @@ struct SamplesStepView: View {
 
                     InlineAudioPlayerControl(
                         text: sample.content,
-                        playbackID: WordPronouncer.shared.playbackID(
-                            for: sample.content,
-                            locale: "en-US",
-                            rate: 0.46
-                        ),
+                        playbackID: EnglishSpeechPlayer.playbackID(for: sample.content, category: "sample-\(selectedBand)"),
                         sourceLabel: "Sample Answer",
                         accentColor: bandColor,
                         title: "Listen to Pronunciation",
                         onPlay: { listenedBands.insert(selectedBand) }
                     )
+
+                    TranslateButton(englishText: sample.content, accentColor: bandColor)
 
                     if !sample.nativeFeatures.isEmpty {
                         Divider().background(AppColors.border)
@@ -2237,15 +2368,19 @@ struct SamplesStepView: View {
                             StepSectionLabel(icon: "sparkles", title: "Native Features", color: bandColor)
 
                             ForEach(sample.nativeFeatures, id: \.self) { feature in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Image(systemName: "star.fill")
-                                        .font(.system(size: 9))
-                                        .foregroundStyle(bandColor)
-                                        .padding(.top, 4)
-                                    Text(feature)
-                                        .font(.subheadline)
-                                        .foregroundStyle(AppColors.secondText)
-                                        .fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Image(systemName: "star.fill")
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(bandColor)
+                                            .padding(.top, 4)
+                                        Text(feature)
+                                            .font(.subheadline)
+                                            .foregroundStyle(AppColors.secondText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    TranslateButton(englishText: feature, accentColor: bandColor)
+                                        .padding(.leading, 17)
                                 }
                             }
                         }
@@ -2270,14 +2405,27 @@ struct SamplesStepView: View {
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
 
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("Improved")
-                                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                                            .foregroundStyle(bandColor)
-                                        Text(item.improved)
-                                            .font(.subheadline.bold())
-                                            .foregroundStyle(AppColors.primaryText)
-                                            .fixedSize(horizontal: false, vertical: true)
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("Improved")
+                                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                                .foregroundStyle(bandColor)
+                                            Text(item.improved)
+                                                .font(.subheadline.bold())
+                                                .foregroundStyle(AppColors.primaryText)
+                                                .fixedSize(horizontal: false, vertical: true)
+                                        }
+
+                                        HStack(spacing: 8) {
+                                            InlineAudioPlayerControl(
+                                                text: item.improved,
+                                                playbackID: EnglishSpeechPlayer.playbackID(for: item.improved, category: "sample-upgrade"),
+                                                sourceLabel: "Sample Upgrade",
+                                                accentColor: bandColor,
+                                                style: .compact
+                                            )
+                                            TranslateButton(englishText: item.improved, accentColor: bandColor)
+                                        }
                                     }
 
                                     Text(item.why)
@@ -2328,13 +2476,17 @@ struct SamplesStepView: View {
                 .foregroundStyle(tint)
 
             ForEach(lines, id: \.self) { line in
-                Text(line)
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.secondText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-                    .background(tint.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(line)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                    TranslateButton(englishText: line, accentColor: tint)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(tint.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
     }
@@ -2402,6 +2554,7 @@ struct PracticePromptView: View {
     @State private var isProcessing = false
     @State private var errorMessage: String?
     @State private var appeared = false
+    @State private var listenedResultAudio = false
     @FocusState private var isInputFocused: Bool
 
     init(stageId: Int, task: SpeakingTask, accentColor: Color, canComplete: Binding<Bool>, progressHint: Binding<String?>) {
@@ -2510,12 +2663,19 @@ struct PracticePromptView: View {
         .onChange(of: translatedEnglish) { _, _ in
             updatePracticeProgress()
         }
+        .onChange(of: listenedResultAudio) { _, _ in
+            updatePracticeProgress()
+        }
     }
 
     private func updatePracticeProgress() {
-        if !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let hasTranslation = !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if hasTranslation && listenedResultAudio {
             canComplete = true
             progressHint = nil
+        } else if hasTranslation {
+            canComplete = false
+            progressHint = "听完英文翻译语音以继续"
         } else {
             canComplete = false
             progressHint = "提交你的回答并获取翻译结果"
@@ -2558,6 +2718,8 @@ struct PracticePromptView: View {
                 .foregroundStyle(AppColors.primaryText)
                 .italic()
                 .lineSpacing(4)
+
+            TranslateButton(englishText: task.prompt, accentColor: practiceColor)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -2584,16 +2746,29 @@ struct PracticePromptView: View {
             StepSectionLabel(icon: "checklist.checked", title: "Speaking Checklist", color: practiceColor)
 
             ForEach(lesson.practice.checklist, id: \.self) { item in
-                HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(practiceColor)
-                        .padding(.top, 2)
-                    Text(item)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(2)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(practiceColor)
+                            .padding(.top, 2)
+                        Text(item)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(2)
+                    }
+
+                    HStack(spacing: 8) {
+                        InlineAudioPlayerControl(
+                            text: item,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: item, category: "checklist"),
+                            sourceLabel: "Checklist",
+                            accentColor: practiceColor,
+                            style: .compact
+                        )
+                        TranslateButton(englishText: item, accentColor: practiceColor)
+                    }
                 }
                 .padding(10)
                 .background(practiceColor.opacity(0.04))
@@ -2611,22 +2786,26 @@ struct PracticePromptView: View {
 
             StepSectionLabel(icon: "text.bubble.fill", title: "Self Prompts", color: practiceColor)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(lesson.practice.selfPrompts, id: \.self) { prompt in
-                        Text(prompt)
-                            .font(.caption.bold())
-                            .foregroundStyle(practiceColor)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(practiceColor.opacity(0.08))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(practiceColor.opacity(0.15), lineWidth: 1)
-                            )
+            ForEach(lesson.practice.selfPrompts, id: \.self) { prompt in
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(prompt)
+                        .font(.caption.bold())
+                        .foregroundStyle(practiceColor)
+
+                    HStack(spacing: 8) {
+                        InlineAudioPlayerControl(
+                            text: prompt,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: prompt, category: "selfprompt"),
+                            sourceLabel: "Self Prompt",
+                            accentColor: practiceColor,
+                            style: .compact
+                        )
+                        TranslateButton(englishText: prompt, accentColor: practiceColor)
                     }
                 }
+                .padding(10)
+                .background(practiceColor.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
             }
         }
     }
@@ -2640,20 +2819,33 @@ struct PracticePromptView: View {
             )
 
             ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                HStack(alignment: .top, spacing: 10) {
-                    Text(index < labels.count ? labels[index] : "要点")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color(hex: "8B5CF6").opacity(0.6))
-                        .clipShape(Capsule())
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Text(index < labels.count ? labels[index] : "要点")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(hex: "8B5CF6").opacity(0.6))
+                            .clipShape(Capsule())
 
-                    Text(sentence)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(2)
+                        Text(sentence)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(2)
+                    }
+
+                    HStack(spacing: 8) {
+                        InlineAudioPlayerControl(
+                            text: sentence,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: sentence, category: "fwhint"),
+                            sourceLabel: "Framework Hint",
+                            accentColor: Color(hex: "8B5CF6"),
+                            style: .compact
+                        )
+                        TranslateButton(englishText: sentence, accentColor: Color(hex: "8B5CF6"))
+                    }
                 }
             }
         }
@@ -2800,14 +2992,13 @@ struct PracticePromptView: View {
 
             InlineAudioPlayerControl(
                 text: text,
-                playbackID: WordPronouncer.shared.playbackID(
-                    for: text,
-                    locale: "en-US",
-                    rate: 0.46
-                ),
+                playbackID: EnglishSpeechPlayer.playbackID(for: text, category: "practice"),
                 sourceLabel: "Practice Result",
                 accentColor: tint,
-                title: "Playback"
+                title: "听英文发音",
+                onPlay: {
+                    listenedResultAudio = true
+                }
             )
 
             Text(text)
@@ -2819,6 +3010,8 @@ struct PracticePromptView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(tint.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            TranslateButton(englishText: text, accentColor: tint)
         }
         .padding(18)
         .cardStyle()
