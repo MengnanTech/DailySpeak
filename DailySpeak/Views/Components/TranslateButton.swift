@@ -27,6 +27,7 @@ struct TranslateButton: View {
                     Text(isExpanded ? "收起" : "翻译")
                         .font(.system(size: 12, weight: .medium))
                 }
+                .fixedSize()
                 .foregroundStyle(isExpanded ? .white : accentColor)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)

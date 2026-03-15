@@ -2236,7 +2236,9 @@ struct PhrasesStepView: View {
 
     @State private var appeared = false
     @State private var listenedPhrases: Set<String> = []
+    @State private var showPhrasesGuide = false
     private var hasLessonContent: Bool { task.lessonContent != nil }
+    private let phraseColor = Color(hex: "10B981")
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -2245,7 +2247,7 @@ struct PhrasesStepView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "实用词组",
                     subtitle: "用短语拉开自然度，避免一句一句直译。",
-                    accentColor: Color(hex: "10B981")
+                    accentColor: phraseColor
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
@@ -2254,26 +2256,41 @@ struct PhrasesStepView: View {
                     title: "实用词组",
                     english: "Useful Phrases",
                     subtitle: "掌握 \(task.phrases.count) 个地道表达，让口语更自然",
-                    accentColor: Color(hex: "10B981"),
+                    accentColor: phraseColor,
                     secondaryColor: Color(hex: "34D399")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            // Phrases count badge
-            HStack(spacing: 8) {
-                Image(systemName: "text.quote")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color(hex: "10B981"))
-                Text("\(listenedPhrases.count)/\(task.phrases.count) 个表达已听")
-                    .font(.caption.bold())
-                    .foregroundStyle(Color(hex: "10B981"))
+            // Section header with Guide
+            HStack {
+                Text("\(task.phrases.count) Phrases")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(phraseColor)
+
+                Text("\(listenedPhrases.count)/\(task.phrases.count)")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(phraseColor.opacity(0.6))
+
                 Spacer()
+
+                Button {
+                    showPhrasesGuide = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("Guide")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(phraseColor)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(Color(hex: "10B981").opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
             .staggerIn(index: 1, appeared: appeared)
 
             ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
@@ -2289,6 +2306,15 @@ struct PhrasesStepView: View {
         }
         .onChange(of: listenedPhrases.count) { _, _ in
             updatePhrasesProgress()
+        }
+        .fullScreenCover(isPresented: $showPhrasesGuide) {
+            PhrasesGuidedView(
+                phrases: task.phrases,
+                accentColor: phraseColor,
+                onComplete: { listened in
+                    listenedPhrases.formUnion(listened)
+                }
+            )
         }
     }
 
@@ -2453,6 +2479,258 @@ struct PhraseCard: View {
     }
 }
 
+// MARK: - Phrases Guided View (Immersive)
+
+private struct PhrasesGuidedView: View {
+    let phrases: [PhraseItem]
+    let accentColor: Color
+    var onComplete: (Set<String>) -> Void = { _ in }
+
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var currentIndex = 0
+    @State private var audioFinished = false
+    @State private var listenedPhrases: Set<String> = []
+    @State private var allDone = false
+    @State private var showExample = false
+
+    private func phrasePlaybackID(_ phrase: PhraseItem) -> String {
+        EnglishSpeechPlayer.playbackID(for: phrase.phrase, category: "phrase-guide")
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture { }
+
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button {
+                        player.stopPlayback()
+                        onComplete(listenedPhrases)
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Text("\(currentIndex + 1) / \(phrases.count)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(accentColor)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(phrases.count), height: 4)
+                            .animation(.spring(duration: 0.5), value: currentIndex)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                Spacer()
+
+                if !allDone {
+                    let phrase = phrases[currentIndex]
+                    let pid = phrasePlaybackID(phrase)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Number + phrase
+                        HStack(spacing: 10) {
+                            Text("\(currentIndex + 1)")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(accentColor)
+                                .clipShape(Circle())
+
+                            Text(phrase.phrase)
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppColors.primaryText)
+
+                            Spacer()
+                        }
+
+                        // Meaning
+                        if let meaning = phrase.meaning {
+                            Text(meaning)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                        }
+
+                        // Example (always shown in guide mode)
+                        if !phrase.example.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "text.quote")
+                                        .font(.system(size: 10, weight: .bold))
+                                    Text("Example")
+                                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                                }
+                                .foregroundStyle(accentColor)
+
+                                Text(phrase.example)
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(AppColors.secondText)
+                                    .italic()
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(4)
+                            }
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(accentColor.opacity(0.06))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+
+                        // Native note
+                        if let note = phrase.nativeNote {
+                            Text(note)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.tertiaryText)
+                                .lineSpacing(2)
+                        }
+
+                        // Audio + translate
+                        HStack(spacing: 12) {
+                            CompactPlayButton(
+                                text: phrase.phrase,
+                                playbackID: pid,
+                                sourceLabel: "Guided Phrase",
+                                accentColor: accentColor
+                            )
+
+                            if player.isPlaying(id: pid) || player.isPaused(id: pid) {
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor.opacity(0.15))
+                                            .frame(height: 4)
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor)
+                                            .frame(width: geo.size.width * player.progress, height: 4)
+                                    }
+                                }
+                                .frame(height: 4)
+                                .transition(.opacity)
+                            }
+
+                            Spacer()
+
+                            TranslateButton(englishText: phrase.phrase + ". " + phrase.example, accentColor: accentColor, showInline: false)
+                        }
+
+                        TranslationOverlay(englishText: phrase.phrase + ". " + phrase.example, accentColor: accentColor)
+
+                        // Confirm
+                        if audioFinished {
+                            Button {
+                                advanceToNext()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: currentIndex < phrases.count - 1 ? "checkmark" : "checkmark.circle.fill")
+                                        .font(.system(size: 14, weight: .bold))
+                                    Text(currentIndex < phrases.count - 1 ? "Got it" : "All Done")
+                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(accentColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
+                    .padding(24)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+                    .padding(.horizontal, 20)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                    .id(currentIndex)
+                    .onAppear {
+                        audioFinished = false
+                        showExample = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            let phrase = phrases[currentIndex]
+                            let pid = phrasePlaybackID(phrase)
+                            if !player.isPlaying(id: pid) {
+                                player.togglePlayback(id: pid, text: phrase.phrase, sourceLabel: "Guided Phrase")
+                            }
+                        }
+                    }
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(accentColor)
+                        Text("全部词组已学完！")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        Text("继续下一步吧")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            onComplete(listenedPhrases)
+                            dismiss()
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
+        .animation(.spring(duration: 0.4), value: allDone)
+        .onChange(of: player.activePlaybackID) { oldValue, newValue in
+            let currentPid = phrasePlaybackID(phrases[currentIndex])
+            if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
+                withAnimation { audioFinished = true }
+                listenedPhrases.insert(phrases[currentIndex].phrase)
+            }
+        }
+        .background(ClearBackgroundView())
+    }
+
+    private func advanceToNext() {
+        listenedPhrases.insert(phrases[currentIndex].phrase)
+        if currentIndex < phrases.count - 1 {
+            withAnimation {
+                currentIndex += 1
+                audioFinished = false
+            }
+        } else {
+            withAnimation { allDone = true }
+        }
+    }
+}
+
 // MARK: - Framework Step
 struct FrameworkStepView: View {
     let task: SpeakingTask
@@ -2462,6 +2740,8 @@ struct FrameworkStepView: View {
 
     @State private var appeared = false
     @State private var listenedSentences: Set<Int> = []
+    @State private var listenedAudioIds: Set<String> = []
+    @State private var showFrameworkGuide = false
     private let labels = ["开场", "来源", "使用", "例子", "收尾"]
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2501,6 +2781,20 @@ struct FrameworkStepView: View {
         }
         .onChange(of: listenedSentences.count) { _, _ in
             updateFrameworkProgress()
+        }
+        .onChange(of: listenedAudioIds.count) { _, _ in
+            updateFrameworkProgress()
+        }
+        .fullScreenCover(isPresented: $showFrameworkGuide) {
+            if let lesson {
+                FrameworkGuidedView(
+                    framework: lesson.framework,
+                    accentColor: frameworkColor,
+                    onComplete: { ids in
+                        listenedAudioIds.formUnion(ids)
+                    }
+                )
+            }
         }
     }
 
@@ -2611,80 +2905,171 @@ struct FrameworkStepView: View {
     }
 
     private func lessonFrameworkContent(_ lesson: LessonContent) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            GradientAccentCard(color: frameworkColor, spacing: 16) {
-                StepSectionLabel(
-                    icon: "rectangle.3.group.fill",
-                    title: "Framework Goal",
-                    color: frameworkColor
-                )
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(lesson.framework.goal)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.primaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(3)
-
-                    InlineAudioPlayerControl(
-                        text: lesson.framework.goal,
-                        playbackID: EnglishSpeechPlayer.playbackID(for: lesson.framework.goal, category: "fw-goal"),
-                        sourceLabel: "Framework Goal",
-                        accentColor: frameworkColor,
-                        style: .compact
-                    )
-                    TranslateButton(englishText: lesson.framework.goal, accentColor: frameworkColor)
-                }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(frameworkColor.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                ForEach(lesson.framework.defaultStructure, id: \.section) { section in
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(section.section)
-                            .font(.caption.bold())
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(frameworkColor.opacity(0.7))
-                            .clipShape(Capsule())
-
-                        ForEach(section.moves, id: \.self) { move in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(alignment: .top, spacing: 10) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(frameworkColor)
-                                        .padding(.top, 3)
-                                    Text(move)
-                                        .font(.subheadline)
-                                        .foregroundStyle(AppColors.secondText)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .lineSpacing(2)
-                                }
-                                TranslateButton(englishText: move, accentColor: frameworkColor)
-                                    .padding(.leading, 22)
-                            }
-                        }
+        let totalItems = 1 + lesson.framework.defaultStructure.count + lesson.framework.deliveryMarkers.count
+        return VStack(alignment: .leading, spacing: 16) {
+            // Section header with Guide
+            HStack {
+                Text("\(totalItems) Framework Items")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(frameworkColor)
+                Spacer()
+                Button {
+                    showFrameworkGuide = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("Guide")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
                     }
-                    .padding(14)
-                    .background(AppColors.surface.opacity(0.5))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(frameworkColor)
+                    .clipShape(Capsule())
                 }
+                .buttonStyle(.plain)
             }
             .staggerIn(index: 1, appeared: appeared)
 
-            GradientAccentCard(color: Color(hex: "5B6EF5")) {
-                StepSectionLabel(
-                    icon: "text.quote",
-                    title: "Delivery Markers",
-                    color: Color(hex: "5B6EF5")
-                )
+            // Framework Goal — section header with play/translate
+            let goalText = lesson.framework.goal
+            let goalPlaybackId = EnglishSpeechPlayer.playbackID(for: goalText, category: "fw-goal")
 
-                lessonMarkersContent(lesson.framework.deliveryMarkers)
+            HStack(spacing: 8) {
+                Image(systemName: "rectangle.3.group.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(frameworkColor)
+                Text("Framework Goal")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(frameworkColor)
+                Spacer()
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: goalText,
+                        playbackID: goalPlaybackId,
+                        sourceLabel: "Framework Goal",
+                        accentColor: frameworkColor
+                    )
+                    TranslateButton(englishText: goalText, accentColor: frameworkColor, showInline: false)
+                }
             }
             .staggerIn(index: 2, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text(goalText)
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+
+                TranslationOverlay(englishText: goalText, accentColor: frameworkColor)
+            }
+            .padding(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                    .foregroundStyle(frameworkColor.opacity(0.3))
+            )
+            .staggerIn(index: 3, appeared: appeared)
+
+            // Structure sections — each with header + content
+            ForEach(Array(lesson.framework.defaultStructure.enumerated()), id: \.element.section) { sIdx, section in
+                let sectionText = section.moves.joined(separator: ". ")
+                let sectionPlaybackId = EnglishSpeechPlayer.playbackID(for: section.section + ". " + sectionText, category: "fw-section")
+
+                HStack(spacing: 8) {
+                    Text(section.section)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(frameworkColor)
+                    Spacer()
+                    HStack(spacing: 6) {
+                        CompactPlayButton(
+                            text: sectionText,
+                            playbackID: sectionPlaybackId,
+                            sourceLabel: "Framework Section",
+                            accentColor: frameworkColor
+                        )
+                        TranslateButton(englishText: sectionText, accentColor: frameworkColor, showInline: false)
+                    }
+                }
+                .staggerIn(index: 4 + sIdx * 2, appeared: appeared)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(section.moves, id: \.self) { move in
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(frameworkColor)
+                                .padding(.top, 3)
+                            Text(move)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(2)
+                        }
+                    }
+
+                    TranslationOverlay(englishText: sectionText, accentColor: frameworkColor)
+                }
+                .padding(14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                        .foregroundStyle(frameworkColor.opacity(0.3))
+                )
+                .staggerIn(index: 5 + sIdx * 2, appeared: appeared)
+            }
+
+            // Delivery Markers — section header with play/translate
+            let markerColor = Color(hex: "5B6EF5")
+            let allMarkersText = lesson.framework.deliveryMarkers.joined(separator: ". ")
+            let markersPlaybackId = EnglishSpeechPlayer.playbackID(for: allMarkersText, category: "fw-markers-all")
+            let markerBaseIndex = 4 + lesson.framework.defaultStructure.count * 2
+
+            HStack(spacing: 8) {
+                Image(systemName: "text.quote")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(markerColor)
+                Text("Delivery Markers")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(markerColor)
+                Spacer()
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: allMarkersText,
+                        playbackID: markersPlaybackId,
+                        sourceLabel: "Delivery Markers",
+                        accentColor: markerColor
+                    )
+                    TranslateButton(englishText: allMarkersText, accentColor: markerColor, showInline: false)
+                }
+            }
+            .staggerIn(index: markerBaseIndex, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(lesson.framework.deliveryMarkers, id: \.self) { marker in
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "quote.bubble.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(markerColor)
+                            .padding(.top, 3)
+                        Text(marker)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                TranslationOverlay(englishText: allMarkersText, accentColor: markerColor)
+            }
+            .padding(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                    .foregroundStyle(markerColor.opacity(0.3))
+            )
+            .staggerIn(index: markerBaseIndex + 1, appeared: appeared)
         }
     }
 
@@ -2862,6 +3247,343 @@ struct FrameworkSentenceCard: View {
     }
 }
 
+// MARK: - Framework Guided View (Immersive)
+
+private enum FrameworkGuideItem: Identifiable {
+    case goal(text: String)
+    case section(name: String, moves: [String])
+    case marker(index: Int, text: String)
+
+    var id: String {
+        switch self {
+        case .goal: "goal"
+        case .section(let name, _): "section-\(name)"
+        case .marker(let i, _): "marker-\(i)"
+        }
+    }
+
+    var playableText: String {
+        switch self {
+        case .goal(let text): text
+        case .section(_, let moves): moves.joined(separator: ". ")
+        case .marker(_, let text): text
+        }
+    }
+
+    var playbackID: String {
+        switch self {
+        case .goal: EnglishSpeechPlayer.playbackID(for: playableText, category: "fw-goal")
+        case .section(let name, _): EnglishSpeechPlayer.playbackID(for: name + playableText, category: "fw-section")
+        case .marker: EnglishSpeechPlayer.playbackID(for: playableText, category: "fw-marker")
+        }
+    }
+
+    var sectionLabel: String {
+        switch self {
+        case .goal: "Framework Goal"
+        case .section: "Structure"
+        case .marker: "Delivery Marker"
+        }
+    }
+
+    var sectionIcon: String {
+        switch self {
+        case .goal: "rectangle.3.group.fill"
+        case .section: "list.bullet.indent"
+        case .marker: "text.quote"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .goal, .section: Color(hex: "8B5CF6")
+        case .marker: Color(hex: "5B6EF5")
+        }
+    }
+}
+
+private struct FrameworkGuidedView: View {
+    let framework: LessonContent.Framework
+    let accentColor: Color
+    var onComplete: (Set<String>) -> Void = { _ in }
+
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var currentIndex = 0
+    @State private var audioFinished = false
+    @State private var completedIds: Set<String> = []
+    @State private var allDone = false
+
+    private var items: [FrameworkGuideItem] {
+        var result: [FrameworkGuideItem] = [.goal(text: framework.goal)]
+        for section in framework.defaultStructure {
+            result.append(.section(name: section.section, moves: section.moves))
+        }
+        for (i, marker) in framework.deliveryMarkers.enumerated() {
+            result.append(.marker(index: i, text: marker))
+        }
+        return result
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture { }
+
+            VStack(spacing: 0) {
+                HStack {
+                    Button {
+                        player.stopPlayback()
+                        onComplete(completedIds)
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    if !allDone {
+                        let item = items[currentIndex]
+                        HStack(spacing: 5) {
+                            Image(systemName: item.sectionIcon)
+                                .font(.system(size: 9, weight: .bold))
+                            Text(item.sectionLabel)
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(item.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(item.color.opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    Text("\(currentIndex + 1) / \(items.count)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(allDone ? accentColor : items[currentIndex].color)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(items.count), height: 4)
+                            .animation(.spring(duration: 0.5), value: currentIndex)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                Spacer()
+
+                if !allDone {
+                    cardForItem(items[currentIndex])
+                        .padding(.horizontal, 20)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                        .id(currentIndex)
+                        .onAppear {
+                            audioFinished = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                let item = items[currentIndex]
+                                let pid = item.playbackID
+                                if !player.isPlaying(id: pid) {
+                                    player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
+                                }
+                            }
+                        }
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(accentColor)
+                        Text("表达框架已掌握！")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        Text("继续下一步吧")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            onComplete(completedIds)
+                            dismiss()
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
+        .animation(.spring(duration: 0.4), value: allDone)
+        .onChange(of: player.activePlaybackID) { oldValue, newValue in
+            let currentPid = items[currentIndex].playbackID
+            if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
+                withAnimation { audioFinished = true }
+                completedIds.insert(currentPid)
+            }
+        }
+        .background(ClearBackgroundView())
+    }
+
+    @ViewBuilder
+    private func cardForItem(_ item: FrameworkGuideItem) -> some View {
+        let color = item.color
+        let pid = item.playbackID
+
+        VStack(alignment: .leading, spacing: 16) {
+            // Header
+            HStack(spacing: 10) {
+                Image(systemName: item.sectionIcon)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(color)
+                    .clipShape(Circle())
+                Text(item.sectionLabel)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppColors.primaryText)
+                Spacer()
+            }
+
+            switch item {
+            case .goal(let text):
+                Text(text)
+                    .font(.system(size: 16))
+                    .foregroundStyle(AppColors.secondText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(4)
+
+            case .section(let name, let moves):
+                // Section name tag
+                Text(name)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 5)
+                    .background(color.opacity(0.7))
+                    .clipShape(Capsule())
+
+                // Moves
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(moves, id: \.self) { move in
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 13))
+                                .foregroundStyle(color)
+                                .padding(.top, 2)
+                            Text(move)
+                                .font(.system(size: 15))
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+                        }
+                    }
+                }
+
+            case .marker(_, let text):
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "quote.bubble.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(color)
+                        .padding(.top, 2)
+                    Text(text)
+                        .font(.system(size: 16))
+                        .foregroundStyle(AppColors.primaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(4)
+                }
+            }
+
+            // Audio + translate
+            HStack(spacing: 12) {
+                CompactPlayButton(
+                    text: item.playableText,
+                    playbackID: pid,
+                    sourceLabel: item.sectionLabel,
+                    accentColor: color
+                )
+
+                if player.isPlaying(id: pid) || player.isPaused(id: pid) {
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(color.opacity(0.15))
+                                .frame(height: 4)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(color)
+                                .frame(width: geo.size.width * player.progress, height: 4)
+                        }
+                    }
+                    .frame(height: 4)
+                    .transition(.opacity)
+                }
+
+                Spacer()
+
+                TranslateButton(englishText: item.playableText, accentColor: color, showInline: false)
+            }
+
+            TranslationOverlay(englishText: item.playableText, accentColor: color)
+
+            if audioFinished {
+                Button {
+                    advanceToNext()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: currentIndex < items.count - 1 ? "checkmark" : "checkmark.circle.fill")
+                            .font(.system(size: 14, weight: .bold))
+                        Text(currentIndex < items.count - 1 ? "Got it" : "All Done")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(color)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .padding(24)
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+    }
+
+    private func advanceToNext() {
+        completedIds.insert(items[currentIndex].playbackID)
+        if currentIndex < items.count - 1 {
+            withAnimation {
+                currentIndex += 1
+                audioFinished = false
+            }
+        } else {
+            withAnimation { allDone = true }
+        }
+    }
+}
+
 // MARK: - Samples Step
 struct SamplesStepView: View {
     let task: SpeakingTask
@@ -2872,6 +3594,7 @@ struct SamplesStepView: View {
     @State private var selectedBand = 0
     @State private var appeared = false
     @State private var listenedBands: Set<Int> = []
+    @State private var showSampleGuide = false
     private var hasLessonContent: Bool { task.lessonContent != nil }
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2989,10 +3712,30 @@ struct SamplesStepView: View {
                             .padding(.vertical, 4)
                             .background(bandColor)
                             .clipShape(Capsule())
-                        Spacer()
+
                         Text("\(sample.wordCount) words")
                             .font(.caption.bold())
                             .foregroundStyle(AppColors.tertiaryText)
+
+                        Spacer()
+
+                        Button {
+                            showSampleGuide = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 8, weight: .bold))
+                                Text("Guide")
+                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            }
+                            .fixedSize()
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(bandColor)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     // Highlighted sample content
@@ -3116,6 +3859,17 @@ struct SamplesStepView: View {
                 progressHint = nil
             }
         }
+        .fullScreenCover(isPresented: $showSampleGuide) {
+            if selectedBand < task.sampleAnswers.count {
+                SampleGuidedView(
+                    sample: task.sampleAnswers[selectedBand],
+                    bandColor: bandColors[selectedBand],
+                    onComplete: {
+                        listenedBands.insert(selectedBand)
+                    }
+                )
+            }
+        }
     }
 
     private func frameworkGuideSection(title: String, lines: [String], tint: Color) -> some View {
@@ -3168,6 +3922,369 @@ struct SamplesStepView: View {
         })
     }
 
+}
+
+// MARK: - Sample Guided View (Immersive)
+
+private enum SampleGuideItem: Identifiable {
+    case sampleText(band: String, content: String, wordCount: Int)
+    case nativeFeature(index: Int, text: String)
+    case upgrade(index: Int, upgrade: SampleAnswer.Upgrade)
+
+    var id: String {
+        switch self {
+        case .sampleText(let band, _, _): "sample-\(band)"
+        case .nativeFeature(let i, _): "feature-\(i)"
+        case .upgrade(let i, _): "upgrade-\(i)"
+        }
+    }
+
+    var playableText: String {
+        switch self {
+        case .sampleText(_, let content, _): content
+        case .nativeFeature(_, let text): text
+        case .upgrade(_, let u): u.improved
+        }
+    }
+
+    var sectionLabel: String {
+        switch self {
+        case .sampleText: "Sample Answer"
+        case .nativeFeature: "Native Feature"
+        case .upgrade: "Expression Upgrade"
+        }
+    }
+
+    var sectionIcon: String {
+        switch self {
+        case .sampleText: "doc.richtext.fill"
+        case .nativeFeature: "sparkles"
+        case .upgrade: "arrow.up.circle.fill"
+        }
+    }
+}
+
+private struct SampleGuidedView: View {
+    let sample: SampleAnswer
+    let bandColor: Color
+    var onComplete: () -> Void = {}
+
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var currentIndex = 0
+    @State private var audioFinished = false
+    @State private var allDone = false
+
+    private var items: [SampleGuideItem] {
+        var result: [SampleGuideItem] = [
+            .sampleText(band: sample.band, content: sample.content, wordCount: sample.wordCount)
+        ]
+        for (i, feature) in sample.nativeFeatures.enumerated() {
+            result.append(.nativeFeature(index: i, text: feature))
+        }
+        for (i, upgrade) in sample.upgrades.enumerated() {
+            result.append(.upgrade(index: i, upgrade: upgrade))
+        }
+        return result
+    }
+
+    private func playbackID(for item: SampleGuideItem) -> String {
+        switch item {
+        case .sampleText: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-guide")
+        case .nativeFeature: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-feature")
+        case .upgrade: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-upgrade-guide")
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture { }
+
+            VStack(spacing: 0) {
+                HStack {
+                    Button {
+                        player.stopPlayback()
+                        onComplete()
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    if !allDone {
+                        let item = items[currentIndex]
+                        HStack(spacing: 5) {
+                            Image(systemName: item.sectionIcon)
+                                .font(.system(size: 9, weight: .bold))
+                            Text(item.sectionLabel)
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(bandColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(bandColor.opacity(0.15))
+                        .clipShape(Capsule())
+                    }
+
+                    Spacer()
+
+                    Text("\(currentIndex + 1) / \(items.count)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(bandColor)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(items.count), height: 4)
+                            .animation(.spring(duration: 0.5), value: currentIndex)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                Spacer()
+
+                if !allDone {
+                    let item = items[currentIndex]
+                    let pid = playbackID(for: item)
+
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            // Header
+                            HStack(spacing: 10) {
+                                Image(systemName: item.sectionIcon)
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 28, height: 28)
+                                    .background(bandColor)
+                                    .clipShape(Circle())
+                                Text(item.sectionLabel)
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .foregroundStyle(AppColors.primaryText)
+                                Spacer()
+                            }
+
+                            switch item {
+                            case .sampleText(let band, let content, let wc):
+                                HStack {
+                                    Text(band)
+                                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(bandColor)
+                                        .clipShape(Capsule())
+                                    Text("\(wc) words")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                }
+
+                                Text(content)
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(6)
+
+                            case .nativeFeature(_, let text):
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "star.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(bandColor)
+                                        .padding(.top, 2)
+                                    Text(text)
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(4)
+                                }
+
+                            case .upgrade(_, let upgrade):
+                                // Original vs Improved
+                                VStack(alignment: .leading, spacing: 12) {
+                                    HStack(alignment: .top, spacing: 10) {
+                                        Text("ORIGINAL")
+                                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 3)
+                                            .background(Color(hex: "EF4444"))
+                                            .clipShape(Capsule())
+                                        Text(upgrade.original)
+                                            .font(.system(size: 15))
+                                            .foregroundStyle(AppColors.tertiaryText)
+                                            .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+
+                                    HStack(alignment: .top, spacing: 10) {
+                                        Text("IMPROVED")
+                                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 3)
+                                            .background(AppColors.success)
+                                            .clipShape(Capsule())
+                                        Text(upgrade.improved)
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundStyle(AppColors.primaryText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(bandColor.opacity(0.04))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                                Text(upgrade.why)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(2)
+
+                                if !upgrade.note.isEmpty {
+                                    Text(upgrade.note)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+
+                            // Audio + translate
+                            HStack(spacing: 12) {
+                                CompactPlayButton(
+                                    text: item.playableText,
+                                    playbackID: pid,
+                                    sourceLabel: item.sectionLabel,
+                                    accentColor: bandColor
+                                )
+
+                                if player.isPlaying(id: pid) || player.isPaused(id: pid) {
+                                    GeometryReader { geo in
+                                        ZStack(alignment: .leading) {
+                                            RoundedRectangle(cornerRadius: 2)
+                                                .fill(bandColor.opacity(0.15))
+                                                .frame(height: 4)
+                                            RoundedRectangle(cornerRadius: 2)
+                                                .fill(bandColor)
+                                                .frame(width: geo.size.width * player.progress, height: 4)
+                                        }
+                                    }
+                                    .frame(height: 4)
+                                    .transition(.opacity)
+                                }
+
+                                Spacer()
+
+                                TranslateButton(englishText: item.playableText, accentColor: bandColor, showInline: false)
+                            }
+
+                            TranslationOverlay(englishText: item.playableText, accentColor: bandColor)
+
+                            if audioFinished {
+                                Button {
+                                    advanceToNext()
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: currentIndex < items.count - 1 ? "checkmark" : "checkmark.circle.fill")
+                                            .font(.system(size: 14, weight: .bold))
+                                        Text(currentIndex < items.count - 1 ? "Got it" : "All Done")
+                                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                                    }
+                                    .foregroundStyle(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(bandColor)
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                            }
+                        }
+                        .padding(24)
+                    }
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+                    .padding(.horizontal, 20)
+                    .frame(maxHeight: UIScreen.main.bounds.height * 0.7)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                    .id(currentIndex)
+                    .onAppear {
+                        audioFinished = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            let item = items[currentIndex]
+                            let pid = playbackID(for: item)
+                            if !player.isPlaying(id: pid) {
+                                player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
+                            }
+                        }
+                    }
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(bandColor)
+                        Text("\(sample.band) 范文已学完！")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        Text("试试其他 Band 或继续下一步")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            onComplete()
+                            dismiss()
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
+        .animation(.spring(duration: 0.4), value: allDone)
+        .onChange(of: player.activePlaybackID) { oldValue, newValue in
+            let currentPid = playbackID(for: items[currentIndex])
+            if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
+                withAnimation { audioFinished = true }
+            }
+        }
+        .background(ClearBackgroundView())
+    }
+
+    private func advanceToNext() {
+        if currentIndex < items.count - 1 {
+            withAnimation {
+                currentIndex += 1
+                audioFinished = false
+            }
+        } else {
+            withAnimation { allDone = true }
+        }
+    }
 }
 
 // MARK: - Practice Prompt
