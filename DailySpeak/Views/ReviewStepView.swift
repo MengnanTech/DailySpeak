@@ -547,6 +547,9 @@ private struct ReviewGuidedView: View {
                                     player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                                 }
                             }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                if !audioFinished { withAnimation { audioFinished = true } }
+                            }
                         }
                 } else {
                     VStack(spacing: 16) {

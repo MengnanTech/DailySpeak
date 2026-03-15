@@ -689,7 +689,7 @@ struct TaskOverviewView: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                let stepKey = (step.title + ". " + stepSubtitle(for: step, state: state)).trimmingCharacters(in: .whitespacesAndNewlines)
+                let stepKey = (step.title + ". " + step.subtitle).trimmingCharacters(in: .whitespacesAndNewlines)
                 let isTranslated = flowTranslationCache.visibleKeys.contains(stepKey)
                 let translatedText = flowTranslationCache.cached(stepKey)
 

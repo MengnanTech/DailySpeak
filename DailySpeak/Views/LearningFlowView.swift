@@ -1204,6 +1204,10 @@ private struct KeyPointsGuidedView: View {
                                 player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Angle")
                             }
                         }
+                        // Fallback: ensure button appears even if audio fails
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if !audioFinished { withAnimation { audioFinished = true } }
+                        }
                     }
                 } else {
                     // All done celebration
@@ -1461,6 +1465,9 @@ private struct SequenceGuidedView: View {
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Sequence")
                             }
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
@@ -2714,6 +2721,9 @@ private struct PhrasesGuidedView: View {
                                 player.togglePlayback(id: pid, text: phrase.phrase, sourceLabel: "Guided Phrase")
                             }
                         }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if !audioFinished { withAnimation { audioFinished = true } }
+                        }
                     }
                 } else {
                     VStack(spacing: 16) {
@@ -3454,6 +3464,9 @@ private struct FrameworkGuidedView: View {
                                 if !player.isPlaying(id: pid) {
                                     player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                                 }
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                if !audioFinished { withAnimation { audioFinished = true } }
                             }
                         }
                 } else {
@@ -4257,6 +4270,9 @@ private struct SampleGuidedView: View {
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                             }
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
