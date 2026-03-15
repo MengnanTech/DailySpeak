@@ -10,6 +10,7 @@ struct ReviewStepView: View {
     @State private var listenedAudioIds: Set<String> = []
     @State private var showReviewGuide = false
     @State private var reviewGuideStartIndex = 0
+    @State private var reviewGuideEndIndex: Int? = nil
     private var lesson: LessonContent? { task.lessonContent }
     private let reviewColor = Color(hex: "F97316")
 
@@ -69,6 +70,7 @@ struct ReviewStepView: View {
                     lesson: lesson,
                     accentColor: reviewColor,
                     startIndex: reviewGuideStartIndex,
+                    endIndex: reviewGuideEndIndex,
                     onComplete: { completedIds in
                         listenedAudioIds.formUnion(completedIds)
                     }
@@ -146,10 +148,11 @@ struct ReviewStepView: View {
 
                 Button {
                     reviewGuideStartIndex = 0
+                    reviewGuideEndIndex = nil
                     showReviewGuide = true
                 } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: "play.fill")
+                        Image(systemName: "book.fill")
                             .font(.system(size: 9, weight: .bold))
                         Text("Guide All")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -177,18 +180,28 @@ struct ReviewStepView: View {
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(reviewColor)
 
-                Button {
-                    reviewGuideStartIndex = 0
-                    showReviewGuide = true
-                } label: {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(reviewColor)
-                }
-                .buttonStyle(.plain)
-
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = 0
+                        reviewGuideEndIndex = tipCount
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("Guide")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .fixedSize()
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(reviewColor)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     CompactPlayButton(
                         text: allTipsText,
                         playbackID: allTipsPlaybackId,
@@ -198,6 +211,7 @@ struct ReviewStepView: View {
                     )
                     BatchTranslateButton(texts: tipTexts, accentColor: reviewColor)
                 }
+                .fixedSize()
             }
             .staggerIn(index: 2, appeared: appeared)
 
@@ -245,18 +259,28 @@ struct ReviewStepView: View {
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(mistakeColor)
 
-                Button {
-                    reviewGuideStartIndex = tipCount
-                    showReviewGuide = true
-                } label: {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(mistakeColor)
-                }
-                .buttonStyle(.plain)
-
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = tipCount
+                        reviewGuideEndIndex = tipCount + contentCount
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("Guide")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .fixedSize()
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(mistakeColor)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     CompactPlayButton(
                         text: allContentText,
                         playbackID: contentPlaybackId,
@@ -265,6 +289,7 @@ struct ReviewStepView: View {
                     )
                     BatchTranslateButton(texts: contentFieldTexts, accentColor: mistakeColor)
                 }
+                .fixedSize()
             }
             .staggerIn(index: 4, appeared: appeared)
 
@@ -328,18 +353,28 @@ struct ReviewStepView: View {
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(langColor)
 
-                Button {
-                    reviewGuideStartIndex = tipCount + contentCount
-                    showReviewGuide = true
-                } label: {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(langColor)
-                }
-                .buttonStyle(.plain)
-
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = tipCount + contentCount
+                        reviewGuideEndIndex = tipCount + contentCount + langCount
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("Guide")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .fixedSize()
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(langColor)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     CompactPlayButton(
                         text: allLangText,
                         playbackID: langPlaybackId,
@@ -353,6 +388,7 @@ struct ReviewStepView: View {
                     )
                     BatchTranslateButton(texts: langFieldTexts, accentColor: langColor)
                 }
+                .fixedSize()
             }
             .staggerIn(index: 6, appeared: appeared)
 
@@ -476,35 +512,38 @@ private struct ReviewGuidedView: View {
     let lesson: LessonContent
     let accentColor: Color
     var startIndex: Int = 0
+    var endIndex: Int? = nil
     var onComplete: (Set<String>) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex: Int
 
-    init(lesson: LessonContent, accentColor: Color, startIndex: Int = 0, onComplete: @escaping (Set<String>) -> Void = { _ in }) {
+    init(lesson: LessonContent, accentColor: Color, startIndex: Int = 0, endIndex: Int? = nil, onComplete: @escaping (Set<String>) -> Void = { _ in }) {
         self.lesson = lesson
         self.accentColor = accentColor
         self.startIndex = startIndex
+        self.endIndex = endIndex
         self.onComplete = onComplete
-        self._currentIndex = State(initialValue: startIndex)
+        self._currentIndex = State(initialValue: 0)
     }
     @State private var audioFinished = false
     @State private var completedAudioIds: Set<String> = []
     @State private var allDone = false
 
     private var items: [ReviewGuideItem] {
-        var result: [ReviewGuideItem] = []
+        var all: [ReviewGuideItem] = []
         for (i, tip) in lesson.strategy.highScoreTips.enumerated() {
-            result.append(.tip(index: i, text: tip))
+            all.append(.tip(index: i, text: tip))
         }
         for (i, m) in lesson.strategy.commonMistakes.content.enumerated() {
-            result.append(.contentMistake(index: i, mistake: m))
+            all.append(.contentMistake(index: i, mistake: m))
         }
         for (i, m) in lesson.strategy.commonMistakes.language.enumerated() {
-            result.append(.languageMistake(index: i, mistake: m))
+            all.append(.languageMistake(index: i, mistake: m))
         }
-        return result
+        let end = endIndex ?? all.count
+        return Array(all[startIndex..<end])
     }
 
     var body: some View {

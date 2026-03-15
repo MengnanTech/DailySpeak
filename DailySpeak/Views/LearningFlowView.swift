@@ -802,7 +802,7 @@ struct StrategyStepView: View {
                     showKeyPointsGuide = true
                 } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: "play.fill")
+                        Image(systemName: "book.fill")
                             .font(.system(size: 9, weight: .bold))
                         Text("Guide")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -896,7 +896,7 @@ struct StrategyStepView: View {
                         showSequenceGuide = true
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: "play.fill")
+                            Image(systemName: "book.fill")
                                 .font(.system(size: 8, weight: .bold))
                             Text("Guide")
                                 .font(.system(size: 11, weight: .semibold, design: .rounded))
@@ -2343,7 +2343,7 @@ struct PhrasesStepView: View {
                     showPhrasesGuide = true
                 } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: "play.fill")
+                        Image(systemName: "book.fill")
                             .font(.system(size: 9, weight: .bold))
                         Text("Guide")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -2794,6 +2794,11 @@ private struct PhrasesGuidedView: View {
 }
 
 // MARK: - Framework Step
+private struct FrameworkGuideConfig: Identifiable {
+    let id = UUID()
+    let startIndex: Int
+}
+
 struct FrameworkStepView: View {
     let task: SpeakingTask
     let accentColor: Color
@@ -2803,7 +2808,7 @@ struct FrameworkStepView: View {
     @State private var appeared = false
     @State private var listenedSentences: Set<Int> = []
     @State private var listenedAudioIds: Set<String> = []
-    @State private var showFrameworkGuide = false
+    @State private var frameworkGuideConfig: FrameworkGuideConfig? = nil
     private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2849,11 +2854,12 @@ struct FrameworkStepView: View {
         .onChange(of: listenedAudioIds.count) { _, _ in
             updateFrameworkProgress()
         }
-        .fullScreenCover(isPresented: $showFrameworkGuide) {
+        .fullScreenCover(item: $frameworkGuideConfig) { config in
             if let lesson {
                 FrameworkGuidedView(
                     framework: lesson.framework,
                     accentColor: frameworkColor,
+                    startIndex: config.startIndex,
                     onComplete: { ids in
                         listenedAudioIds.formUnion(ids)
                     }
@@ -2977,31 +2983,6 @@ struct FrameworkStepView: View {
     private func lessonFrameworkContent(_ lesson: LessonContent) -> some View {
         let totalItems = 1 + lesson.framework.defaultStructure.count + lesson.framework.deliveryMarkers.count
         return VStack(alignment: .leading, spacing: 16) {
-            // Section header with Guide
-            HStack {
-                Text("\(totalItems) Framework Items")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(frameworkColor)
-                Spacer()
-                Button {
-                    showFrameworkGuide = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 9, weight: .bold))
-                        Text("Guide")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(frameworkColor)
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-            }
-            .staggerIn(index: 1, appeared: appeared)
-
             // Framework Goal
             let goalText = lesson.framework.goal
             let goalPlaybackId = EnglishSpeechPlayer.playbackID(for: goalText, category: "fw-goal")
@@ -3057,6 +3038,24 @@ struct FrameworkStepView: View {
                     .foregroundStyle(frameworkColor)
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        frameworkGuideConfig = FrameworkGuideConfig(startIndex: 1)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "book.fill")
+                                .font(.system(size: 8, weight: .bold))
+                            Text("Guide")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .fixedSize()
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(frameworkColor)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     CompactPlayButton(
                         text: allStructureText,
                         playbackID: structurePlaybackId,
@@ -3065,6 +3064,7 @@ struct FrameworkStepView: View {
                     )
                     BatchTranslateButton(texts: allStructureTexts, accentColor: frameworkColor)
                 }
+                .fixedSize()
             }
             .staggerIn(index: 4, appeared: appeared)
 
@@ -3391,12 +3391,21 @@ private enum FrameworkGuideItem: Identifiable {
 private struct FrameworkGuidedView: View {
     let framework: LessonContent.Framework
     let accentColor: Color
+    var startIndex: Int = 0
     var onComplete: (Set<String>) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
-    @State private var currentIndex = 0
+    @State private var currentIndex: Int
     @State private var audioFinished = false
+
+    init(framework: LessonContent.Framework, accentColor: Color, startIndex: Int = 0, onComplete: @escaping (Set<String>) -> Void = { _ in }) {
+        self.framework = framework
+        self.accentColor = accentColor
+        self.startIndex = startIndex
+        self.onComplete = onComplete
+        self._currentIndex = State(initialValue: startIndex)
+    }
     @State private var completedIds: Set<String> = []
     @State private var allDone = false
 
@@ -3674,6 +3683,12 @@ private struct FrameworkGuidedView: View {
 }
 
 // MARK: - Samples Step
+private struct SampleGuideConfig: Identifiable {
+    let id = UUID()
+    let bandIndex: Int
+    let startIndex: Int
+}
+
 struct SamplesStepView: View {
     let task: SpeakingTask
     let accentColor: Color
@@ -3683,7 +3698,7 @@ struct SamplesStepView: View {
     @State private var selectedBand = 0
     @State private var appeared = false
     @State private var listenedBands: Set<Int> = []
-    @State private var showSampleGuide = false
+    @State private var sampleGuideConfig: SampleGuideConfig? = nil
     private var hasLessonContent: Bool { task.lessonContent != nil }
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -3822,10 +3837,10 @@ struct SamplesStepView: View {
                     Spacer()
                     HStack(spacing: 6) {
                         Button {
-                            showSampleGuide = true
+                            sampleGuideConfig = SampleGuideConfig(bandIndex: selectedBand, startIndex: 0)
                         } label: {
                             HStack(spacing: 4) {
-                                Image(systemName: "play.fill")
+                                Image(systemName: "book.fill")
                                     .font(.system(size: 8, weight: .bold))
                                 Text("Guide")
                                     .font(.system(size: 11, weight: .semibold, design: .rounded))
@@ -3850,6 +3865,7 @@ struct SamplesStepView: View {
                         let sampleSentences = sample.content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
                         BatchTranslateButton(texts: sampleSentences, accentColor: bandColor)
                     }
+                    .fixedSize()
                 }
                 .staggerIn(index: 4, appeared: appeared)
 
@@ -3888,6 +3904,24 @@ struct SamplesStepView: View {
                             .foregroundStyle(bandColor)
                         Spacer()
                         HStack(spacing: 6) {
+                            Button {
+                                sampleGuideConfig = SampleGuideConfig(bandIndex: selectedBand, startIndex: 1)
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "book.fill")
+                                        .font(.system(size: 8, weight: .bold))
+                                    Text("Guide")
+                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                }
+                                .fixedSize()
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(bandColor)
+                                .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+
                             CompactPlayButton(
                                 text: upgradePlayText,
                                 playbackID: EnglishSpeechPlayer.playbackID(for: upgradePlayText, category: "upgrades-\(selectedBand)"),
@@ -3896,6 +3930,7 @@ struct SamplesStepView: View {
                             )
                             BatchTranslateButton(texts: upgradeTexts, accentColor: bandColor)
                         }
+                        .fixedSize()
                     }
                     .staggerIn(index: 6, appeared: appeared)
 
@@ -3959,13 +3994,14 @@ struct SamplesStepView: View {
             canComplete = true
             progressHint = nil
         }
-        .fullScreenCover(isPresented: $showSampleGuide) {
-            if selectedBand < task.sampleAnswers.count {
+        .fullScreenCover(item: $sampleGuideConfig) { config in
+            if config.bandIndex < task.sampleAnswers.count {
                 SampleGuidedView(
-                    sample: task.sampleAnswers[selectedBand],
-                    bandColor: bandColors[selectedBand],
+                    sample: task.sampleAnswers[config.bandIndex],
+                    bandColor: bandColors[config.bandIndex],
+                    startIndex: config.startIndex,
                     onComplete: {
-                        listenedBands.insert(selectedBand)
+                        listenedBands.insert(config.bandIndex)
                     }
                 )
             }
@@ -4040,13 +4076,22 @@ private enum SampleGuideItem: Identifiable {
 private struct SampleGuidedView: View {
     let sample: SampleAnswer
     let bandColor: Color
+    var startIndex: Int = 0
     var onComplete: () -> Void = {}
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
-    @State private var currentIndex = 0
+    @State private var currentIndex: Int
     @State private var audioFinished = false
     @State private var allDone = false
+
+    init(sample: SampleAnswer, bandColor: Color, startIndex: Int = 0, onComplete: @escaping () -> Void = {}) {
+        self.sample = sample
+        self.bandColor = bandColor
+        self.startIndex = startIndex
+        self.onComplete = onComplete
+        self._currentIndex = State(initialValue: startIndex)
+    }
 
     private var items: [SampleGuideItem] {
         var result: [SampleGuideItem] = [
@@ -4139,6 +4184,7 @@ private struct SampleGuidedView: View {
                             // Header
                             HStack(spacing: 10) {
                                 Image(systemName: item.sectionIcon)
+
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundStyle(.white)
                                     .frame(width: 28, height: 28)
@@ -4280,10 +4326,10 @@ private struct SampleGuidedView: View {
                             }
                         }
                         .padding(24)
+                        .background(AppColors.card)
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     }
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     .padding(.horizontal, 20)
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
