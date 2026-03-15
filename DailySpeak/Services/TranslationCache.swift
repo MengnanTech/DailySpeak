@@ -8,6 +8,7 @@ final class TranslationCache {
 
     private(set) var translations: [String: String] = [:]
     private(set) var loadingKeys: Set<String> = []
+    var visibleKeys: Set<String> = []
 
     private init() {}
 
