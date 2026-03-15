@@ -1580,6 +1580,7 @@ struct VocabularyStepView: View {
     @State private var flashcardFlipped = false
     @State private var appeared = false
     @State private var revealedWords: Set<String> = []
+    @State private var viewedWords: Set<String> = []
     @State private var listenedWords: Set<String> = []
     private var hasLessonContent: Bool { task.lessonContent != nil }
 
@@ -1657,10 +1658,20 @@ struct VocabularyStepView: View {
         }
         .onAppear {
             appeared = true
+            markCurrentCardViewed()
             updateVocabProgress()
         }
         .onChange(of: revealedWords.count) { _, _ in
             updateVocabProgress()
+        }
+        .onChange(of: viewedWords.count) { _, _ in
+            updateVocabProgress()
+        }
+        .onChange(of: flashcardIndex) { _, _ in
+            markCurrentCardViewed()
+        }
+        .onChange(of: selectedCategory) { _, _ in
+            markCurrentCardViewed()
         }
         .onChange(of: listenedWords.count) { _, _ in
             updateVocabProgress()
@@ -1671,16 +1682,23 @@ struct VocabularyStepView: View {
         Set(coreItems.map { $0.word })
     }
 
+    private func markCurrentCardViewed() {
+        let items = currentFlashcardItems
+        guard !items.isEmpty else { return }
+        let item = items[flashcardIndex % items.count]
+        viewedWords.insert(item.word)
+    }
+
     private func updateVocabProgress() {
         let allWords = Set(task.vocabulary.map { $0.word } + task.phrases.map { $0.phrase })
-        let revealed = allWords.intersection(revealedWords).count
+        let viewed = allWords.intersection(viewedWords).count
         let total = allWords.count
-        if revealed >= total {
+        if viewed >= total {
             canComplete = true
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "还剩 \(total - revealed) 张卡片未翻"
+            progressHint = "\(total - viewed) cards remaining"
         }
     }
 
@@ -2845,6 +2863,12 @@ struct FrameworkStepView: View {
     }
 
     private func updateFrameworkProgress() {
+        // Lesson content: complete on appear (content is self-paced)
+        if lesson != nil {
+            canComplete = true
+            progressHint = nil
+            return
+        }
         if totalSentences == 0 {
             canComplete = true
             progressHint = nil
@@ -2856,7 +2880,7 @@ struct FrameworkStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "还剩 \(remaining) 个框架句子未听"
+            progressHint = "\(remaining) framework sentences remaining"
         }
     }
 
