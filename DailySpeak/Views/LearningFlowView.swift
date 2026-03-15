@@ -3039,6 +3039,7 @@ struct FrameworkStepView: View {
                         sourceLabel: "Speaking Structure",
                         accentColor: frameworkColor
                     )
+                    BatchTranslateButton(texts: allStructureTexts, accentColor: frameworkColor)
                 }
             }
             .staggerIn(index: 4, appeared: appeared)
@@ -3055,16 +3056,19 @@ struct FrameworkStepView: View {
                             .clipShape(Capsule())
 
                         ForEach(section.moves, id: \.self) { move in
-                            HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(frameworkColor)
-                                    .padding(.top, 3)
-                                Text(move)
-                                    .font(.subheadline)
-                                    .foregroundStyle(AppColors.secondText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(2)
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(frameworkColor)
+                                        .padding(.top, 3)
+                                    Text(move)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(2)
+                                }
+                                TranslationOverlay(englishText: move, accentColor: frameworkColor)
                             }
                         }
                     }

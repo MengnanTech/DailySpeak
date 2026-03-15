@@ -9,6 +9,7 @@ struct ReviewStepView: View {
     @State private var appeared = false
     @State private var listenedAudioIds: Set<String> = []
     @State private var showReviewGuide = false
+    @State private var reviewGuideStartIndex = 0
     private var lesson: LessonContent? { task.lessonContent }
     private let reviewColor = Color(hex: "F97316")
 
@@ -67,6 +68,7 @@ struct ReviewStepView: View {
                 ReviewGuidedView(
                     lesson: lesson,
                     accentColor: reviewColor,
+                    startIndex: reviewGuideStartIndex,
                     onComplete: { completedIds in
                         listenedAudioIds.formUnion(completedIds)
                     }
@@ -143,12 +145,13 @@ struct ReviewStepView: View {
                 Spacer()
 
                 Button {
+                    reviewGuideStartIndex = 0
                     showReviewGuide = true
                 } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "play.fill")
                             .font(.system(size: 9, weight: .bold))
-                        Text("Guide")
+                        Text("Guide All")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                     }
                     .foregroundStyle(.white)
@@ -175,6 +178,19 @@ struct ReviewStepView: View {
                     .foregroundStyle(reviewColor)
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = 0
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
+                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(reviewColor).clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allTipsText,
                         playbackID: allTipsPlaybackId,
@@ -232,6 +248,19 @@ struct ReviewStepView: View {
                     .foregroundStyle(mistakeColor)
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = tipCount
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
+                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(mistakeColor).clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allContentText,
                         playbackID: contentPlaybackId,
@@ -304,6 +333,19 @@ struct ReviewStepView: View {
                     .foregroundStyle(langColor)
                 Spacer()
                 HStack(spacing: 6) {
+                    Button {
+                        reviewGuideStartIndex = tipCount + contentCount
+                        showReviewGuide = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
+                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10).padding(.vertical, 5)
+                        .background(langColor).clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allLangText,
                         playbackID: langPlaybackId,
@@ -439,11 +481,13 @@ private enum ReviewGuideItem: Identifiable {
 private struct ReviewGuidedView: View {
     let lesson: LessonContent
     let accentColor: Color
+    var startIndex: Int = 0
     var onComplete: (Set<String>) -> Void = { _ in }
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex = 0
+    @State private var didSetStart = false
     @State private var audioFinished = false
     @State private var completedAudioIds: Set<String> = []
     @State private var allDone = false
@@ -586,6 +630,12 @@ private struct ReviewGuidedView: View {
             }
         }
         .background(ClearBackgroundView())
+        .onAppear {
+            if !didSetStart && startIndex > 0 && startIndex < items.count {
+                currentIndex = startIndex
+                didSetStart = true
+            }
+        }
     }
 
     @ViewBuilder
