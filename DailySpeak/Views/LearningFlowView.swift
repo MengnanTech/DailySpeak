@@ -520,6 +520,7 @@ struct StrategyStepView: View {
 
     @State private var appeared = false
     @State private var listenedAudioIds: Set<String> = []
+    @State private var showKeyPointsGuide = false
     private var lesson: LessonContent? { task.lessonContent }
 
     // The prompt is the main English content to listen to
@@ -535,10 +536,8 @@ struct StrategyStepView: View {
                 let text = angle.title + ". " + angle.content.joined(separator: ". ")
                 ids.insert(EnglishSpeechPlayer.playbackID(for: text, category: "angle"))
             }
-            for item in lesson.strategy.sequence {
-                let text = "\(item.phase). \(item.focus). \(item.target)"
-                ids.insert(EnglishSpeechPlayer.playbackID(for: text, category: "sequence"))
-            }
+            let allSeqText = lesson.strategy.sequence.map { "\($0.phase). \($0.focus). \($0.target)" }.joined(separator: " ")
+            ids.insert(EnglishSpeechPlayer.playbackID(for: allSeqText, category: "sequence-all"))
             return ids
         }
         // Standard mode: prompt + all tips
@@ -551,13 +550,57 @@ struct StrategyStepView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if lesson != nil {
-                LessonStepHeader(
-                    label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "先搭答案骨架",
-                    subtitle: "先定人物关系和特质，再用一个故事收住影响。",
-                    accentColor: Color(hex: "F59E0B")
-                )
+            if let lesson {
+                let promptText = task.prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                let goalText = (lesson.topic.learningGoal ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                let headerText = goalText.isEmpty ? promptText : (promptText + " " + goalText)
+                let headerPlaybackId = EnglishSpeechPlayer.playbackID(for: headerText, category: "strategy-header")
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .center) {
+                        Text((task.lessonContent?.topic.stageLabel ?? "Structured Lesson").uppercased())
+                            .font(.system(size: 10, weight: .heavy, design: .rounded))
+                            .foregroundStyle(stepColor)
+                            .tracking(1.3)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(stepColor.opacity(0.08))
+                            .clipShape(Capsule())
+
+                        Spacer()
+
+                        HStack(spacing: 8) {
+                            CompactPlayButton(
+                                text: headerText,
+                                playbackID: headerPlaybackId,
+                                sourceLabel: "Strategy Header",
+                                accentColor: stepColor
+                            )
+                            TranslateButton(englishText: headerText, accentColor: stepColor, showInline: false)
+                        }
+                    }
+
+                    Text("Answer Strategy")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppColors.primaryText)
+
+                    Text(promptText)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.secondText)
+
+                    if !goalText.isEmpty {
+                        Text(goalText)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(3)
+                            .padding(.top, 2)
+                    }
+
+                    TranslationOverlay(englishText: headerText, accentColor: stepColor)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 8)
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
@@ -694,35 +737,54 @@ struct StrategyStepView: View {
 
     private func lessonStrategyContent(_ lesson: LessonContent) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            StepSectionLabel(
-                icon: "brain.head.profile",
-                title: "先想这 \(lesson.strategy.angles.count) 点",
-                color: stepColor
-            )
-            .staggerIn(index: 1, appeared: appeared)
+            // Section: angles
+            HStack {
+                Text("\(lesson.strategy.angles.count) Key Points")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(stepColor)
+                Spacer()
+
+                Button {
+                    showKeyPointsGuide = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 9, weight: .bold))
+                        Text("沉浸学习")
+                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(stepColor)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .staggerIn(index: 2, appeared: appeared)
 
             ForEach(Array(lesson.strategy.angles.enumerated()), id: \.offset) { index, angle in
                 let angleText = angle.title + ". " + angle.content.joined(separator: ". ")
                 let anglePlaybackId = EnglishSpeechPlayer.playbackID(for: angleText, category: "angle")
 
-                VStack(alignment: .leading, spacing: 10) {
-                    // Header: number + title
-                    HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Header: number + title + buttons right-aligned
+                    HStack(alignment: .center, spacing: 0) {
                         Text("\(index + 1)")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                            .frame(width: 26, height: 26)
+                            .frame(width: 24, height: 24)
                             .background(stepColor)
                             .clipShape(Circle())
+                            .padding(.trailing, 10)
 
                         Text(angle.title)
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(AppColors.primaryText)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .lineLimit(2)
 
-                        Spacer()
+                        Spacer(minLength: 8)
 
-                        // Action buttons aligned center
                         HStack(spacing: 8) {
                             CompactPlayButton(
                                 text: angleText,
@@ -731,16 +793,16 @@ struct StrategyStepView: View {
                                 accentColor: stepColor,
                                 onPlay: { listenedAudioIds.insert(anglePlaybackId) }
                             )
-
                             TranslateButton(englishText: angleText, accentColor: stepColor, showInline: false)
                         }
+                        .layoutPriority(1)
                     }
 
                     // Content items
                     ForEach(angle.content, id: \.self) { item in
                         HStack(alignment: .top, spacing: 8) {
                             Circle()
-                                .fill(stepColor.opacity(0.35))
+                                .fill(stepColor.opacity(0.4))
                                 .frame(width: 5, height: 5)
                                 .padding(.top, 7)
                             Text(item)
@@ -749,10 +811,8 @@ struct StrategyStepView: View {
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineSpacing(2)
                         }
-                        .padding(.leading, 36)
                     }
 
-                    // Translation appears below content
                     TranslationOverlay(englishText: angleText, accentColor: stepColor)
                 }
                 .padding(14)
@@ -762,85 +822,123 @@ struct StrategyStepView: View {
                         .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
                         .foregroundStyle(stepColor.opacity(0.3))
                 )
-                .staggerIn(index: index + 2, appeared: appeared)
+                .staggerIn(index: index + 3, appeared: appeared)
             }
 
-            StepSectionLabel(icon: "arrow.right.circle.fill", title: "按这个顺序说", color: stepColor)
-                .staggerIn(index: lesson.strategy.angles.count + 2, appeared: appeared)
+            // Sequence — one unified card
+            let allSeqText = lesson.strategy.sequence.map { "\($0.phase). \($0.focus). \($0.target)" }.joined(separator: " ")
+            let allSeqPlaybackId = EnglishSpeechPlayer.playbackID(for: allSeqText, category: "sequence-all")
 
-            ForEach(Array(lesson.strategy.sequence.enumerated()), id: \.offset) { index, item in
-                let seqText = "\(item.phase). \(item.focus). \(item.target)"
-                let seqPlaybackId = EnglishSpeechPlayer.playbackID(for: seqText, category: "sequence")
+            // Section header — outside the card, matching Key Points style
+            HStack {
+                Text("Speaking Order")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(stepColor)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .top, spacing: 10) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(stepColor)
-                            .frame(width: 26, height: 26)
-                            .background(stepColor.opacity(0.1))
-                            .clipShape(Circle())
+                Spacer()
 
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(item.phase)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(AppColors.primaryText)
-                            Text(item.focus)
+                HStack(spacing: 8) {
+                    CompactPlayButton(
+                        text: allSeqText,
+                        playbackID: allSeqPlaybackId,
+                        sourceLabel: "Strategy Sequence",
+                        accentColor: stepColor,
+                        onPlay: { listenedAudioIds.insert(allSeqPlaybackId) }
+                    )
+                    TranslateButton(englishText: allSeqText, accentColor: stepColor, showInline: false)
+                }
+            }
+            .staggerIn(index: lesson.strategy.angles.count + 3, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(Array(lesson.strategy.sequence.enumerated()), id: \.offset) { index, item in
+                    HStack(alignment: .top, spacing: 12) {
+                        // Timeline
+                        VStack(spacing: 0) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 22, height: 22)
+                                .background(stepColor)
+                                .clipShape(Circle())
+                            if index < lesson.strategy.sequence.count - 1 {
+                                Rectangle()
+                                    .fill(stepColor.opacity(0.15))
+                                    .frame(width: 1.5)
+                                    .frame(maxHeight: .infinity)
+                            }
+                        }
+                        .frame(width: 22)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(item.phase)
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(AppColors.primaryText)
+                                Text(item.focus)
+                                    .font(.caption)
+                                    .foregroundStyle(stepColor)
+                            }
+                            Text(item.target)
+                                .font(.caption)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.bottom, index < lesson.strategy.sequence.count - 1 ? 8 : 0)
+                    }
+                }
+
+                TranslationOverlay(englishText: allSeqText, accentColor: stepColor)
+            }
+            .padding(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                    .foregroundStyle(stepColor.opacity(0.3))
+            )
+            .staggerIn(index: lesson.strategy.angles.count + 4, appeared: appeared)
+
+            // Content Distribution
+            let ratioText = lesson.strategy.contentRatio.map { "\($0.label): \($0.value)" }.joined(separator: ". ")
+            let ratioPlaybackId = EnglishSpeechPlayer.playbackID(for: ratioText, category: "content-dist")
+
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .center) {
+                    Text("Content Distribution")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(stepColor)
+                    Spacer()
+                    HStack(spacing: 8) {
+                        CompactPlayButton(
+                            text: ratioText,
+                            playbackID: ratioPlaybackId,
+                            sourceLabel: "Content Distribution",
+                            accentColor: stepColor
+                        )
+                        TranslateButton(englishText: ratioText, accentColor: stepColor, showInline: false)
+                    }
+                }
+
+                HStack(spacing: 8) {
+                    ForEach(lesson.strategy.contentRatio, id: \.label) { ratio in
+                        VStack(spacing: 4) {
+                            Text(ratio.value)
                                 .font(.caption.bold())
                                 .foregroundStyle(stepColor)
+                            Text(ratio.label)
+                                .font(.caption2)
+                                .foregroundStyle(AppColors.secondText)
                         }
-
-                        Spacer()
-
-                        HStack(spacing: 8) {
-                            CompactPlayButton(
-                                text: seqText,
-                                playbackID: seqPlaybackId,
-                                sourceLabel: "Strategy Sequence",
-                                accentColor: stepColor,
-                                onPlay: { listenedAudioIds.insert(seqPlaybackId) }
-                            )
-
-                            TranslateButton(englishText: seqText, accentColor: stepColor, showInline: false)
-                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(stepColor.opacity(0.06))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-
-                    Text(item.target)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.leading, 36)
-
-                    TranslationOverlay(englishText: seqText, accentColor: stepColor)
                 }
-                .padding(14)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
-                        .foregroundStyle(stepColor.opacity(0.3))
-                )
-                .staggerIn(index: lesson.strategy.angles.count + index + 3, appeared: appeared)
-            }
 
-            // 内容分配
-            StepSectionLabel(icon: "chart.bar.fill", title: "内容分配", color: stepColor)
-
-            HStack(spacing: 8) {
-                ForEach(lesson.strategy.contentRatio, id: \.label) { ratio in
-                    VStack(spacing: 4) {
-                        Text(ratio.value)
-                            .font(.caption.bold())
-                            .foregroundStyle(stepColor)
-                        Text(ratio.label)
-                            .font(.caption2)
-                            .foregroundStyle(AppColors.secondText)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(stepColor.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
+                TranslationOverlay(englishText: ratioText, accentColor: stepColor)
             }
+            .staggerIn(index: lesson.strategy.angles.count + 5, appeared: appeared)
         }
     }
 }

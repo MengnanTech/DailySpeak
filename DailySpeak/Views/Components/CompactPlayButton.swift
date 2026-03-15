@@ -8,6 +8,7 @@ struct CompactPlayButton: View {
     var onPlay: (() -> Void)? = nil
 
     @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var hasError = false
 
     private var isPlaying: Bool { player.isPlaying(id: playbackID) }
     private var isPaused: Bool { player.isPaused(id: playbackID) }
@@ -17,22 +18,28 @@ struct CompactPlayButton: View {
     var body: some View {
         HStack(spacing: 6) {
             Button {
-                player.togglePlayback(id: playbackID, text: text, sourceLabel: sourceLabel)
+                hasError = false
+                let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else {
+                    hasError = true
+                    return
+                }
+                player.togglePlayback(id: playbackID, text: trimmed, sourceLabel: sourceLabel)
                 onPlay?()
             } label: {
                 ZStack {
                     Circle()
-                        .fill(isActive ? accentColor : accentColor.opacity(0.1))
+                        .fill(hasError ? Color.red.opacity(0.15) : (isActive ? accentColor : accentColor.opacity(0.1)))
                         .frame(width: 32, height: 32)
 
                     if isLoading {
                         ProgressView()
                             .controlSize(.mini)
-                            .tint(isActive ? .white : accentColor)
+                            .tint(.white)
                     } else {
-                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        Image(systemName: hasError ? "exclamationmark.triangle.fill" : (isPlaying ? "pause.fill" : "play.fill"))
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(isActive ? .white : accentColor)
+                            .foregroundStyle(hasError ? .red : (isActive ? .white : accentColor))
                     }
                 }
             }
@@ -45,6 +52,15 @@ struct CompactPlayButton: View {
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPlaying)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isLoading)
+        .onChange(of: isLoading) { wasLoading, nowLoading in
+            // If loading stopped but not playing/paused, it means it failed
+            if wasLoading && !nowLoading && !isPlaying && !isPaused {
+                hasError = true
+            }
+        }
+        .onChange(of: isPlaying) { _, playing in
+            if playing { hasError = false }
+        }
     }
 }
 
