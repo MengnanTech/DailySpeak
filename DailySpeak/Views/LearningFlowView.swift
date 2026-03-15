@@ -521,6 +521,7 @@ struct StrategyStepView: View {
     @State private var appeared = false
     @State private var listenedAudioIds: Set<String> = []
     @State private var showKeyPointsGuide = false
+    @State private var showSequenceGuide = false
     private var lesson: LessonContent? { task.lessonContent }
 
     // The prompt is the main English content to listen to
@@ -626,6 +627,28 @@ struct StrategyStepView: View {
         }
         .onChange(of: listenedAudioIds.count) { _, _ in
             updateStrategyProgress()
+        }
+        .fullScreenCover(isPresented: $showKeyPointsGuide) {
+            if let lesson {
+                KeyPointsGuidedView(
+                    angles: lesson.strategy.angles,
+                    accentColor: stepColor,
+                    onComplete: { completedIds in
+                        listenedAudioIds.formUnion(completedIds)
+                    }
+                )
+            }
+        }
+        .fullScreenCover(isPresented: $showSequenceGuide) {
+            if let lesson {
+                SequenceGuidedView(
+                    steps: lesson.strategy.sequence,
+                    accentColor: stepColor,
+                    onComplete: { completedId in
+                        listenedAudioIds.insert(completedId)
+                    }
+                )
+            }
         }
     }
 
@@ -750,7 +773,7 @@ struct StrategyStepView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "play.fill")
                             .font(.system(size: 9, weight: .bold))
-                        Text("沉浸学习")
+                        Text("Guide")
                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                     }
                     .foregroundStyle(.white)
@@ -838,6 +861,23 @@ struct StrategyStepView: View {
                 Spacer()
 
                 HStack(spacing: 8) {
+                    Button {
+                        showSequenceGuide = true
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 9, weight: .bold))
+                            Text("Guide")
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(stepColor)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
                     CompactPlayButton(
                         text: allSeqText,
                         playbackID: allSeqPlaybackId,
@@ -939,6 +979,508 @@ struct StrategyStepView: View {
                 TranslationOverlay(englishText: ratioText, accentColor: stepColor)
             }
             .staggerIn(index: lesson.strategy.angles.count + 5, appeared: appeared)
+        }
+    }
+}
+
+// MARK: - Key Points Guided View (Immersive)
+private struct KeyPointsGuidedView: View {
+    let angles: [LessonContent.Strategy.Angle]
+    let accentColor: Color
+    var onComplete: (Set<String>) -> Void = { _ in }
+
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var currentIndex = 0
+    @State private var cardAppeared = false
+    @State private var audioFinished = false
+    @State private var completedAudioIds: Set<String> = []
+    @State private var allDone = false
+
+    private func angleText(for angle: LessonContent.Strategy.Angle) -> String {
+        angle.title + ". " + angle.content.joined(separator: ". ")
+    }
+
+    private func playbackID(for angle: LessonContent.Strategy.Angle) -> String {
+        EnglishSpeechPlayer.playbackID(for: angleText(for: angle), category: "angle")
+    }
+
+    var body: some View {
+        ZStack {
+            // Dimmed background
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture { } // block taps through
+
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button {
+                        player.stopPlayback()
+                        onComplete(completedAudioIds)
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    // Progress indicator
+                    Text("\(currentIndex + 1) / \(angles.count)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(accentColor)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(angles.count), height: 4)
+                            .animation(.spring(duration: 0.5), value: currentIndex)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                Spacer()
+
+                // Card
+                if !allDone {
+                    let angle = angles[currentIndex]
+                    let text = angleText(for: angle)
+                    let pid = playbackID(for: angle)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Header
+                        HStack(spacing: 10) {
+                            Text("\(currentIndex + 1)")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(accentColor)
+                                .clipShape(Circle())
+
+                            Text(angle.title)
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppColors.primaryText)
+
+                            Spacer()
+                        }
+
+                        // Content items
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(angle.content, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 10) {
+                                    Circle()
+                                        .fill(accentColor.opacity(0.5))
+                                        .frame(width: 6, height: 6)
+                                        .padding(.top, 8)
+                                    Text(item)
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(4)
+                                }
+                            }
+                        }
+
+                        // Audio player
+                        HStack(spacing: 12) {
+                            CompactPlayButton(
+                                text: text,
+                                playbackID: pid,
+                                sourceLabel: "Guided Angle",
+                                accentColor: accentColor
+                            )
+
+                            if player.isPlaying(id: pid) || player.isPaused(id: pid) {
+                                // Progress bar
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor.opacity(0.15))
+                                            .frame(height: 4)
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor)
+                                            .frame(width: geo.size.width * player.progress, height: 4)
+                                    }
+                                }
+                                .frame(height: 4)
+                                .transition(.opacity)
+                            }
+
+                            Spacer()
+
+                            TranslateButton(englishText: text, accentColor: accentColor, showInline: false)
+                        }
+
+                        TranslationOverlay(englishText: text, accentColor: accentColor)
+
+                        // Confirmation button — shown after audio finishes
+                        if audioFinished {
+                            Button {
+                                advanceToNext()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: currentIndex < angles.count - 1 ? "checkmark" : "checkmark.circle.fill")
+                                        .font(.system(size: 14, weight: .bold))
+                                    Text(currentIndex < angles.count - 1 ? "已学会，下一个" : "全部完成")
+                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(accentColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
+                    .padding(24)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+                    .padding(.horizontal, 20)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                    .id(currentIndex) // force re-create for transition
+                    .onAppear {
+                        cardAppeared = true
+                        audioFinished = false
+                        // Auto-play after a short delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            let angle = angles[currentIndex]
+                            let text = angleText(for: angle)
+                            let pid = playbackID(for: angle)
+                            if !player.isPlaying(id: pid) {
+                                player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Angle")
+                            }
+                        }
+                    }
+                } else {
+                    // All done celebration
+                    VStack(spacing: 16) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(accentColor)
+
+                        Text("全部要点已学完！")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text("继续学习后面的内容吧")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            onComplete(completedAudioIds)
+                            dismiss()
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
+        .animation(.spring(duration: 0.4), value: allDone)
+        .onChange(of: player.activePlaybackID) { oldValue, newValue in
+            // Detect when current angle's audio finishes playing
+            let currentPid = playbackID(for: angles[currentIndex])
+            if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
+                // Audio finished naturally
+                withAnimation {
+                    audioFinished = true
+                }
+                completedAudioIds.insert(currentPid)
+            }
+        }
+        .background(ClearBackgroundView())
+    }
+
+    private func advanceToNext() {
+        let currentPid = playbackID(for: angles[currentIndex])
+        completedAudioIds.insert(currentPid)
+
+        if currentIndex < angles.count - 1 {
+            withAnimation {
+                currentIndex += 1
+                audioFinished = false
+            }
+        } else {
+            withAnimation {
+                allDone = true
+            }
+        }
+    }
+}
+
+// Helper to make fullScreenCover background transparent
+private struct ClearBackgroundView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+// MARK: - Speaking Order Guided View (Immersive)
+private struct SequenceGuidedView: View {
+    let steps: [LessonContent.Strategy.SequenceStep]
+    let accentColor: Color
+    var onComplete: (String) -> Void = { _ in }
+
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var player = EnglishSpeechPlayer.shared
+    @State private var currentIndex = 0
+    @State private var audioFinished = false
+    @State private var allDone = false
+
+    private func stepText(for step: LessonContent.Strategy.SequenceStep) -> String {
+        "\(step.phase). \(step.focus). \(step.target)"
+    }
+
+    private func stepPlaybackID(for step: LessonContent.Strategy.SequenceStep) -> String {
+        EnglishSpeechPlayer.playbackID(for: stepText(for: step), category: "seq-step")
+    }
+
+    private var allStepsText: String {
+        steps.map { "\($0.phase). \($0.focus). \($0.target)" }.joined(separator: " ")
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture { }
+
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button {
+                        player.stopPlayback()
+                        onComplete(EnglishSpeechPlayer.playbackID(for: allStepsText, category: "sequence-all"))
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .frame(width: 36, height: 36)
+                            .background(.white.opacity(0.15))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Text("\(currentIndex + 1) / \(steps.count)")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(.white.opacity(0.15))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(accentColor)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(steps.count), height: 4)
+                            .animation(.spring(duration: 0.5), value: currentIndex)
+                    }
+                }
+                .frame(height: 4)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+                Spacer()
+
+                if !allDone {
+                    let step = steps[currentIndex]
+                    let text = stepText(for: step)
+                    let pid = stepPlaybackID(for: step)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Step number + phase
+                        HStack(spacing: 10) {
+                            Text("\(currentIndex + 1)")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 28, height: 28)
+                                .background(accentColor)
+                                .clipShape(Circle())
+
+                            Text(step.phase)
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppColors.primaryText)
+
+                            Spacer()
+                        }
+
+                        // Focus tag
+                        Text(step.focus)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(accentColor)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(accentColor.opacity(0.1))
+                            .clipShape(Capsule())
+
+                        // Target
+                        Text(step.target)
+                            .font(.system(size: 16))
+                            .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(4)
+
+                        // Audio + translate
+                        HStack(spacing: 12) {
+                            CompactPlayButton(
+                                text: text,
+                                playbackID: pid,
+                                sourceLabel: "Guided Sequence",
+                                accentColor: accentColor
+                            )
+
+                            if player.isPlaying(id: pid) || player.isPaused(id: pid) {
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor.opacity(0.15))
+                                            .frame(height: 4)
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(accentColor)
+                                            .frame(width: geo.size.width * player.progress, height: 4)
+                                    }
+                                }
+                                .frame(height: 4)
+                                .transition(.opacity)
+                            }
+
+                            Spacer()
+
+                            TranslateButton(englishText: text, accentColor: accentColor, showInline: false)
+                        }
+
+                        TranslationOverlay(englishText: text, accentColor: accentColor)
+
+                        // Confirm button
+                        if audioFinished {
+                            Button {
+                                advanceToNext()
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: currentIndex < steps.count - 1 ? "checkmark" : "checkmark.circle.fill")
+                                        .font(.system(size: 14, weight: .bold))
+                                    Text(currentIndex < steps.count - 1 ? "已学会，下一个" : "全部完成")
+                                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(accentColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
+                    .padding(24)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
+                    .padding(.horizontal, 20)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                    .id(currentIndex)
+                    .onAppear {
+                        audioFinished = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            let step = steps[currentIndex]
+                            let text = stepText(for: step)
+                            let pid = stepPlaybackID(for: step)
+                            if !player.isPlaying(id: pid) {
+                                player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Sequence")
+                            }
+                        }
+                    }
+                } else {
+                    VStack(spacing: 16) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 56))
+                            .foregroundStyle(accentColor)
+
+                        Text("Speaking Order 已掌握！")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text("继续学习后面的内容吧")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            onComplete(EnglishSpeechPlayer.playbackID(for: allStepsText, category: "sequence-all"))
+                            dismiss()
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+        }
+        .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
+        .animation(.spring(duration: 0.4), value: allDone)
+        .onChange(of: player.activePlaybackID) { oldValue, newValue in
+            let currentPid = stepPlaybackID(for: steps[currentIndex])
+            if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
+                withAnimation {
+                    audioFinished = true
+                }
+            }
+        }
+        .background(ClearBackgroundView())
+    }
+
+    private func advanceToNext() {
+        if currentIndex < steps.count - 1 {
+            withAnimation {
+                currentIndex += 1
+                audioFinished = false
+            }
+        } else {
+            withAnimation {
+                allDone = true
+            }
         }
     }
 }
