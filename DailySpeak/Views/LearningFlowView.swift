@@ -3461,7 +3461,7 @@ private struct FrameworkGuidedView: View {
 
                     Spacer()
 
-                    Text("\(currentIndex + 1) / \(items.count)")
+                    Text("\(currentIndex - startIndex + 1) / \(items.count - startIndex)")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                 }
@@ -3469,13 +3469,14 @@ private struct FrameworkGuidedView: View {
                 .padding(.top, 16)
 
                 GeometryReader { geo in
+                    let visibleCount = items.count - startIndex
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(.white.opacity(0.15))
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(allDone ? accentColor : items[currentIndex].color)
-                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(items.count), height: 4)
+                            .frame(width: geo.size.width * CGFloat(currentIndex - startIndex + 1) / CGFloat(visibleCount), height: 4)
                             .animation(.spring(duration: 0.5), value: currentIndex)
                     }
                 }
@@ -4151,7 +4152,7 @@ private struct SampleGuidedView: View {
 
                     Spacer()
 
-                    Text("\(currentIndex + 1) / \(items.count)")
+                    Text("\(currentIndex - startIndex + 1) / \(items.count - startIndex)")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                 }
@@ -4159,13 +4160,14 @@ private struct SampleGuidedView: View {
                 .padding(.top, 16)
 
                 GeometryReader { geo in
+                    let visibleCount = items.count - startIndex
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(.white.opacity(0.15))
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(bandColor)
-                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(items.count), height: 4)
+                            .frame(width: geo.size.width * CGFloat(currentIndex - startIndex + 1) / CGFloat(visibleCount), height: 4)
                             .animation(.spring(duration: 0.5), value: currentIndex)
                     }
                 }
