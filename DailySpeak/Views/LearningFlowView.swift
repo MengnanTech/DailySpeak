@@ -301,7 +301,7 @@ struct LearningFlowView: View {
                         }
                         Text(
                             !canProceed
-                                ? "完成本步骤内容"
+                                ? "Complete this step"
                                 : isLastStep
                                     ? "Complete"
                                     : isCurrentCompleted
@@ -409,13 +409,12 @@ struct StepHeroHeader: View {
             }
 
             HStack {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(english.uppercased())
-                        .font(.system(size: 10, weight: .heavy, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.65))
-                        .tracking(1.5)
-
+                VStack(alignment: .leading, spacing: 5) {
                     Text(title)
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.7))
+
+                    Text(english)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
@@ -428,19 +427,29 @@ struct StepHeroHeader: View {
 
                 Spacer()
 
-                ZStack {
-                    Circle()
-                        .fill(.white.opacity(0.1))
-                        .frame(width: 52, height: 52)
-                    Image(systemName: icon)
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .symbolEffect(.pulse, options: .repeating.speed(0.5))
+                VStack(spacing: 10) {
+                    ZStack {
+                        Circle()
+                            .fill(.white.opacity(0.1))
+                            .frame(width: 44, height: 44)
+                        Image(systemName: icon)
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .symbolEffect(.pulse, options: .repeating.speed(0.5))
+                    }
+
+                    CompactPlayButton(
+                        text: subtitle,
+                        playbackID: EnglishSpeechPlayer.playbackID(for: subtitle, category: "step-header"),
+                        sourceLabel: english,
+                        accentColor: .white,
+                        onPlay: {}
+                    )
                 }
             }
             .padding(20)
         }
-        .frame(height: 120)
+        .frame(height: 130)
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -461,27 +470,49 @@ struct LessonStepHeader: View {
     let label: String
     let title: String
     let subtitle: String
+    let englishTitle: String
+    let englishSubtitle: String
     let accentColor: Color
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label.uppercased())
-                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                .foregroundStyle(accentColor)
-                .tracking(1.3)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(accentColor.opacity(0.08))
-                .clipShape(Capsule())
+            HStack {
+                Text(label.uppercased())
+                    .font(.system(size: 10, weight: .heavy, design: .rounded))
+                    .foregroundStyle(accentColor)
+                    .tracking(1.3)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(accentColor.opacity(0.08))
+                    .clipShape(Capsule())
 
-            Text(title)
+                Spacer()
+
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: englishSubtitle,
+                        playbackID: EnglishSpeechPlayer.playbackID(for: englishSubtitle, category: "lesson-header"),
+                        sourceLabel: englishTitle,
+                        accentColor: accentColor
+                    )
+                    TranslateButton(englishText: englishSubtitle, accentColor: accentColor, showInline: false)
+                }
+            }
+
+            Text(englishTitle)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(AppColors.primaryText)
 
-            Text(subtitle)
+            Text(englishSubtitle)
                 .font(.subheadline)
                 .foregroundStyle(AppColors.secondText)
                 .fixedSize(horizontal: false, vertical: true)
+
+            TranslationOverlay(englishText: englishSubtitle, accentColor: accentColor)
+
+            Text(title)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(AppColors.tertiaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
@@ -608,7 +639,7 @@ struct StrategyStepView: View {
                     icon: "lightbulb.max.fill",
                     title: "答题策略",
                     english: "Strategy & Tips",
-                    subtitle: "了解如何组织你的回答，掌握答题思路",
+                    subtitle: "Learn to organize answers and master response flow",
                     accentColor: Color(hex: "F59E0B"),
                     secondaryColor: Color(hex: "F97316")
                 )
@@ -668,7 +699,7 @@ struct StrategyStepView: View {
     private var standardStrategyContent: some View {
         Group {
             GradientAccentCard(color: stepColor) {
-                StepSectionLabel(icon: "lightbulb.fill", title: "答题思路", color: stepColor)
+                StepSectionLabel(icon: "lightbulb.fill", title: "Response Tips", color: stepColor)
 
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
                     VStack(alignment: .leading, spacing: 8) {
@@ -733,7 +764,7 @@ struct StrategyStepView: View {
             .staggerIn(index: 2, appeared: appeared)
 
             GradientAccentCard(color: Color(hex: "EF4444")) {
-                StepSectionLabel(icon: "target", title: "过关标准", color: Color(hex: "EF4444"))
+                StepSectionLabel(icon: "target", title: "Scoring Criteria", color: Color(hex: "EF4444"))
 
                 ForEach(task.passCriteria, id: \.self) { criteria in
                     VStack(alignment: .leading, spacing: 8) {
@@ -1138,7 +1169,7 @@ private struct KeyPointsGuidedView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: currentIndex < angles.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
-                                    Text(currentIndex < angles.count - 1 ? "已学会，下一个" : "全部完成")
+                                    Text(currentIndex < angles.count - 1 ? "Got it, next" : "All Done")
                                         .font(.system(size: 15, weight: .bold, design: .rounded))
                                 }
                                 .foregroundStyle(.white)
@@ -1181,11 +1212,11 @@ private struct KeyPointsGuidedView: View {
                             .font(.system(size: 56))
                             .foregroundStyle(accentColor)
 
-                        Text("全部要点已学完！")
+                        Text("All Key Points Learned!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
 
-                        Text("继续学习后面的内容吧")
+                        Text("Continue to the next section")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -1398,7 +1429,7 @@ private struct SequenceGuidedView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: currentIndex < steps.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
-                                    Text(currentIndex < steps.count - 1 ? "已学会，下一个" : "全部完成")
+                                    Text(currentIndex < steps.count - 1 ? "Got it, next" : "All Done")
                                         .font(.system(size: 15, weight: .bold, design: .rounded))
                                 }
                                 .foregroundStyle(.white)
@@ -1442,7 +1473,7 @@ private struct SequenceGuidedView: View {
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
 
-                        Text("继续学习后面的内容吧")
+                        Text("Continue to the next section")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -1490,11 +1521,13 @@ private struct SequenceGuidedView: View {
 private enum VocabCategory: String, CaseIterable {
     case core
     case extended
+    case phrases
 
     var title: String {
         switch self {
-        case .core: "核心词汇"
-        case .extended: "扩展词汇"
+        case .core: "Core"
+        case .extended: "Extended"
+        case .phrases: "Phrases"
         }
     }
 
@@ -1502,6 +1535,7 @@ private enum VocabCategory: String, CaseIterable {
         switch self {
         case .core: "textbook.fill"
         case .extended: "sparkles"
+        case .phrases: "text.quote"
         }
     }
 }
@@ -1519,8 +1553,8 @@ private enum VocabViewMode: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .list: "列表"
-        case .flashcard: "闪卡"
+        case .list: "List"
+        case .flashcard: "Cards"
         }
     }
 }
@@ -1535,7 +1569,6 @@ struct VocabularyStepView: View {
     @State private var selectedItem: VocabItem?
     @State private var showUpgrade = true
     @State private var showAdvanced = false
-    @State private var viewMode: VocabViewMode = .list
     @State private var flashcardIndex = 0
     @State private var flashcardFlipped = false
     @State private var appeared = false
@@ -1555,8 +1588,29 @@ struct VocabularyStepView: View {
         task.vocabulary.filter { $0.band == .advanced }
     }
 
+    private var phraseItems: [VocabItem] {
+        task.phrases.map { phrase in
+            VocabItem(
+                word: phrase.phrase,
+                phonetic: "",
+                meaning: phrase.meaning ?? "",
+                englishMeaning: "",
+                example: phrase.example,
+                exampleTranslation: "",
+                band: .core,
+                providedPartOfSpeech: "phrase",
+                sourceBand: phrase.sourceBand,
+                nativeNote: phrase.nativeNote
+            )
+        }
+    }
+
     private var currentFlashcardItems: [VocabItem] {
-        selectedCategory == .core ? coreItems : (upgradeItems + advancedItems)
+        switch selectedCategory {
+        case .core: coreItems
+        case .extended: upgradeItems + advancedItems
+        case .phrases: phraseItems
+        }
     }
 
     var body: some View {
@@ -1564,66 +1618,31 @@ struct VocabularyStepView: View {
             if hasLessonContent {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "核心词汇",
-                    subtitle: "先抓最常用的描述词，再补更成熟的升级表达。",
+                    title: "词汇与词组",
+                    subtitle: "先抓核心词汇，再学实用词组和升级表达。",
+                    englishTitle: "Key Vocabulary",
+                    englishSubtitle: "Master core words first, then learn phrases and upgrades.",
                     accentColor: Color(hex: "4A90D9")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "character.book.closed.fill",
-                    title: "核心词汇",
-                    english: "Key Vocabulary",
-                    subtitle: "掌握 \(coreItems.count) 个核心词 · \(upgradeItems.count + advancedItems.count) 个进阶词",
+                    title: "词汇与词组",
+                    english: "Vocabulary & Phrases",
+                    subtitle: "Master \(coreItems.count) core words · \(task.phrases.count) phrases",
                     accentColor: Color(hex: "4A90D9"),
                     secondaryColor: Color(hex: "7AB4E8")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             }
 
-            // Mode switcher: List / Flashcard
-            HStack(spacing: 0) {
-                ForEach(VocabViewMode.allCases, id: \.self) { mode in
-                    let isSelected = viewMode == mode
-                    Button {
-                        withAnimation(.spring(duration: 0.28)) { viewMode = mode; flashcardIndex = 0; flashcardFlipped = false }
-                    } label: {
-                        HStack(spacing: 5) {
-                            Image(systemName: mode.icon)
-                                .font(.system(size: 11, weight: .bold))
-                            Text(mode.label)
-                                .font(.caption.bold())
-                        }
-                        .foregroundStyle(isSelected ? .white : AppColors.secondText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 34)
-                        .background(isSelected ? accentColor : AppColors.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(3)
-            .background(AppColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .staggerIn(index: 1, appeared: appeared)
-
             // Category switcher
             categorySwitcher
-                .staggerIn(index: 2, appeared: appeared)
+                .staggerIn(index: 1, appeared: appeared)
 
-            if viewMode == .flashcard {
-                flashcardView
-                    .staggerIn(index: 3, appeared: appeared)
-            } else {
-                if selectedCategory == .core {
-                    vocabList(items: coreItems)
-                        .staggerIn(index: 3, appeared: appeared)
-                } else {
-                    extendedSectionCard
-                        .staggerIn(index: 3, appeared: appeared)
-                }
-            }
+            flashcardView
+                .staggerIn(index: 2, appeared: appeared)
         }
         .sheet(item: $selectedItem) { item in
             VocabDetailSheet(item: item, accentColor: accentColor)
@@ -1646,18 +1665,15 @@ struct VocabularyStepView: View {
     }
 
     private func updateVocabProgress() {
-        let total = allCoreWords.count
-        let revealed = allCoreWords.intersection(revealedWords).count
-        let listened = allCoreWords.intersection(listenedWords).count
-        if revealed >= total && listened >= total {
+        let allWords = Set(task.vocabulary.map { $0.word } + task.phrases.map { $0.phrase })
+        let revealed = allWords.intersection(revealedWords).count
+        let total = allWords.count
+        if revealed >= total {
             canComplete = true
             progressHint = nil
-        } else if listened < total {
-            canComplete = false
-            progressHint = "还剩 \(total - listened) 个核心词发音未听"
         } else {
             canComplete = false
-            progressHint = "还剩 \(total - revealed) 个核心词汇未学习"
+            progressHint = "还剩 \(total - revealed) 张卡片未翻"
         }
     }
 
@@ -1769,6 +1785,7 @@ struct VocabularyStepView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1, z: 0))
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -1790,6 +1807,12 @@ struct VocabularyStepView: View {
                         axis: (x: 0, y: 1, z: 0),
                         perspective: 0.5
                     )
+                    .overlay(alignment: .topLeading) {
+                        Text(selectedCategory.title)
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(accentColor.opacity(0.45))
+                            .padding(12)
+                    }
                     .shadow(color: accentColor.opacity(0.12), radius: 18, x: 0, y: 10)
                     .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                 }
@@ -1820,7 +1843,20 @@ struct VocabularyStepView: View {
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                             flashcardFlipped = false
-                            flashcardIndex = (flashcardIndex + 1) % items.count
+                            let nextIndex = flashcardIndex + 1
+                            if nextIndex >= items.count {
+                                // Auto-advance to next category
+                                let allCats = VocabCategory.allCases
+                                if let currentIdx = allCats.firstIndex(of: selectedCategory),
+                                   currentIdx + 1 < allCats.count {
+                                    selectedCategory = allCats[currentIdx + 1]
+                                    flashcardIndex = 0
+                                } else {
+                                    flashcardIndex = 0 // wrap around on last category
+                                }
+                            } else {
+                                flashcardIndex = nextIndex
+                            }
                         }
                     } label: {
                         Image(systemName: "chevron.right")
@@ -1850,21 +1886,23 @@ struct VocabularyStepView: View {
                         flashcardFlipped = false
                     }
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 5) {
                         Image(systemName: category.icon)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                         Text(category.title)
-                            .font(.subheadline.bold())
+                            .font(.system(size: 13, weight: .bold))
+                            .lineLimit(1)
+                            .fixedSize()
                         Text("\(count)")
-                            .font(.caption.bold())
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
+                            .font(.caption2.bold())
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
                             .background(.white.opacity(isSelected ? 0.22 : 0.08))
                             .clipShape(Capsule())
                     }
                     .foregroundStyle(isSelected ? .white : AppColors.secondText)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 40)
+                    .frame(height: 38)
                     .background {
                         if isSelected {
                             LinearGradient(
@@ -1895,7 +1933,7 @@ struct VocabularyStepView: View {
                 }
                 .padding(.top, 10)
             } label: {
-                sectionTag(title: "进阶词汇", count: upgradeItems.count, color: Color(hex: "F59E0B"), caption: "日常表达升级")
+                sectionTag(title: "Intermediate", count: upgradeItems.count, color: Color(hex: "F59E0B"), caption: "Everyday expression upgrades")
             }
 
             Divider().background(AppColors.border.opacity(0.35))
@@ -1906,7 +1944,7 @@ struct VocabularyStepView: View {
                 }
                 .padding(.top, 10)
             } label: {
-                sectionTag(title: "高分词汇", count: advancedItems.count, color: Color(hex: "EF4444"), caption: "高阶表达与观点深度")
+                sectionTag(title: "Advanced", count: advancedItems.count, color: Color(hex: "EF4444"), caption: "Advanced expression & depth")
             }
         }
     }
@@ -2005,7 +2043,7 @@ struct VocabCardView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "book.closed.fill")
                             .font(.system(size: 11, weight: .bold))
-                        Text("释义")
+                        Text("Definition")
                             .font(.system(size: 12, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(item.band.color)
@@ -2120,7 +2158,7 @@ struct VocabDetailSheet: View {
                     .cardShadow()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("发音")
+                        Text("Pronunciation")
                             .font(.subheadline.bold())
                             .foregroundStyle(AppColors.primaryText)
 
@@ -2144,7 +2182,7 @@ struct VocabDetailSheet: View {
 
                     if !item.example.isEmpty || !item.exampleTranslation.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("例句")
+                            Text("Example")
                                 .font(.subheadline.bold())
                                 .foregroundStyle(AppColors.primaryText)
                             if !item.example.isEmpty {
@@ -2177,7 +2215,7 @@ struct VocabDetailSheet: View {
                 .padding(.vertical, 12)
             }
             .background(AppColors.background.ignoresSafeArea())
-            .navigationTitle("单词详情")
+            .navigationTitle("Word Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -2247,6 +2285,8 @@ struct PhrasesStepView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "实用词组",
                     subtitle: "用短语拉开自然度，避免一句一句直译。",
+                    englishTitle: "Useful Phrases",
+                    englishSubtitle: "Use phrases for naturalness, avoid word-by-word translation.",
                     accentColor: phraseColor
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -2255,7 +2295,7 @@ struct PhrasesStepView: View {
                     icon: "quote.bubble.fill",
                     title: "实用词组",
                     english: "Useful Phrases",
-                    subtitle: "掌握 \(task.phrases.count) 个地道表达，让口语更自然",
+                    subtitle: "Master \(task.phrases.count) native phrases for natural speech",
                     accentColor: phraseColor,
                     secondaryColor: Color(hex: "34D399")
                 )
@@ -2319,15 +2359,9 @@ struct PhrasesStepView: View {
     }
 
     private func updatePhrasesProgress() {
-        let total = task.phrases.count
-        let listened = listenedPhrases.count
-        if listened >= total {
-            canComplete = true
-            progressHint = nil
-        } else {
-            canComplete = false
-            progressHint = "还剩 \(total - listened) 个词组未听"
-        }
+        // Low bar: viewing the page is enough to proceed
+        canComplete = appeared
+        progressHint = appeared ? nil : "Browse phrase content"
     }
 }
 
@@ -2686,10 +2720,10 @@ private struct PhrasesGuidedView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(accentColor)
-                        Text("全部词组已学完！")
+                        Text("All Phrases Learned!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                        Text("继续下一步吧")
+                        Text("Continue to the next step")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -2742,7 +2776,7 @@ struct FrameworkStepView: View {
     @State private var listenedSentences: Set<Int> = []
     @State private var listenedAudioIds: Set<String> = []
     @State private var showFrameworkGuide = false
-    private let labels = ["开场", "来源", "使用", "例子", "收尾"]
+    private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
     private var totalSentences: Int { task.frameworkSentences.count }
@@ -2754,6 +2788,8 @@ struct FrameworkStepView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "表达框架",
                     subtitle: "先看总结构，再补连接表达和升级表达。",
+                    englishTitle: "Expression Framework",
+                    englishSubtitle: "See the structure first, then add connectors and upgrades.",
                     accentColor: Color(hex: "8B5CF6")
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -2762,7 +2798,7 @@ struct FrameworkStepView: View {
                     icon: "rectangle.3.group.fill",
                     title: "表达框架",
                     english: "Expression Framework",
-                    subtitle: "掌握答题模板，让表达有条理",
+                    subtitle: "Master templates for structured expression",
                     accentColor: Color(hex: "8B5CF6"),
                     secondaryColor: Color(hex: "A78BFA")
                 )
@@ -2823,7 +2859,7 @@ struct FrameworkStepView: View {
                     ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
                         FrameworkSentenceCard(
                             index: index + 1,
-                            label: index < labels.count ? labels[index] : "要点",
+                            label: index < labels.count ? labels[index] : "Point",
                             sentence: sentence,
                             accentColor: frameworkColor,
                             isLast: index == task.frameworkSentences.count - 1,
@@ -2838,7 +2874,7 @@ struct FrameworkStepView: View {
                 GradientAccentCard(color: Color(hex: "F59E0B")) {
                     StepSectionLabel(
                         icon: "arrow.up.circle.fill",
-                        title: "升级表达",
+                        title: "Upgraded Expressions",
                         color: Color(hex: "F59E0B")
                     )
 
@@ -2932,7 +2968,7 @@ struct FrameworkStepView: View {
             }
             .staggerIn(index: 1, appeared: appeared)
 
-            // Framework Goal — section header with play/translate
+            // Framework Goal
             let goalText = lesson.framework.goal
             let goalPlaybackId = EnglishSpeechPlayer.playbackID(for: goalText, category: "fw-goal")
 
@@ -2973,59 +3009,70 @@ struct FrameworkStepView: View {
             )
             .staggerIn(index: 3, appeared: appeared)
 
-            // Structure sections — each with header + content
-            ForEach(Array(lesson.framework.defaultStructure.enumerated()), id: \.element.section) { sIdx, section in
-                let sectionText = section.moves.joined(separator: ". ")
-                let sectionPlaybackId = EnglishSpeechPlayer.playbackID(for: section.section + ". " + sectionText, category: "fw-section")
+            // Speaking Structure — unified card with Opening/Body/Closing
+            let allStructureTexts = lesson.framework.defaultStructure.flatMap { [$0.section] + $0.moves }
+            let allStructureText = lesson.framework.defaultStructure.map { "\($0.section). \($0.moves.joined(separator: ". "))" }.joined(separator: " ")
+            let structurePlaybackId = EnglishSpeechPlayer.playbackID(for: allStructureText, category: "fw-structure-all")
 
-                HStack(spacing: 8) {
-                    Text(section.section)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(frameworkColor)
-                    Spacer()
-                    HStack(spacing: 6) {
-                        CompactPlayButton(
-                            text: sectionText,
-                            playbackID: sectionPlaybackId,
-                            sourceLabel: "Framework Section",
-                            accentColor: frameworkColor
-                        )
-                        TranslateButton(englishText: sectionText, accentColor: frameworkColor, showInline: false)
-                    }
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet.indent")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(frameworkColor)
+                Text("Speaking Structure")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(frameworkColor)
+                Spacer()
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: allStructureText,
+                        playbackID: structurePlaybackId,
+                        sourceLabel: "Speaking Structure",
+                        accentColor: frameworkColor
+                    )
                 }
-                .staggerIn(index: 4 + sIdx * 2, appeared: appeared)
+            }
+            .staggerIn(index: 4, appeared: appeared)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(section.moves, id: \.self) { move in
-                        HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 12))
-                                .foregroundStyle(frameworkColor)
-                                .padding(.top, 3)
-                            Text(move)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.secondText)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .lineSpacing(2)
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(lesson.framework.defaultStructure, id: \.section) { section in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(section.section)
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(frameworkColor.opacity(0.7))
+                            .clipShape(Capsule())
+
+                        ForEach(section.moves, id: \.self) { move in
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(frameworkColor)
+                                    .padding(.top, 3)
+                                Text(move)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(2)
+                            }
                         }
                     }
-
-                    TranslationOverlay(englishText: sectionText, accentColor: frameworkColor)
                 }
-                .padding(14)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
-                        .foregroundStyle(frameworkColor.opacity(0.3))
-                )
-                .staggerIn(index: 5 + sIdx * 2, appeared: appeared)
             }
+            .padding(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                    .foregroundStyle(frameworkColor.opacity(0.3))
+            )
+            .staggerIn(index: 5, appeared: appeared)
 
-            // Delivery Markers — section header with play/translate
+            // Delivery Markers
             let markerColor = Color(hex: "5B6EF5")
-            let allMarkersText = lesson.framework.deliveryMarkers.joined(separator: ". ")
+            let markerTexts = lesson.framework.deliveryMarkers
+            let allMarkersText = markerTexts.joined(separator: ". ")
             let markersPlaybackId = EnglishSpeechPlayer.playbackID(for: allMarkersText, category: "fw-markers-all")
-            let markerBaseIndex = 4 + lesson.framework.defaultStructure.count * 2
 
             HStack(spacing: 8) {
                 Image(systemName: "text.quote")
@@ -3042,26 +3089,27 @@ struct FrameworkStepView: View {
                         sourceLabel: "Delivery Markers",
                         accentColor: markerColor
                     )
-                    TranslateButton(englishText: allMarkersText, accentColor: markerColor, showInline: false)
+                    BatchTranslateButton(texts: markerTexts, accentColor: markerColor)
                 }
             }
-            .staggerIn(index: markerBaseIndex, appeared: appeared)
+            .staggerIn(index: 6, appeared: appeared)
 
             VStack(alignment: .leading, spacing: 10) {
-                ForEach(lesson.framework.deliveryMarkers, id: \.self) { marker in
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "quote.bubble.fill")
-                            .font(.system(size: 11))
-                            .foregroundStyle(markerColor)
-                            .padding(.top, 3)
-                        Text(marker)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.primaryText)
-                            .fixedSize(horizontal: false, vertical: true)
+                ForEach(markerTexts, id: \.self) { marker in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Image(systemName: "quote.bubble.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(markerColor)
+                                .padding(.top, 3)
+                            Text(marker)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.primaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        TranslationOverlay(englishText: marker, accentColor: markerColor)
                     }
                 }
-
-                TranslationOverlay(englishText: allMarkersText, accentColor: markerColor)
             }
             .padding(14)
             .overlay(
@@ -3069,7 +3117,7 @@ struct FrameworkStepView: View {
                     .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
                     .foregroundStyle(markerColor.opacity(0.3))
             )
-            .staggerIn(index: markerBaseIndex + 1, appeared: appeared)
+            .staggerIn(index: 7, appeared: appeared)
         }
     }
 
@@ -3413,10 +3461,10 @@ private struct FrameworkGuidedView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(accentColor)
-                        Text("表达框架已掌握！")
+                        Text("Framework Mastered!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                        Text("继续下一步吧")
+                        Text("Continue to the next step")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -3609,6 +3657,8 @@ struct SamplesStepView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "范文学习",
                     subtitle: "用 Band 6 / 7 / 8 对照看内容深度和表达差异。",
+                    englishTitle: "Sample Answers",
+                    englishSubtitle: "Compare Band 6/7/8 for depth and expression differences.",
                     accentColor: Color(hex: "EC4899")
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -3617,7 +3667,7 @@ struct SamplesStepView: View {
                     icon: "doc.richtext.fill",
                     title: "范文学习",
                     english: "Sample Answers",
-                    subtitle: "三个水平的示范回答，对比学习",
+                    subtitle: "Three-level model answers for comparison",
                     accentColor: Color(hex: "EC4899"),
                     secondaryColor: Color(hex: "F472B6")
                 )
@@ -3663,62 +3713,73 @@ struct SamplesStepView: View {
             }
             .staggerIn(index: 1, appeared: appeared)
 
-            if selectedBand < task.sampleAnswers.count, let bandGuide = task.sampleAnswers[selectedBand].bandGuide {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        StepSectionLabel(
-                            icon: "list.bullet.rectangle.portrait",
-                            title: "Band \(bandGuide.band) 表达框架",
-                            color: bandColors[selectedBand]
-                        )
-                        Spacer()
-                        Text(bandGuide.focus)
-                            .font(.caption.bold())
-                            .foregroundStyle(bandColors[selectedBand])
-                    }
-
-                    frameworkGuideSection(
-                        title: "Opening",
-                        lines: bandGuide.opening,
-                        tint: bandColors[selectedBand]
-                    )
-                    frameworkGuideSection(
-                        title: "Body",
-                        lines: bandGuide.body,
-                        tint: bandColors[selectedBand]
-                    )
-                    frameworkGuideSection(
-                        title: "Closing",
-                        lines: bandGuide.closing,
-                        tint: bandColors[selectedBand]
-                    )
-                }
-                .padding(18)
-                .cardStyle()
-                .staggerIn(index: 2, appeared: appeared)
-            }
-
-            // Sample content
             if selectedBand < task.sampleAnswers.count {
                 let sample = task.sampleAnswers[selectedBand]
                 let bandColor = bandColors[selectedBand]
+                let samplePlaybackId = EnglishSpeechPlayer.playbackID(for: sample.content, category: "sample-\(selectedBand)")
 
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack {
-                        Text(sample.band)
+                // Band framework guide (if available)
+                if let bandGuide = sample.bandGuide {
+                    let guideTexts = bandGuide.opening + bandGuide.body + bandGuide.closing
+
+                    HStack(spacing: 8) {
+                        Text("Band \(bandGuide.band) Structure")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(bandColor)
-                            .clipShape(Capsule())
-
-                        Text("\(sample.wordCount) words")
-                            .font(.caption.bold())
-                            .foregroundStyle(AppColors.tertiaryText)
-
+                            .foregroundStyle(bandColor)
                         Spacer()
+                        CompactPlayButton(
+                            text: guideTexts.joined(separator: ". "),
+                            playbackID: EnglishSpeechPlayer.playbackID(for: guideTexts.joined(separator: ". "), category: "band-guide"),
+                            sourceLabel: "Band Guide",
+                            accentColor: bandColor
+                        )
+                    }
+                    .staggerIn(index: 2, appeared: appeared)
 
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            Text(bandGuide.focus)
+                                .font(.caption.bold())
+                                .foregroundStyle(bandColor)
+                            Spacer()
+                        }
+
+                        ForEach(["Opening", "Body", "Closing"], id: \.self) { section in
+                            let lines = section == "Opening" ? bandGuide.opening : section == "Body" ? bandGuide.body : bandGuide.closing
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(section)
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(bandColor.opacity(0.7))
+                                    .clipShape(Capsule())
+
+                                ForEach(lines, id: \.self) { line in
+                                    Text(line)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                    }
+                    .padding(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                            .foregroundStyle(bandColor.opacity(0.3))
+                    )
+                    .staggerIn(index: 3, appeared: appeared)
+                }
+
+                // Sample Answer
+                HStack(spacing: 8) {
+                    Text("\(sample.band) · \(sample.wordCount) words")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(bandColor)
+                    Spacer()
+                    HStack(spacing: 6) {
                         Button {
                             showSampleGuide = true
                         } label: {
@@ -3736,101 +3797,104 @@ struct SamplesStepView: View {
                             .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
+
+                        CompactPlayButton(
+                            text: sample.content,
+                            playbackID: samplePlaybackId,
+                            sourceLabel: "Sample Answer",
+                            accentColor: bandColor,
+                            onPlay: { listenedBands.insert(selectedBand) }
+                        )
+
+                        let sampleSentences = sample.content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
+                        BatchTranslateButton(texts: sampleSentences, accentColor: bandColor)
                     }
+                }
+                .staggerIn(index: 4, appeared: appeared)
 
-                    // Highlighted sample content
-                    highlightedSampleText(sample.content)
-                        .lineSpacing(6)
-
-                    InlineAudioPlayerControl(
-                        text: sample.content,
-                        playbackID: EnglishSpeechPlayer.playbackID(for: sample.content, category: "sample-\(selectedBand)"),
-                        sourceLabel: "Sample Answer",
-                        accentColor: bandColor,
-                        title: "Listen to Pronunciation",
-                        onPlay: { listenedBands.insert(selectedBand) }
-                    )
-
-                    TranslateButton(englishText: sample.content, accentColor: bandColor)
-
-                    if !sample.nativeFeatures.isEmpty {
-                        Divider().background(AppColors.border)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            StepSectionLabel(icon: "sparkles", title: "Native Features", color: bandColor)
-
-                            ForEach(sample.nativeFeatures, id: \.self) { feature in
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Image(systemName: "star.fill")
-                                            .font(.system(size: 9))
-                                            .foregroundStyle(bandColor)
-                                            .padding(.top, 4)
-                                        Text(feature)
-                                            .font(.subheadline)
-                                            .foregroundStyle(AppColors.secondText)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-                                    TranslateButton(englishText: feature, accentColor: bandColor)
-                                        .padding(.leading, 17)
-                                }
-                            }
+                VStack(alignment: .leading, spacing: 10) {
+                    let sentences = sample.content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
+                    ForEach(sentences, id: \.self) { sentence in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(sentence)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.primaryText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(3)
+                            TranslationOverlay(englishText: sentence, accentColor: bandColor)
                         }
                     }
+                }
+                .padding(14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                        .foregroundStyle(bandColor.opacity(0.3))
+                )
+                .staggerIn(index: 5, appeared: appeared)
 
-                    if !sample.upgrades.isEmpty {
-                        Divider().background(AppColors.border)
+                // Expression Upgrades
+                if !sample.upgrades.isEmpty {
+                    let upgradeTexts = sample.upgrades.flatMap { [$0.original, $0.improved, $0.why] }
+                    let upgradePlayText = sample.upgrades.map { "Original: \($0.original). Improved: \($0.improved)" }.joined(separator: ". ")
 
-                        VStack(alignment: .leading, spacing: 10) {
-                            StepSectionLabel(icon: "arrow.up.circle.fill", title: "Expression Upgrades", color: bandColor)
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(bandColor)
+                        Text("Expression Upgrades")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(bandColor)
+                        Spacer()
+                        HStack(spacing: 6) {
+                            CompactPlayButton(
+                                text: upgradePlayText,
+                                playbackID: EnglishSpeechPlayer.playbackID(for: upgradePlayText, category: "upgrades-\(selectedBand)"),
+                                sourceLabel: "Expression Upgrades",
+                                accentColor: bandColor
+                            )
+                            BatchTranslateButton(texts: upgradeTexts, accentColor: bandColor)
+                        }
+                    }
+                    .staggerIn(index: 6, appeared: appeared)
 
-                            ForEach(Array(sample.upgrades.enumerated()), id: \.offset) { _, item in
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("Original")
-                                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                                            .foregroundStyle(Color(hex: "EF4444"))
-                                        Text(item.original)
-                                            .font(.subheadline)
-                                            .foregroundStyle(AppColors.tertiaryText)
-                                            .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
-
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        HStack(alignment: .top, spacing: 8) {
-                                            Text("Improved")
-                                                .font(.system(size: 9, weight: .bold, design: .rounded))
-                                                .foregroundStyle(bandColor)
-                                            Text(item.improved)
-                                                .font(.subheadline.bold())
-                                                .foregroundStyle(AppColors.primaryText)
-                                                .fixedSize(horizontal: false, vertical: true)
-                                        }
-
-                                        HStack(spacing: 8) {
-                                            InlineAudioPlayerControl(
-                                                text: item.improved,
-                                                playbackID: EnglishSpeechPlayer.playbackID(for: item.improved, category: "sample-upgrade"),
-                                                sourceLabel: "Sample Upgrade",
-                                                accentColor: bandColor,
-                                                style: .compact
-                                            )
-                                            TranslateButton(englishText: item.improved, accentColor: bandColor)
-                                        }
-                                    }
-
-                                    Text(item.why)
-                                        .font(.caption)
-                                        .foregroundStyle(AppColors.secondText)
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(Array(sample.upgrades.enumerated()), id: \.offset) { _, item in
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("Original")
+                                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Color(hex: "EF4444"))
+                                    Text(item.original)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                        .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
                                         .fixedSize(horizontal: false, vertical: true)
+                                }
+                                TranslationOverlay(englishText: item.original, accentColor: Color(hex: "EF4444"))
 
-                                    if !item.note.isEmpty {
-                                        Text(item.note)
-                                            .font(.caption)
-                                            .foregroundStyle(AppColors.tertiaryText)
-                                            .fixedSize(horizontal: false, vertical: true)
-                                    }
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text("Improved")
+                                        .font(.system(size: 9, weight: .bold, design: .rounded))
+                                        .foregroundStyle(bandColor)
+                                    Text(item.improved)
+                                        .font(.subheadline.bold())
+                                        .foregroundStyle(AppColors.primaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                TranslationOverlay(englishText: item.improved, accentColor: bandColor)
+
+                                Text(item.why)
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                TranslationOverlay(englishText: item.why, accentColor: bandColor)
+
+                                if !item.note.isEmpty {
+                                    Text(item.note)
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.tertiaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
 
                                 if item.original != sample.upgrades.last?.original {
@@ -3839,25 +3903,20 @@ struct SamplesStepView: View {
                             }
                         }
                     }
+                    .padding(14)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                            .foregroundStyle(bandColor.opacity(0.3))
+                    )
+                    .staggerIn(index: 7, appeared: appeared)
                 }
-                .padding(18)
-                .cardStyle()
-                .transition(.asymmetric(
-                    insertion: .opacity.combined(with: .move(edge: .trailing)),
-                    removal: .opacity.combined(with: .move(edge: .leading))
-                ))
-                .staggerIn(index: lesson == nil ? 2 : 3, appeared: appeared)
             }
         }
         .onAppear {
             appeared = true
-            progressHint = "听完至少 1 个 Band 的范文音频"
-        }
-        .onChange(of: listenedBands.count) { _, _ in
-            if !listenedBands.isEmpty {
-                canComplete = true
-                progressHint = nil
-            }
+            canComplete = true
+            progressHint = nil
         }
         .fullScreenCover(isPresented: $showSampleGuide) {
             if selectedBand < task.sampleAnswers.count {
@@ -3868,28 +3927,6 @@ struct SamplesStepView: View {
                         listenedBands.insert(selectedBand)
                     }
                 )
-            }
-        }
-    }
-
-    private func frameworkGuideSection(title: String, lines: [String], tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption.bold())
-                .foregroundStyle(tint)
-
-            ForEach(lines, id: \.self) { line in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(line)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .fixedSize(horizontal: false, vertical: true)
-                    TranslateButton(englishText: line, accentColor: tint)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(10)
-                .background(tint.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
     }
@@ -3928,13 +3965,11 @@ struct SamplesStepView: View {
 
 private enum SampleGuideItem: Identifiable {
     case sampleText(band: String, content: String, wordCount: Int)
-    case nativeFeature(index: Int, text: String)
     case upgrade(index: Int, upgrade: SampleAnswer.Upgrade)
 
     var id: String {
         switch self {
         case .sampleText(let band, _, _): "sample-\(band)"
-        case .nativeFeature(let i, _): "feature-\(i)"
         case .upgrade(let i, _): "upgrade-\(i)"
         }
     }
@@ -3942,7 +3977,6 @@ private enum SampleGuideItem: Identifiable {
     var playableText: String {
         switch self {
         case .sampleText(_, let content, _): content
-        case .nativeFeature(_, let text): text
         case .upgrade(_, let u): u.improved
         }
     }
@@ -3950,7 +3984,6 @@ private enum SampleGuideItem: Identifiable {
     var sectionLabel: String {
         switch self {
         case .sampleText: "Sample Answer"
-        case .nativeFeature: "Native Feature"
         case .upgrade: "Expression Upgrade"
         }
     }
@@ -3958,7 +3991,6 @@ private enum SampleGuideItem: Identifiable {
     var sectionIcon: String {
         switch self {
         case .sampleText: "doc.richtext.fill"
-        case .nativeFeature: "sparkles"
         case .upgrade: "arrow.up.circle.fill"
         }
     }
@@ -3979,9 +4011,6 @@ private struct SampleGuidedView: View {
         var result: [SampleGuideItem] = [
             .sampleText(band: sample.band, content: sample.content, wordCount: sample.wordCount)
         ]
-        for (i, feature) in sample.nativeFeatures.enumerated() {
-            result.append(.nativeFeature(index: i, text: feature))
-        }
         for (i, upgrade) in sample.upgrades.enumerated() {
             result.append(.upgrade(index: i, upgrade: upgrade))
         }
@@ -3991,7 +4020,6 @@ private struct SampleGuidedView: View {
     private func playbackID(for item: SampleGuideItem) -> String {
         switch item {
         case .sampleText: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-guide")
-        case .nativeFeature: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-feature")
         case .upgrade: EnglishSpeechPlayer.playbackID(for: item.playableText, category: "sample-upgrade-guide")
         }
     }
@@ -4059,7 +4087,7 @@ private struct SampleGuidedView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
 
-                Spacer()
+                Spacer(minLength: 12)
 
                 if !allDone {
                     let item = items[currentIndex]
@@ -4096,23 +4124,16 @@ private struct SampleGuidedView: View {
                                         .foregroundStyle(AppColors.tertiaryText)
                                 }
 
-                                Text(content)
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(AppColors.secondText)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(6)
-
-                            case .nativeFeature(_, let text):
-                                HStack(alignment: .top, spacing: 10) {
-                                    Image(systemName: "star.fill")
-                                        .font(.system(size: 12))
-                                        .foregroundStyle(bandColor)
-                                        .padding(.top, 2)
-                                    Text(text)
-                                        .font(.system(size: 16))
-                                        .foregroundStyle(AppColors.secondText)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .lineSpacing(4)
+                                let sentences = content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
+                                ForEach(sentences, id: \.self) { sentence in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(sentence)
+                                            .font(.system(size: 15))
+                                            .foregroundStyle(AppColors.secondText)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .lineSpacing(3)
+                                        TranslationOverlay(englishText: sentence, accentColor: bandColor)
+                                    }
                                 }
 
                             case .upgrade(_, let upgrade):
@@ -4223,7 +4244,6 @@ private struct SampleGuidedView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     .padding(.horizontal, 20)
-                    .frame(maxHeight: UIScreen.main.bounds.height * 0.7)
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)
@@ -4244,10 +4264,10 @@ private struct SampleGuidedView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(bandColor)
-                        Text("\(sample.band) 范文已学完！")
+                        Text("\(sample.band) Sample Complete!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                        Text("试试其他 Band 或继续下一步")
+                        Text("Try other bands or continue to the next step")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -4260,7 +4280,7 @@ private struct SampleGuidedView: View {
                     }
                 }
 
-                Spacer()
+                Spacer(minLength: 12)
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
@@ -4289,15 +4309,15 @@ private struct SampleGuidedView: View {
 
 // MARK: - Practice Prompt
 private enum PracticeInputMode: String, CaseIterable, Identifiable {
-    case text = "文字输入"
-    case voice = "语音输入"
+    case text = "Text"
+    case voice = "Voice"
 
     var id: String { rawValue }
 }
 
 private enum PracticeLanguageMode: String, CaseIterable, Identifiable {
-    case native = "母语输入"
-    case english = "英文草稿"
+    case native = "Native"
+    case english = "English"
 
     var id: String { rawValue }
 }
@@ -4308,7 +4328,7 @@ struct PracticePromptView: View {
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
-    private let labels = ["开场", "来源", "使用", "例子", "收尾"]
+    private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
     @StateObject private var speechInput = SpeechInputManager()
@@ -4348,6 +4368,8 @@ struct PracticePromptView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "口语练习",
                     subtitle: "按提示把内容真正说出来，不要只停留在阅读。",
+                    englishTitle: "Speaking Practice",
+                    englishSubtitle: "Speak the content out loud — don't just read.",
                     accentColor: Color(hex: "EF4444")
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -4356,7 +4378,7 @@ struct PracticePromptView: View {
                     icon: "mic.fill",
                     title: "口语练习",
                     english: "Speaking Practice",
-                    subtitle: "实战演练，开口说英语",
+                    subtitle: "Real practice — speak English out loud",
                     accentColor: Color(hex: "EF4444"),
                     secondaryColor: Color(hex: "F97316")
                 )
@@ -4365,12 +4387,73 @@ struct PracticePromptView: View {
 
             topicCard
                 .staggerIn(index: 1, appeared: appeared)
+
             if let lesson {
-                practiceChecklistCard(lesson)
-                    .staggerIn(index: 2, appeared: appeared)
-            }
-            frameworkHints
+                // Speaking guide — checklist + prompts in one clean card
+                let checklistTexts = lesson.practice.checklist
+                let promptTexts = lesson.practice.selfPrompts
+
+                HStack(spacing: 8) {
+                    Image(systemName: "checklist.checked")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(practiceColor)
+                    Text("Speaking Guide")
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(practiceColor)
+                    Spacer()
+                    BatchTranslateButton(texts: checklistTexts + promptTexts, accentColor: practiceColor)
+                }
+                .staggerIn(index: 2, appeared: appeared)
+
+                VStack(alignment: .leading, spacing: 14) {
+                    // Checklist
+                    ForEach(checklistTexts, id: \.self) { item in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(alignment: .top, spacing: 10) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(practiceColor)
+                                    .padding(.top, 2)
+                                Text(item)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(2)
+                            }
+                            TranslationOverlay(englishText: item, accentColor: practiceColor)
+                        }
+                    }
+
+                    if !promptTexts.isEmpty {
+                        Divider().background(AppColors.border.opacity(0.5))
+
+                        // Self prompts as simple questions
+                        ForEach(promptTexts, id: \.self) { prompt in
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "questionmark.circle.fill")
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(practiceColor.opacity(0.7))
+                                        .padding(.top, 2)
+                                    Text(prompt)
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.primaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                TranslationOverlay(englishText: prompt, accentColor: practiceColor)
+                            }
+                        }
+                    }
+                }
+                .padding(14)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                        .foregroundStyle(practiceColor.opacity(0.3))
+                )
                 .staggerIn(index: 3, appeared: appeared)
+            }
+
             inputCard
                 .staggerIn(index: 4, appeared: appeared)
             actionArea
@@ -4378,19 +4461,9 @@ struct PracticePromptView: View {
 
             if !translatedEnglish.isEmpty {
                 resultCard(
-                    title: languageMode == .native ? "英文结果（API）" : "当前英文草稿",
-                    subtitle: languageMode == .native ? "基于当前后端 contract 的翻译结果" : "当前后端没有额外润色接口，保留你的英文输入",
+                    title: "English Result",
                     text: translatedEnglish,
                     tint: Color(hex: "4A90D9")
-                )
-            }
-
-            if !polishedEnglish.isEmpty {
-                resultCard(
-                    title: "保留字段",
-                    subtitle: "等待后端补充 DailySpeak 专用润色接口后再恢复",
-                    text: polishedEnglish,
-                    tint: Color(hex: "10B981")
                 )
             }
 
@@ -4436,15 +4509,12 @@ struct PracticePromptView: View {
 
     private func updatePracticeProgress() {
         let hasTranslation = !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        if hasTranslation && listenedResultAudio {
+        if hasTranslation {
             canComplete = true
             progressHint = nil
-        } else if hasTranslation {
-            canComplete = false
-            progressHint = "听完英文翻译语音以继续"
         } else {
             canComplete = false
-            progressHint = "提交你的回答并获取翻译结果"
+            progressHint = "Submit your answer and get translation"
         }
     }
 
@@ -4507,129 +4577,19 @@ struct PracticePromptView: View {
         .shadow(color: practiceColor.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 
-    private func practiceChecklistCard(_ lesson: LessonContent) -> some View {
-        GradientAccentCard(color: practiceColor, spacing: 14) {
-            StepSectionLabel(icon: "checklist.checked", title: "Speaking Checklist", color: practiceColor)
-
-            ForEach(lesson.practice.checklist, id: \.self) { item in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top, spacing: 10) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 13))
-                            .foregroundStyle(practiceColor)
-                            .padding(.top, 2)
-                        Text(item)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
-                    }
-
-                    HStack(spacing: 8) {
-                        InlineAudioPlayerControl(
-                            text: item,
-                            playbackID: EnglishSpeechPlayer.playbackID(for: item, category: "checklist"),
-                            sourceLabel: "Checklist",
-                            accentColor: practiceColor,
-                            style: .compact
-                        )
-                        TranslateButton(englishText: item, accentColor: practiceColor)
-                    }
-                }
-                .padding(10)
-                .background(practiceColor.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-
-            Rectangle()
-                .fill(
-                    LinearGradient(
-                        colors: [AppColors.border.opacity(0.3), AppColors.border, AppColors.border.opacity(0.3)],
-                        startPoint: .leading, endPoint: .trailing
-                    )
-                )
-                .frame(height: 1)
-
-            StepSectionLabel(icon: "text.bubble.fill", title: "Self Prompts", color: practiceColor)
-
-            ForEach(lesson.practice.selfPrompts, id: \.self) { prompt in
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(prompt)
-                        .font(.caption.bold())
-                        .foregroundStyle(practiceColor)
-
-                    HStack(spacing: 8) {
-                        InlineAudioPlayerControl(
-                            text: prompt,
-                            playbackID: EnglishSpeechPlayer.playbackID(for: prompt, category: "selfprompt"),
-                            sourceLabel: "Self Prompt",
-                            accentColor: practiceColor,
-                            style: .compact
-                        )
-                        TranslateButton(englishText: prompt, accentColor: practiceColor)
-                    }
-                }
-                .padding(10)
-                .background(practiceColor.opacity(0.04))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-        }
-    }
-
-    private var frameworkHints: some View {
-        GradientAccentCard(color: Color(hex: "8B5CF6"), spacing: 12) {
-            StepSectionLabel(
-                icon: "list.bullet.rectangle.portrait",
-                title: "表达框架提示",
-                color: Color(hex: "8B5CF6")
-            )
-
-            ForEach(Array(task.frameworkSentences.enumerated()), id: \.offset) { index, sentence in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .top, spacing: 10) {
-                        Text(index < labels.count ? labels[index] : "要点")
-                            .font(.system(size: 10, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(hex: "8B5CF6").opacity(0.6))
-                            .clipShape(Capsule())
-
-                        Text(sentence)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
-                    }
-
-                    HStack(spacing: 8) {
-                        InlineAudioPlayerControl(
-                            text: sentence,
-                            playbackID: EnglishSpeechPlayer.playbackID(for: sentence, category: "fwhint"),
-                            sourceLabel: "Framework Hint",
-                            accentColor: Color(hex: "8B5CF6"),
-                            style: .compact
-                        )
-                        TranslateButton(englishText: sentence, accentColor: Color(hex: "8B5CF6"))
-                    }
-                }
-            }
-        }
-    }
-
     private var inputCard: some View {
         GradientAccentCard(color: Color(hex: "4A90D9"), spacing: 14) {
-            StepSectionLabel(icon: "square.and.pencil", title: "输入你的回答草稿", color: Color(hex: "4A90D9"))
+            StepSectionLabel(icon: "square.and.pencil", title: "Write Your Draft", color: Color(hex: "4A90D9"))
 
             modeSelector(
-                title: "输入方式",
+                title: "Input Mode",
                 items: PracticeInputMode.allCases,
                 selected: inputMode
             ) { inputMode = $0 }
 
             if inputMode == .text {
                 modeSelector(
-                    title: "内容类型",
+                    title: "Content Type",
                     items: PracticeLanguageMode.allCases,
                     selected: languageMode
                 ) { languageMode = $0 }
@@ -4647,7 +4607,7 @@ struct PracticePromptView: View {
                     .foregroundStyle(Color(hex: "DC2626"))
             }
 
-            Text("草稿会自动保存。你可以先用母语输入，再通过当前后端接口转成英文。")
+            Text("Draft auto-saves. You can write in your native language first, then convert to English.")
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
                 .lineSpacing(2)
@@ -4662,7 +4622,7 @@ struct PracticePromptView: View {
                 HStack(spacing: 8) {
                     Image(systemName: speechInput.isRecording ? "stop.circle.fill" : "mic.circle.fill")
                         .font(.system(size: 16, weight: .bold))
-                    Text(speechInput.isRecording ? "停止录音" : "开始录音")
+                    Text(speechInput.isRecording ? "Stop" : "Record")
                         .font(.subheadline.bold())
                 }
                 .foregroundStyle(.white)
@@ -4698,7 +4658,7 @@ struct PracticePromptView: View {
             )
             .overlay(alignment: .topLeading) {
                 if draftInput.isEmpty {
-                    Text(languageMode == .native ? "先输入母语内容，建议 4-6 句..." : "先写英文草稿，当前会保留你的原文...")
+                    Text(languageMode == .native ? "Write in your native language, 4-6 sentences..." : "Write your English draft here...")
                         .font(.subheadline)
                         .foregroundStyle(AppColors.tertiaryText)
                         .padding(.horizontal, 16)
@@ -4720,7 +4680,7 @@ struct PracticePromptView: View {
                     Image(systemName: "wand.and.stars")
                         .font(.subheadline.bold())
                 }
-                Text(languageMode == .native ? "母语 -> 英文" : "保留英文草稿")
+                Text(languageMode == .native ? "Native → English" : "Keep English draft")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
             }
             .foregroundStyle(.white)
@@ -4748,39 +4708,42 @@ struct PracticePromptView: View {
         .disabled(draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing)
     }
 
-    private func resultCard(title: String, subtitle: String, text: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            StepSectionLabel(icon: "text.bubble.fill", title: title, color: tint)
-
-            Text(subtitle)
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-
-            InlineAudioPlayerControl(
-                text: text,
-                playbackID: EnglishSpeechPlayer.playbackID(for: text, category: "practice"),
-                sourceLabel: "Practice Result",
-                accentColor: tint,
-                title: "听英文发音",
-                onPlay: {
-                    listenedResultAudio = true
-                }
-            )
+    private func resultCard(title: String, text: String, tint: Color) -> some View {
+        let resultPlaybackId = EnglishSpeechPlayer.playbackID(for: text, category: "practice")
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "text.bubble.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(tint)
+                Text(title)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(tint)
+                Spacer()
+                CompactPlayButton(
+                    text: text,
+                    playbackID: resultPlaybackId,
+                    sourceLabel: "Practice Result",
+                    accentColor: tint,
+                    onPlay: { listenedResultAudio = true }
+                )
+                TranslateButton(englishText: text, accentColor: tint, showInline: false)
+            }
 
             Text(text)
                 .font(.subheadline)
                 .foregroundStyle(AppColors.primaryText)
                 .lineSpacing(5)
                 .textSelection(.enabled)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(tint.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .fixedSize(horizontal: false, vertical: true)
 
-            TranslateButton(englishText: text, accentColor: tint)
+            TranslationOverlay(englishText: text, accentColor: tint)
         }
-        .padding(18)
-        .cardStyle()
+        .padding(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                .foregroundStyle(tint.opacity(0.3))
+        )
     }
 
     private func modeSelector<Item: Identifiable>(

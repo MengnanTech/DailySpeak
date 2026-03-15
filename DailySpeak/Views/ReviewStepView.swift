@@ -32,6 +32,8 @@ struct ReviewStepView: View {
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
                     title: "高分检查",
                     subtitle: "骨架搭好后，再查内容力度和语言自然度。",
+                    englishTitle: "Score Check",
+                    englishSubtitle: "After structuring, check content depth and naturalness.",
                     accentColor: reviewColor
                 )
                 .staggerIn(index: 0, appeared: appeared)
@@ -40,7 +42,7 @@ struct ReviewStepView: View {
                     icon: "checklist",
                     title: "高分检查",
                     english: "Score Check",
-                    subtitle: "答完前快速检查内容完整度和语言准确度",
+                    subtitle: "Quick check on content and language accuracy",
                     accentColor: reviewColor,
                     secondaryColor: Color(hex: "FB923C")
                 )
@@ -90,18 +92,29 @@ struct ReviewStepView: View {
         VStack(alignment: .leading, spacing: 14) {
             StepSectionLabel(
                 icon: "checklist.checked",
-                title: "开口前，最后检查",
+                title: "Final Check Before Speaking",
                 color: reviewColor
             )
 
             ForEach(Array(task.tips.enumerated()), id: \.offset) { _, tip in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(tip)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.secondText)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    TranslateButton(englishText: tip, accentColor: reviewColor)
+                    HStack {
+                        Text(tip)
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.secondText)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer()
+                        HStack(spacing: 6) {
+                            CompactPlayButton(
+                                text: tip,
+                                playbackID: EnglishSpeechPlayer.playbackID(for: tip, category: "review-tip"),
+                                sourceLabel: "Review Tip",
+                                accentColor: reviewColor
+                            )
+                            TranslateButton(englishText: tip, accentColor: reviewColor, showInline: false)
+                        }
+                    }
+                    TranslationOverlay(englishText: tip, accentColor: reviewColor)
                 }
                 .padding(10)
                 .background(reviewColor.opacity(0.04))
@@ -149,7 +162,8 @@ struct ReviewStepView: View {
             .staggerIn(index: 1, appeared: appeared)
 
             // High-score tips section
-            let allTipsText = lesson.strategy.highScoreTips.joined(separator: ". ")
+            let tipTexts = lesson.strategy.highScoreTips
+            let allTipsText = tipTexts.joined(separator: ". ")
             let allTipsPlaybackId = EnglishSpeechPlayer.playbackID(for: allTipsText, category: "review-tips-all")
 
             HStack(spacing: 8) {
@@ -168,30 +182,32 @@ struct ReviewStepView: View {
                         accentColor: reviewColor,
                         onPlay: { listenedAudioIds.insert(allTipsPlaybackId) }
                     )
-                    TranslateButton(englishText: allTipsText, accentColor: reviewColor, showInline: false)
+                    BatchTranslateButton(texts: tipTexts, accentColor: reviewColor)
                 }
             }
             .staggerIn(index: 2, appeared: appeared)
 
             VStack(alignment: .leading, spacing: 12) {
-                ForEach(Array(lesson.strategy.highScoreTips.enumerated()), id: \.offset) { index, tip in
-                    HStack(alignment: .top, spacing: 10) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .frame(width: 22, height: 22)
-                            .background(reviewColor)
-                            .clipShape(Circle())
+                ForEach(Array(tipTexts.enumerated()), id: \.offset) { index, tip in
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1)")
+                                .font(.system(size: 11, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .frame(width: 22, height: 22)
+                                .background(reviewColor)
+                                .clipShape(Circle())
 
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
+                            Text(tip)
+                                .font(.subheadline)
+                                .foregroundStyle(AppColors.secondText)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(2)
+                        }
+
+                        TranslationOverlay(englishText: tip, accentColor: reviewColor)
                     }
                 }
-
-                TranslationOverlay(englishText: allTipsText, accentColor: reviewColor)
             }
             .padding(14)
             .overlay(
@@ -203,21 +219,37 @@ struct ReviewStepView: View {
 
             // Content mistakes section
             let mistakeColor = Color(hex: "EF4444")
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(mistakeColor)
-                    Text("Content Pitfalls")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(mistakeColor)
-                }
+            let contentFieldTexts = lesson.strategy.commonMistakes.content.flatMap { [$0.problem, $0.whyItHurts, $0.fix] }
+            let allContentText = lesson.strategy.commonMistakes.content.map { "\($0.problem). \($0.whyItHurts). \($0.fix)" }.joined(separator: " ")
+            let contentPlaybackId = EnglishSpeechPlayer.playbackID(for: allContentText, category: "review-content-all")
 
+            HStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(mistakeColor)
+                Text("Content Pitfalls")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(mistakeColor)
+                Spacer()
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: allContentText,
+                        playbackID: contentPlaybackId,
+                        sourceLabel: "Content Pitfalls",
+                        accentColor: mistakeColor
+                    )
+                    BatchTranslateButton(texts: contentFieldTexts, accentColor: mistakeColor)
+                }
+            }
+            .staggerIn(index: 4, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(lesson.strategy.commonMistakes.content.enumerated()), id: \.element.problem) { _, mistake in
                     VStack(alignment: .leading, spacing: 8) {
                         Text(mistake.problem)
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AppColors.primaryText)
+                        TranslationOverlay(englishText: mistake.problem, accentColor: mistakeColor)
 
                         (
                             Text("Why it hurts  ")
@@ -228,6 +260,7 @@ struct ReviewStepView: View {
                                 .foregroundStyle(AppColors.tertiaryText)
                         )
                         .fixedSize(horizontal: false, vertical: true)
+                        TranslationOverlay(englishText: mistake.whyItHurts, accentColor: mistakeColor)
 
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "lightbulb.fill")
@@ -239,9 +272,7 @@ struct ReviewStepView: View {
                                 .foregroundStyle(AppColors.secondText)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-
-                        TranslateButton(englishText: "\(mistake.problem). \(mistake.fix)", accentColor: mistakeColor, showInline: false)
-                        TranslationOverlay(englishText: "\(mistake.problem). \(mistake.fix)", accentColor: mistakeColor)
+                        TranslationOverlay(englishText: mistake.fix, accentColor: AppColors.success)
 
                         if mistake.problem != lesson.strategy.commonMistakes.content.last?.problem {
                             Divider().background(AppColors.border.opacity(0.5))
@@ -256,26 +287,46 @@ struct ReviewStepView: View {
                     .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
                     .foregroundStyle(mistakeColor.opacity(0.3))
             )
-            .staggerIn(index: 4, appeared: appeared)
+            .staggerIn(index: 5, appeared: appeared)
 
             // Language corrections section
             let langColor = Color(hex: "8B5CF6")
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "textformat.abc")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(langColor)
-                    Text("Language Fix")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(langColor)
-                }
+            let langFieldTexts = lesson.strategy.commonMistakes.language.flatMap { [$0.problem, $0.wrongExample, $0.betterExample, $0.reason] }
+            let allLangText = lesson.strategy.commonMistakes.language.map { "\($0.problem). \($0.wrongExample). \($0.betterExample). \($0.reason)" }.joined(separator: " ")
+            let langPlaybackId = EnglishSpeechPlayer.playbackID(for: allLangText, category: "review-lang-all")
 
+            HStack(spacing: 8) {
+                Image(systemName: "textformat.abc")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(langColor)
+                Text("Language Fix")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(langColor)
+                Spacer()
+                HStack(spacing: 6) {
+                    CompactPlayButton(
+                        text: allLangText,
+                        playbackID: langPlaybackId,
+                        sourceLabel: "Language Fix",
+                        accentColor: langColor,
+                        onPlay: {
+                            for m in lesson.strategy.commonMistakes.language {
+                                listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: m.betterExample, category: "review-lang"))
+                            }
+                        }
+                    )
+                    BatchTranslateButton(texts: langFieldTexts, accentColor: langColor)
+                }
+            }
+            .staggerIn(index: 6, appeared: appeared)
+
+            VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(lesson.strategy.commonMistakes.language.enumerated()), id: \.element.problem) { _, mistake in
-                    let playbackId = EnglishSpeechPlayer.playbackID(for: mistake.betterExample, category: "review-lang")
                     VStack(alignment: .leading, spacing: 8) {
                         Text(mistake.problem)
                             .font(.subheadline.bold())
                             .foregroundStyle(AppColors.primaryText)
+                        TranslationOverlay(englishText: mistake.problem, accentColor: langColor)
 
                         HStack(alignment: .top, spacing: 8) {
                             Text("Wrong")
@@ -287,6 +338,7 @@ struct ReviewStepView: View {
                                 .strikethrough(color: mistakeColor.opacity(0.4))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
+                        TranslationOverlay(englishText: mistake.wrongExample, accentColor: mistakeColor)
 
                         HStack(alignment: .top, spacing: 8) {
                             Text("Better")
@@ -297,31 +349,13 @@ struct ReviewStepView: View {
                                 .foregroundStyle(AppColors.primaryText)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
-
-                        HStack(spacing: 8) {
-                            CompactPlayButton(
-                                text: mistake.betterExample,
-                                playbackID: playbackId,
-                                sourceLabel: "Review Language",
-                                accentColor: langColor,
-                                onPlay: { listenedAudioIds.insert(playbackId) }
-                            )
-                            TranslateButton(
-                                englishText: "\(mistake.wrongExample) → \(mistake.betterExample). \(mistake.reason)",
-                                accentColor: langColor,
-                                showInline: false
-                            )
-                        }
+                        TranslationOverlay(englishText: mistake.betterExample, accentColor: AppColors.success)
 
                         Text(mistake.reason)
                             .font(.caption)
                             .foregroundStyle(AppColors.tertiaryText)
                             .fixedSize(horizontal: false, vertical: true)
-
-                        TranslationOverlay(
-                            englishText: "\(mistake.wrongExample) → \(mistake.betterExample). \(mistake.reason)",
-                            accentColor: langColor
-                        )
+                        TranslationOverlay(englishText: mistake.reason, accentColor: langColor)
 
                         if mistake.problem != lesson.strategy.commonMistakes.language.last?.problem {
                             Divider().background(AppColors.border.opacity(0.5))
@@ -336,7 +370,7 @@ struct ReviewStepView: View {
                     .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
                     .foregroundStyle(langColor.opacity(0.3))
             )
-            .staggerIn(index: 5, appeared: appeared)
+            .staggerIn(index: 7, appeared: appeared)
         }
     }
 }
@@ -519,10 +553,10 @@ private struct ReviewGuidedView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 56))
                             .foregroundStyle(accentColor)
-                        Text("高分检查已完成！")
+                        Text("Score Check Complete!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                        Text("准备开口说吧")
+                        Text("Ready to speak!")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -579,6 +613,8 @@ private struct ReviewGuidedView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
 
+                TranslationOverlay(englishText: text, accentColor: color)
+
             case .contentMistake(_, let mistake):
                 // Header
                 HStack(spacing: 10) {
@@ -595,52 +631,42 @@ private struct ReviewGuidedView: View {
                 }
 
                 // Problem
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(mistake.problem)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(AppColors.primaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                    TranslateButton(englishText: mistake.problem, accentColor: color)
-                    TranslationOverlay(englishText: mistake.problem, accentColor: color)
-                }
+                Text(mistake.problem)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(AppColors.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                TranslationOverlay(englishText: mistake.problem, accentColor: color)
 
                 // Why it hurts
-                VStack(alignment: .leading, spacing: 6) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Why it hurts")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
-                            .foregroundStyle(color.opacity(0.82))
-                        Text(mistake.whyItHurts)
-                            .font(.subheadline)
-                            .foregroundStyle(AppColors.tertiaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(2)
-                    }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(color.opacity(0.06))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-
-                    TranslateButton(englishText: mistake.whyItHurts, accentColor: color)
-                    TranslationOverlay(englishText: mistake.whyItHurts, accentColor: color)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Why it hurts")
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(color.opacity(0.82))
+                    Text(mistake.whyItHurts)
+                        .font(.subheadline)
+                        .foregroundStyle(AppColors.tertiaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(2)
                 }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(color.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                TranslationOverlay(englishText: mistake.whyItHurts, accentColor: color)
 
                 // Fix
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "lightbulb.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(AppColors.success)
-                            .padding(.top, 2)
-                        Text(mistake.fix)
-                            .font(.system(size: 16))
-                            .foregroundStyle(AppColors.secondText)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(3)
-                    }
-                    TranslateButton(englishText: mistake.fix, accentColor: AppColors.success)
-                    TranslationOverlay(englishText: mistake.fix, accentColor: AppColors.success)
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "lightbulb.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppColors.success)
+                        .padding(.top, 2)
+                    Text(mistake.fix)
+                        .font(.system(size: 16))
+                        .foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .lineSpacing(3)
                 }
+                TranslationOverlay(englishText: mistake.fix, accentColor: AppColors.success)
 
             case .languageMistake(_, let mistake):
                 // Header
@@ -658,68 +684,58 @@ private struct ReviewGuidedView: View {
                 }
 
                 // Problem title
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(mistake.problem)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(AppColors.primaryText)
-                    TranslateButton(englishText: mistake.problem, accentColor: color)
-                    TranslationOverlay(englishText: mistake.problem, accentColor: color)
-                }
+                Text(mistake.problem)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(AppColors.primaryText)
+                TranslationOverlay(englishText: mistake.problem, accentColor: color)
 
                 // Wrong vs Better
-                VStack(alignment: .leading, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(alignment: .top, spacing: 10) {
-                            Text("WRONG")
-                                .font(.system(size: 9, weight: .heavy, design: .rounded))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color(hex: "EF4444"))
-                                .clipShape(Capsule())
-                            Text(mistake.wrongExample)
-                                .font(.system(size: 15))
-                                .foregroundStyle(AppColors.tertiaryText)
-                                .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-
-                        HStack(alignment: .top, spacing: 10) {
-                            Text("BETTER")
-                                .font(.system(size: 9, weight: .heavy, design: .rounded))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(AppColors.success)
-                                .clipShape(Capsule())
-                            Text(mistake.betterExample)
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(AppColors.primaryText)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("WRONG")
+                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(Color(hex: "EF4444"))
+                            .clipShape(Capsule())
+                        Text(mistake.wrongExample)
+                            .font(.system(size: 15))
+                            .foregroundStyle(AppColors.tertiaryText)
+                            .strikethrough(color: Color(hex: "EF4444").opacity(0.4))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(color.opacity(0.04))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    TranslateButton(englishText: "\(mistake.wrongExample) → \(mistake.betterExample)", accentColor: color)
-                    TranslationOverlay(englishText: "\(mistake.wrongExample) → \(mistake.betterExample)", accentColor: color)
+                    HStack(alignment: .top, spacing: 10) {
+                        Text("BETTER")
+                            .font(.system(size: 9, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(AppColors.success)
+                            .clipShape(Capsule())
+                        Text(mistake.betterExample)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(AppColors.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(color.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                TranslationOverlay(englishText: "\(mistake.wrongExample) → \(mistake.betterExample)", accentColor: color)
 
                 // Reason
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(mistake.reason)
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.tertiaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .lineSpacing(2)
-                    TranslateButton(englishText: mistake.reason, accentColor: color)
-                    TranslationOverlay(englishText: mistake.reason, accentColor: color)
-                }
+                Text(mistake.reason)
+                    .font(.subheadline)
+                    .foregroundStyle(AppColors.tertiaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(2)
+                TranslationOverlay(englishText: mistake.reason, accentColor: color)
             }
 
-            // Audio player
+            // Audio + translate
             HStack(spacing: 12) {
                 CompactPlayButton(
                     text: item.playableText,
@@ -744,12 +760,15 @@ private struct ReviewGuidedView: View {
                 }
 
                 Spacer()
-            }
 
-            // Tip type: keep shared translate for the whole text
-            if case .tip = item {
-                TranslateButton(englishText: item.playableText, accentColor: color, showInline: false)
-                TranslationOverlay(englishText: item.playableText, accentColor: color)
+                let translateTexts: [String] = {
+                    switch item {
+                    case .tip(_, let text): return [text]
+                    case .contentMistake(_, let m): return [m.problem, m.whyItHurts, m.fix]
+                    case .languageMistake(_, let m): return [m.problem, "\(m.wrongExample) → \(m.betterExample)", m.reason]
+                    }
+                }()
+                BatchTranslateButton(texts: translateTexts, accentColor: color)
             }
 
             // Confirm button
@@ -792,6 +811,70 @@ private struct ReviewGuidedView: View {
             withAnimation {
                 allDone = true
             }
+        }
+    }
+}
+
+// MARK: - Batch Translate Button
+/// One button in header that translates multiple texts individually,
+/// so each item can show its own TranslationOverlay.
+struct BatchTranslateButton: View {
+    let texts: [String]
+    var accentColor: Color = .blue
+
+    @State private var cache = TranslationCache.shared
+    @State private var isLoading = false
+
+    private var allVisible: Bool {
+        texts.allSatisfy { cache.visibleKeys.contains($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+    }
+
+    var body: some View {
+        Button(action: handleTap) {
+            HStack(spacing: 4) {
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.mini)
+                } else {
+                    Image(systemName: "globe")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                Text(allVisible ? "收起" : "翻译")
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .fixedSize()
+            .foregroundStyle(allVisible ? .white : accentColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(allVisible ? accentColor : accentColor.opacity(0.1))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(isLoading)
+    }
+
+    private func handleTap() {
+        if allVisible {
+            // Hide all
+            for text in texts {
+                cache.visibleKeys.remove(text.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+            return
+        }
+        // Translate all and show
+        isLoading = true
+        Task {
+            await withTaskGroup(of: Void.self) { group in
+                for text in texts {
+                    group.addTask {
+                        _ = try? await cache.translate(text)
+                    }
+                }
+            }
+            for text in texts {
+                cache.visibleKeys.insert(text.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+            isLoading = false
         }
     }
 }

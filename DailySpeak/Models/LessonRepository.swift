@@ -250,10 +250,9 @@ private extension LessonContent {
                 LearningStep(id: 0, type: .strategy),
                 LearningStep(id: 1, type: .review),
                 LearningStep(id: 2, type: .vocabulary),
-                LearningStep(id: 3, type: .phrases),
-                LearningStep(id: 4, type: .framework),
-                LearningStep(id: 5, type: .samples),
-                LearningStep(id: 6, type: .practice)
+                LearningStep(id: 3, type: .framework),
+                LearningStep(id: 4, type: .samples),
+                LearningStep(id: 5, type: .practice)
             ],
             tips: Array(strategy.highScoreTips.prefix(4)),
             vocabulary: adaptedVocabulary(),

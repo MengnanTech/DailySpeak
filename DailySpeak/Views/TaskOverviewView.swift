@@ -390,7 +390,7 @@ struct TaskOverviewView: View {
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("学习重点")
+                    Text("Key Focus")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                     Text(lesson.practice.targetLength)
@@ -409,7 +409,7 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                focusGoalText(lesson.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
+                focusGoalText(lesson.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples.", isPopup: isPopup)
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
@@ -434,11 +434,11 @@ struct TaskOverviewView: View {
 
             // Stats row — card-style mini stats
             HStack(spacing: 0) {
-                lessonMiniStat(title: "思路", value: "\(lesson.strategy.angles.count)", icon: "sparkles")
+                lessonMiniStat(title: "Strategy", value: "\(lesson.strategy.angles.count)", icon: "sparkles")
                 miniStatDivider
-                lessonMiniStat(title: "词汇", value: "\(task.vocabulary.count)", icon: "textformat.abc")
+                lessonMiniStat(title: "Vocab", value: "\(task.vocabulary.count)", icon: "textformat.abc")
                 miniStatDivider
-                lessonMiniStat(title: "范文", value: "\(task.sampleAnswers.count)", icon: "doc.text")
+                lessonMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)", icon: "doc.text")
             }
             .padding(.vertical, 12)
             .background(
@@ -457,11 +457,11 @@ struct TaskOverviewView: View {
                     Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(theme.startColor)
-                    Text("建议顺序")
+                    Text("Suggested Order")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                         .foregroundStyle(theme.startColor)
                 }
-                focusSuggestionText("先看答题思路，再学词汇和框架，最后对照范文开口练。", isPopup: isPopup)
+                focusSuggestionText("Start with strategy, then learn vocabulary and framework, finally practice with samples.", isPopup: isPopup)
             }
             .padding(14)
             .background(
@@ -555,7 +555,7 @@ struct TaskOverviewView: View {
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("学习重点")
+                    Text("Key Focus")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                     Text(task.suggestedTime)
@@ -574,7 +574,7 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                focusGoalText("打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。", isPopup: isPopup)
+                focusGoalText("Understand the topic first, identify key words, then follow the steps to practice speaking.", isPopup: isPopup)
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
@@ -608,16 +608,31 @@ struct TaskOverviewView: View {
 
     // MARK: - Flow Section Card
 
+    @State private var flowTranslationCache = TranslationCache.shared
+
+    private var allStepTexts: [String] {
+        task.steps.map { step in
+            step.title + ". " + step.subtitle
+        }
+    }
+
     private var flowSectionCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("学习流程").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
+                Text("Learning Flow").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
-                Text("\(task.steps.count) steps")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundStyle(theme.startColor)
-                    .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(theme.startColor.opacity(0.08)).clipShape(Capsule())
+                if phase == .ready && !showCenteredFlow {
+                    HStack(spacing: 6) {
+                        let allText = allStepTexts.joined(separator: ". ")
+                        CompactPlayButton(
+                            text: allText,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: allText, category: "flow-all"),
+                            sourceLabel: "Learning Flow",
+                            accentColor: theme.startColor
+                        )
+                        BatchTranslateButton(texts: allStepTexts, accentColor: theme.startColor)
+                    }
+                }
             }
             .padding(.bottom, 2)
 
@@ -669,19 +684,31 @@ struct TaskOverviewView: View {
                 if !isLast {
                     Rectangle()
                         .fill(connectorColor(for: index))
-                        .frame(width: 2, height: 24)
+                        .frame(width: 2, height: 32)
                 }
             }
 
             VStack(alignment: .leading, spacing: 3) {
+                let stepKey = (step.title + ". " + stepSubtitle(for: step, state: state)).trimmingCharacters(in: .whitespacesAndNewlines)
+                let isTranslated = flowTranslationCache.visibleKeys.contains(stepKey)
+                let translatedText = flowTranslationCache.cached(stepKey)
+
                 HStack(spacing: 6) {
                     Image(systemName: step.icon).font(.system(size: 12, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
-                    Text(stepTitleText(for: step, at: index))
-                        .font(.system(size: 16, weight: .bold)).foregroundStyle(AppColors.primaryText)
+                    if isTranslated, let translated = translatedText {
+                        Text(translated)
+                            .font(.system(size: 14, weight: .semibold)).foregroundStyle(AppColors.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text(stepTitleText(for: step, at: index))
+                            .font(.system(size: 16, weight: .bold)).foregroundStyle(AppColors.primaryText)
+                    }
                 }
-                Text(stepSubtitleText(for: step, at: index, state: state))
-                    .font(.system(size: 13)).foregroundStyle(AppColors.tertiaryText)
+                if !isTranslated {
+                    Text(stepSubtitleText(for: step, at: index, state: state))
+                        .font(.system(size: 13)).foregroundStyle(AppColors.tertiaryText)
+                }
             }
             .opacity(state == .spinning ? 0.92 : 1)
             Spacer()
@@ -689,6 +716,7 @@ struct TaskOverviewView: View {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppColors.tertiaryText)
+                    .frame(maxHeight: .infinity, alignment: .center)
             }
         }
         .contentShape(Rectangle())
@@ -715,7 +743,7 @@ struct TaskOverviewView: View {
     }
 
     private func stepSubtitle(for step: LearningStep, state: OverviewStepDisplayState) -> String {
-        state == .locked ? "完成前一步后解锁" : step.subtitle
+        state == .locked ? "Complete previous step to unlock" : step.subtitle
     }
 
     private func stepTitleText(for step: LearningStep, at index: Int) -> String {
@@ -891,21 +919,27 @@ struct TaskOverviewView: View {
             let subtitle = stepSubtitle(for: step, state: .spinning)
             let totalChars = step.title.count + subtitle.count
 
-            // Start spinning + typewriter simultaneously
-            let typeDuration = max(0.8, Double(totalChars) * 0.08)
-            withAnimation(.spring(duration: 0.4, bounce: 0.16)) {
+            // Stop any previous step TTS
+            EnglishSpeechPlayer.shared.stopPlayback()
+            // Start spinning + typewriter + TTS simultaneously
+            let typeDuration = max(0.6, Double(totalChars) * 0.04)
+            withAnimation(.spring(duration: 0.35, bounce: 0.16)) {
                 stepDisplayStates[index] = .spinning
             }
+            // Speak step title during typewriter animation
+            let stepFullText = step.title + ". " + subtitle
+            let pid = EnglishSpeechPlayer.playbackID(for: stepFullText, category: "step-overview")
+            EnglishSpeechPlayer.shared.togglePlayback(id: pid, text: stepFullText, sourceLabel: "Step Overview")
             await typeStepText(index: index, totalChars: totalChars, duration: typeDuration)
             guard !Task.isCancelled else { return }
-            // Reading pause — let user absorb
-            await pause(0.5)
+            // Brief reading pause
+            await pause(0.3)
             guard !Task.isCancelled else { return }
             // Settle to checkmark
-            withAnimation(.spring(duration: 0.35, bounce: 0.2)) {
+            withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
                 stepDisplayStates[index] = .checked
             }
-            await pause(0.3)
+            await pause(0.2)
         }
         guard !Task.isCancelled else { return }
 
@@ -980,16 +1014,16 @@ struct TaskOverviewView: View {
     private func typeFocusGoal() async {
         let text: String
         if let lessonContent {
-            text = lessonContent.topic.learningGoal ?? "先看思路，再学词汇和框架，最后对照范文开口练。"
+            text = lessonContent.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples."
         } else {
-            text = "打开这道题时，先理解题意，再抓关键词，最后按照步骤开口练。"
+            text = "Understand the topic first, identify key words, then follow the steps to practice speaking."
         }
         let characters = Array(text)
         guard !characters.isEmpty else { return }
 
         // Play TTS — audio was pre-loaded in TaskLoadingView, plays from local file instantly
         let playbackId = EnglishSpeechPlayer.playbackID(for: text, category: "focus-goal")
-        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: text, sourceLabel: "学习重点")
+        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: text, sourceLabel: "Key Focus")
 
         // Match typewriter duration to actual audio duration
         let audioDuration = EnglishSpeechPlayer.shared.cachedDuration(id: playbackId)
@@ -1004,7 +1038,7 @@ struct TaskOverviewView: View {
 
     @MainActor
     private func typeFocusSuggestion() async {
-        let text = "先看答题思路，再学词汇和框架，最后对照范文开口练。"
+        let text = "Start with strategy, then learn vocabulary and framework, finally practice with samples."
         let characters = Array(text)
         guard !characters.isEmpty else { return }
         let totalDuration = min(1.2, max(0.5, Double(characters.count) * 0.035))

@@ -13,19 +13,7 @@ enum StepType: Int, CaseIterable, Codable {
 
     var title: String {
         switch self {
-        case .strategy:   "答题策略"
-        case .review:     "高分检查"
-        case .vocabulary:  "核心词汇"
-        case .phrases:     "实用词组"
-        case .framework:   "表达框架"
-        case .samples:     "范文学习"
-        case .practice:    "口语练习"
-        }
-    }
-
-    var englishTitle: String {
-        switch self {
-        case .strategy:   "Answer Structure"
+        case .strategy:   "Answer Strategy"
         case .review:     "Score Check"
         case .vocabulary:  "Key Vocabulary"
         case .phrases:     "Useful Phrases"
@@ -35,15 +23,27 @@ enum StepType: Int, CaseIterable, Codable {
         }
     }
 
+    var chineseTitle: String {
+        switch self {
+        case .strategy:   "答题策略"
+        case .review:     "高分检查"
+        case .vocabulary:  "词汇与词组"
+        case .phrases:     "实用词组"
+        case .framework:   "表达框架"
+        case .samples:     "范文学习"
+        case .practice:    "口语练习"
+        }
+    }
+
     var subtitle: String {
         switch self {
-        case .strategy:   "先搭答案骨架，再安排表达顺序"
-        case .review:     "检查提分点、内容漏洞和语言问题"
-        case .vocabulary:  "掌握关键词汇和发音"
-        case .phrases:     "学习地道表达和例句"
-        case .framework:   "掌握答题模板与升级表达"
-        case .samples:     "三个等级的优秀范文"
-        case .practice:    "实战演练，开口说英语"
+        case .strategy:   "Build answer structure and organize expression"
+        case .review:     "Check scoring points, content gaps and language"
+        case .vocabulary:  "Master key words and pronunciation"
+        case .phrases:     "Learn native expressions and examples"
+        case .framework:   "Master templates and upgraded expressions"
+        case .samples:     "Three-level model answers"
+        case .practice:    "Real practice — speak English out loud"
         }
     }
 
