@@ -176,21 +176,19 @@ struct ReviewStepView: View {
                 Text("High Score Tips")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(reviewColor)
+
+                Button {
+                    reviewGuideStartIndex = 0
+                    showReviewGuide = true
+                } label: {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(reviewColor)
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
-                        reviewGuideStartIndex = 0
-                        showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
-                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .background(reviewColor).clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allTipsText,
                         playbackID: allTipsPlaybackId,
@@ -246,21 +244,19 @@ struct ReviewStepView: View {
                 Text("Content Pitfalls")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(mistakeColor)
+
+                Button {
+                    reviewGuideStartIndex = tipCount
+                    showReviewGuide = true
+                } label: {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(mistakeColor)
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
-                        reviewGuideStartIndex = tipCount
-                        showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
-                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .background(mistakeColor).clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allContentText,
                         playbackID: contentPlaybackId,
@@ -331,21 +327,19 @@ struct ReviewStepView: View {
                 Text("Language Fix")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(langColor)
+
+                Button {
+                    reviewGuideStartIndex = tipCount + contentCount
+                    showReviewGuide = true
+                } label: {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(langColor)
+                }
+                .buttonStyle(.plain)
+
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
-                        reviewGuideStartIndex = tipCount + contentCount
-                        showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "play.fill").font(.system(size: 8, weight: .bold))
-                            Text("Guide").font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .background(langColor).clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
                     CompactPlayButton(
                         text: allLangText,
                         playbackID: langPlaybackId,
@@ -486,8 +480,15 @@ private struct ReviewGuidedView: View {
 
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
-    @State private var currentIndex = 0
-    @State private var didSetStart = false
+    @State private var currentIndex: Int
+
+    init(lesson: LessonContent, accentColor: Color, startIndex: Int = 0, onComplete: @escaping (Set<String>) -> Void = { _ in }) {
+        self.lesson = lesson
+        self.accentColor = accentColor
+        self.startIndex = startIndex
+        self.onComplete = onComplete
+        self._currentIndex = State(initialValue: startIndex)
+    }
     @State private var audioFinished = false
     @State private var completedAudioIds: Set<String> = []
     @State private var allDone = false
@@ -630,12 +631,6 @@ private struct ReviewGuidedView: View {
             }
         }
         .background(ClearBackgroundView())
-        .onAppear {
-            if !didSetStart && startIndex > 0 && startIndex < items.count {
-                currentIndex = startIndex
-                didSetStart = true
-            }
-        }
     }
 
     @ViewBuilder
