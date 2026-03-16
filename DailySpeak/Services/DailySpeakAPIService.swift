@@ -12,6 +12,19 @@ private struct EnglishTTSResponseDTO: Decodable {
     let provider: String?
 }
 
+private struct EnglishTTSBatchResponseDTO: Decodable {
+    let items: [EnglishTTSBatchItemDTO]
+    let total: Int
+    let cached: Int
+    let generated: Int
+}
+
+private struct EnglishTTSBatchItemDTO: Decodable {
+    let id: String?
+    let audioUrl: String?
+    let provider: String?
+}
+
 final class DailySpeakAPIService {
     static let shared = DailySpeakAPIService()
 
@@ -61,6 +74,36 @@ final class DailySpeakAPIService {
 
     func polishToSpokenEnglish(englishText _: String, topic _: String) async throws -> String {
         throw APIError.transport("后端当前没有 DailySpeak polish 接口，客户端已停止调用该能力。")
+    }
+
+    /// Batch resolve audio URLs for multiple items in one request.
+    /// Returns a dictionary mapping id → remote audio URL.
+    func generateEnglishAudioURLBatch(items: [(id: String, text: String)], voiceId: String? = nil) async throws -> [String: URL] {
+        let requestItems: [[String: String]] = items.map { item in
+            let dict: [String: String] = ["id": item.id, "text": item.text]
+            return dict
+        }
+        var body: [String: Any] = ["items": requestItems]
+        if let voiceId {
+            body["voiceId"] = voiceId
+        }
+        let response: APIEnvelope<EnglishTTSBatchResponseDTO> = try await APIClient.shared.request(
+            "tts/english/mp3/batch",
+            method: "POST",
+            body: body,
+            requiresAuth: true
+        )
+        guard response.code == 200, let data = response.data else {
+            throw APIError.api(response.code, response.msg)
+        }
+        var result: [String: URL] = [:]
+        for item in data.items {
+            guard let id = item.id, let urlString = item.audioUrl else { continue }
+            let trimmed = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty, let url = URL(string: trimmed) else { continue }
+            result[id] = url
+        }
+        return result
     }
 
     func generateEnglishAudioURL(id: String, text: String, voiceId: String? = nil) async throws -> URL {

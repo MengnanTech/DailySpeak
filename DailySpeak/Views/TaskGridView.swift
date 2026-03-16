@@ -187,6 +187,8 @@ struct TimelineRow: View {
     let currentNodePulse: Bool
     let onTap: () -> Void
 
+    @State private var downloadState: AudioDownloadState = .idle
+
     private var theme: StageTheme { stage.theme }
 
     var body: some View {
@@ -324,6 +326,7 @@ struct TimelineRow: View {
                 }
 
                 if state != .locked {
+                    audioDownloadButton
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10))
                         .foregroundStyle(AppColors.border)
@@ -332,6 +335,7 @@ struct TimelineRow: View {
             .padding(.vertical, 14)
             .padding(.trailing, 4)
         }
+        .onAppear { checkDownloadState() }
     }
 
     // MARK: - Expanded Row (current task)
@@ -424,5 +428,98 @@ struct TimelineRow: View {
         }
         .padding(.bottom, 16)
         .padding(.trailing, 4)
+    }
+
+    // MARK: - Audio Download Button
+
+    @ViewBuilder
+    private var audioDownloadButton: some View {
+        if task.lessonContent != nil {
+            Button {
+                guard downloadState == .idle else { return }
+                startDownload()
+            } label: {
+                Group {
+                    switch downloadState {
+                    case .idle:
+                        Image(systemName: "arrow.down.circle")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(theme.startColor.opacity(0.5))
+                    case .downloading(let progress):
+                        ZStack {
+                            Circle()
+                                .stroke(theme.startColor.opacity(0.15), lineWidth: 2)
+                                .frame(width: 18, height: 18)
+                            Circle()
+                                .trim(from: 0, to: progress)
+                                .stroke(theme.startColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                                .frame(width: 18, height: 18)
+                                .rotationEffect(.degrees(-90))
+                        }
+                    case .done:
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(AppColors.success)
+                    }
+                }
+                .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .disabled(downloadState != .idle)
+        }
+    }
+
+    private func checkDownloadState() {
+        guard task.lessonContent != nil else { return }
+        if AudioPreloader.isFullyCached(for: task) {
+            downloadState = .done
+        }
+    }
+
+    private func startDownload() {
+        downloadState = .downloading(progress: 0)
+        let items = AudioPreloader.allItems(for: task)
+        guard !items.isEmpty else {
+            downloadState = .done
+            return
+        }
+        Task {
+            let total = Double(items.count)
+            var completed = 0.0
+            // Download in batches of 5 for progress feedback
+            let batchSize = 5
+            for batchStart in stride(from: 0, to: items.count, by: batchSize) {
+                let batchEnd = min(batchStart + batchSize, items.count)
+                let batch = Array(items[batchStart..<batchEnd])
+                await EnglishSpeechPlayer.shared.preloadBatch(batch)
+                completed += Double(batch.count)
+                withAnimation {
+                    downloadState = .downloading(progress: completed / total)
+                }
+            }
+            withAnimation {
+                downloadState = .done
+            }
+        }
+    }
+}
+
+// MARK: - Download State
+
+private enum AudioDownloadState: Equatable {
+    case idle
+    case downloading(progress: Double)
+    case done
+
+    static func == (lhs: AudioDownloadState, rhs: AudioDownloadState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.done, .done): return true
+        case (.downloading, .downloading): return true
+        default: return false
+        }
+    }
+
+    static func != (lhs: AudioDownloadState, rhs: AudioDownloadState) -> Bool {
+        !(lhs == rhs)
     }
 }

@@ -21,7 +21,7 @@ struct TaskLoadingContainerView: View {
                 .transition(.opacity)
             }
         }
-        .navigationBarBackButtonHidden(!isLoaded)
+        .navigationBarBackButtonHidden(false)
     }
 }
 
@@ -152,24 +152,62 @@ struct TaskLoadingView: View {
         statusText = "加载课程数据"
         try? await Task.sleep(nanoseconds: 300_000_000)
 
-        // Phase 2: Load TTS audio
+        // Phase 2: Prepare focus-goal audio only (fast)
         withAnimation { progress = 0.4 }
         statusText = "准备语音内容"
 
-        if !goalText.isEmpty {
-            let playbackId = EnglishSpeechPlayer.playbackID(for: goalText, category: "focus-goal")
-            let success = await EnglishSpeechPlayer.shared.prepareAudio(id: playbackId, text: goalText)
+        // Preload all intro animation audio: hero-prompt, focus-goal, focus-suggestion, step-overview
+        // Must wait for completion — user can press back to exit if too slow
+        var priorityItems: [AudioPreloader.AudioItem] = []
 
-            if success {
-                withAnimation { progress = 0.85 }
-                statusText = "语音就绪"
-            } else {
-                withAnimation { progress = 0.85 }
-                statusText = "语音加载失败，继续进入"
-            }
-        } else {
-            withAnimation { progress = 0.85 }
+        // Hero prompt
+        let heroId = EnglishSpeechPlayer.playbackID(for: task.prompt, category: "hero-prompt")
+        priorityItems.append((id: heroId, text: task.prompt))
+
+        // Focus goal
+        if !goalText.isEmpty {
+            let goalId = EnglishSpeechPlayer.playbackID(for: goalText, category: "focus-goal")
+            priorityItems.append((id: goalId, text: goalText))
         }
+
+        // Focus suggestion
+        let suggestionText = "Start with strategy, then learn vocabulary and framework, finally practice with samples."
+        let suggestionId = EnglishSpeechPlayer.playbackID(for: suggestionText, category: "focus-suggestion")
+        priorityItems.append((id: suggestionId, text: suggestionText))
+
+        // Focus angle titles (read during Key Focus animation)
+        if let lesson = task.lessonContent {
+            for angle in lesson.strategy.angles {
+                let id = EnglishSpeechPlayer.playbackID(for: angle.title, category: "focus-angle")
+                priorityItems.append((id: id, text: angle.title))
+            }
+        }
+
+        // Step overviews
+        for step in task.steps {
+            let text = step.title + ". " + step.subtitle
+            let id = EnglishSpeechPlayer.playbackID(for: text, category: "step-overview")
+            priorityItems.append((id: id, text: text))
+        }
+
+        if !priorityItems.isEmpty {
+            let total = priorityItems.count
+            // Download one by one to show progress
+            var done = 0
+            for item in priorityItems {
+                guard !Task.isCancelled else { return }
+                _ = await EnglishSpeechPlayer.shared.prepareAudio(id: item.id, text: item.text)
+                done += 1
+                let pct = 0.4 + 0.45 * Double(done) / Double(total)
+                withAnimation { progress = pct }
+                statusText = "准备语音 \(done)/\(total)"
+            }
+        }
+        withAnimation { progress = 0.85 }
+        statusText = "语音就绪"
+
+        // Kick off guide audio preload in background (non-blocking)
+        AudioPreloader.preloadAll(for: task)
 
         try? await Task.sleep(nanoseconds: 200_000_000)
 
@@ -180,5 +218,16 @@ struct TaskLoadingView: View {
 
         isReady = true
         onReady()
+    }
+
+    private func audioItemsForStep(_ stepType: StepType) -> [AudioPreloader.AudioItem] {
+        switch stepType {
+        case .strategy: return AudioPreloader.strategyItems(for: task)
+        case .review:   return AudioPreloader.reviewItems(for: task)
+        case .phrases:  return AudioPreloader.phrasesItems(for: task)
+        case .framework: return AudioPreloader.frameworkItems(for: task)
+        case .samples:  return AudioPreloader.samplesItems(for: task)
+        case .vocabulary, .practice: return []
+        }
     }
 }

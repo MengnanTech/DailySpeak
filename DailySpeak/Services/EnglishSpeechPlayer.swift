@@ -28,8 +28,28 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
     private var cachedAudioDurations: [String: Double] = [:]
     private var requestSequence = 0
 
+    private static var cacheDirectory: URL {
+        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        return caches.appendingPathComponent("tts-audio", isDirectory: true)
+    }
+
     private override init() {
         super.init()
+        let dir = Self.cacheDirectory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        loadDiskCache()
+    }
+
+    private func loadDiskCache() {
+        let dir = Self.cacheDirectory
+        guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { return }
+        for file in files where file.pathExtension == "mp3" {
+            let id = file.deletingPathExtension().lastPathComponent
+            cachedAudioURLs[id] = file
+        }
+        if !cachedAudioURLs.isEmpty {
+            print("ℹ️ [TTS] loaded \(cachedAudioURLs.count) cached audio files from disk")
+        }
     }
 
     static func playbackID(for text: String, category: String = "english") -> String {
@@ -41,10 +61,18 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
     func clearAudioCache() {
         cachedAudioURLs.removeAll()
         cachedAudioDurations.removeAll()
+        try? FileManager.default.removeItem(at: Self.cacheDirectory)
+        try? FileManager.default.createDirectory(at: Self.cacheDirectory, withIntermediateDirectories: true)
     }
 
     func isAudioCached(id: String) -> Bool {
-        cachedAudioURLs[id] != nil
+        if cachedAudioURLs[id] != nil { return true }
+        let file = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+        if FileManager.default.fileExists(atPath: file.path) {
+            cachedAudioURLs[id] = file
+            return true
+        }
+        return false
     }
 
     /// Returns the cached audio duration in seconds, or nil if not prepared.
@@ -57,27 +85,122 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
         if cachedAudioURLs[id] != nil { return true }
+        guard let localURL = await downloadToLocal(id: id, text: trimmed) else { return false }
+        // Probe duration
         do {
-            let voiceId = VoiceManager.shared.selectedVoiceId
-            let remoteURL = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: trimmed, voiceId: voiceId)
-            print("⬇️ [TTS] downloading audio to local: id=\(id)")
-            let (data, _) = try await URLSession.shared.data(from: remoteURL)
-            let localURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(id).mp3")
-            try data.write(to: localURL)
-            cachedAudioURLs[id] = localURL
-
-            // Probe duration
             let asset = AVAsset(url: localURL)
             let cmDuration = try await asset.load(.duration)
             let seconds = CMTimeGetSeconds(cmDuration)
             if seconds.isFinite && seconds > 0 {
                 cachedAudioDurations[id] = seconds
             }
-            print("✅ [TTS] prepared audio (local): id=\(id) size=\(data.count) duration=\(String(format: "%.1f", seconds))s")
+        } catch {
+            print("⚠️ [TTS] duration probe failed: \(error.localizedDescription)")
+        }
+        return true
+    }
+
+    /// Batch preload: resolve all URLs in one API call, then download MP3s in parallel.
+    /// Returns the number of successfully cached items.
+    @discardableResult
+    func preloadBatch(_ items: [(id: String, text: String)]) async -> Int {
+        // Filter out already-cached items
+        let uncached = items.filter { !isAudioCached(id: $0.id) }
+        guard !uncached.isEmpty else {
+            print("ℹ️ [TTS] preloadBatch: all \(items.count) items already cached")
+            return items.count
+        }
+
+        print("⬇️ [TTS] preloadBatch: \(uncached.count) uncached / \(items.count) total")
+
+        // Step 1: Batch API call to resolve all audio URLs at once
+        let voiceId = VoiceManager.shared.selectedVoiceId
+        let urlMap: [String: URL]
+        do {
+            urlMap = try await DailySpeakAPIService.shared.generateEnglishAudioURLBatch(
+                items: uncached,
+                voiceId: voiceId
+            )
+        } catch {
+            print("⚠️ [TTS] batch URL resolve failed, falling back to individual: \(error.localizedDescription)")
+            // Fallback: download individually in parallel
+            return await preloadIndividually(uncached)
+        }
+
+        // Step 2: Download all MP3s in parallel
+        let downloaded = await withTaskGroup(of: Bool.self, returning: Int.self) { group in
+            for item in uncached {
+                guard let remoteURL = urlMap[item.id] else { continue }
+                group.addTask {
+                    await self.downloadMP3(id: item.id, from: remoteURL)
+                }
+            }
+            var count = 0
+            for await success in group {
+                if success { count += 1 }
+            }
+            return count
+        }
+
+        let alreadyCached = items.count - uncached.count
+        print("✅ [TTS] preloadBatch done: \(downloaded) downloaded, \(alreadyCached) already cached")
+        return downloaded + alreadyCached
+    }
+
+    /// Fallback: preload items individually using the single API.
+    private func preloadIndividually(_ items: [(id: String, text: String)]) async -> Int {
+        await withTaskGroup(of: Bool.self, returning: Int.self) { group in
+            for item in items {
+                group.addTask {
+                    await self.prepareAudio(id: item.id, text: item.text)
+                }
+            }
+            var count = 0
+            for await success in group {
+                if success { count += 1 }
+            }
+            return count
+        }
+    }
+
+    /// Download a single MP3 from a known remote URL to local cache.
+    private func downloadMP3(id: String, from remoteURL: URL) async -> Bool {
+        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            cachedAudioURLs[id] = localURL
+            return true
+        }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: remoteURL)
+            try data.write(to: localURL)
+            cachedAudioURLs[id] = localURL
+            print("✅ [TTS] cached: \(id) (\(data.count) bytes)")
             return true
         } catch {
-            print("❌ [TTS] prepare failed: \(error.localizedDescription)")
+            print("❌ [TTS] download failed: \(id) - \(error.localizedDescription)")
             return false
+        }
+    }
+
+    /// Download MP3 from API to local Caches directory and populate cachedAudioURLs.
+    private func downloadToLocal(id: String, text: String) async -> URL? {
+        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            cachedAudioURLs[id] = localURL
+            return localURL
+        }
+        do {
+            let voiceId = VoiceManager.shared.selectedVoiceId
+            let remoteURL = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: text, voiceId: voiceId)
+            print("⬇️ [TTS] downloading audio: id=\(id)")
+            let (data, _) = try await URLSession.shared.data(from: remoteURL)
+            try data.write(to: localURL)
+            cachedAudioURLs[id] = localURL
+            print("✅ [TTS] cached audio: id=\(id) size=\(data.count)")
+            return localURL
+        } catch {
+            print("❌ [TTS] download failed: \(error.localizedDescription)")
+            return nil
         }
     }
 
@@ -127,25 +250,16 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
 
         print("⬆️ [TTS] request english audio: id=\(id) textLength=\(trimmed.count)")
         Task {
-            do {
-                let voiceId = VoiceManager.shared.selectedVoiceId
-                let url = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: trimmed, voiceId: voiceId)
-                await MainActor.run {
-                    guard self.requestSequence == currentRequest else { return }
-                    self.cachedAudioURLs[id] = url
-                    print("✅ [TTS] english audio url ready: \(url.absoluteString)")
-                    self.startPlayback(url: url, context: context)
-                }
-            } catch {
-                await MainActor.run {
-                    guard self.requestSequence == currentRequest else { return }
-                    self.loadingPlaybackID = nil
-                    self.playbackContext = nil
-                    self.pausedPlaybackID = nil
-                    self.currentTime = 0
-                    self.duration = 0
-                    print("❌ [TTS] failed to load english speech: \(error.localizedDescription)")
-                }
+            let localURL = await self.downloadToLocal(id: id, text: trimmed)
+            guard self.requestSequence == currentRequest else { return }
+            if let localURL {
+                self.startPlayback(url: localURL, context: context)
+            } else {
+                self.loadingPlaybackID = nil
+                self.playbackContext = nil
+                self.pausedPlaybackID = nil
+                self.currentTime = 0
+                self.duration = 0
             }
         }
     }

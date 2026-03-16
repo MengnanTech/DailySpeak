@@ -67,6 +67,7 @@ struct TaskOverviewView: View {
     @State private var focusGoalOpacity: Double = 0
     @State private var focusGoalChars: Int = 0
     @State private var focusChipsOpacity: Double = 0
+    @State private var focusVisibleAngleCount: Int = 0
     @State private var focusStatsOpacity: Double = 0
     @State private var focusSuggestionOpacity: Double = 0
     @State private var focusSuggestionChars: Int = 0
@@ -398,6 +399,18 @@ struct TaskOverviewView: View {
                         .foregroundStyle(AppColors.tertiaryText)
                 }
                 Spacer()
+                if phase == .ready && !showCenteredFocus {
+                    HStack(spacing: 6) {
+                        let goalText = lesson.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples."
+                        CompactPlayButton(
+                            text: goalText,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: goalText, category: "focus-goal"),
+                            sourceLabel: "Key Focus",
+                            accentColor: theme.startColor
+                        )
+                        TranslateButton(englishText: goalText, accentColor: theme.startColor, showInline: false)
+                    }
+                }
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
@@ -409,7 +422,15 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                focusGoalText(lesson.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples.", isPopup: isPopup)
+                let goalText = lesson.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples."
+                let goalKey = goalText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !isPopup, TranslationCache.shared.visibleKeys.contains(goalKey), let chinese = TranslationCache.shared.cached(goalKey) {
+                    Text(chinese)
+                        .font(.subheadline).foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    focusGoalText(goalText, isPopup: isPopup)
+                }
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
@@ -428,6 +449,8 @@ struct TaskOverviewView: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(AppColors.primaryText)
                     }
+                    .opacity(isPopup ? (index < focusVisibleAngleCount ? 1 : 0) : 1)
+                    .offset(y: isPopup ? (index < focusVisibleAngleCount ? 0 : 10) : 0)
                 }
             }
             .opacity(isPopup ? focusChipsOpacity : 1)
@@ -563,6 +586,18 @@ struct TaskOverviewView: View {
                         .foregroundStyle(AppColors.tertiaryText)
                 }
                 Spacer()
+                if phase == .ready && !showCenteredFocus {
+                    HStack(spacing: 6) {
+                        let fallbackGoal = "Understand the topic first, identify key words, then follow the steps to practice speaking."
+                        CompactPlayButton(
+                            text: fallbackGoal,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: fallbackGoal, category: "focus-goal"),
+                            sourceLabel: "Key Focus",
+                            accentColor: theme.startColor
+                        )
+                        TranslateButton(englishText: fallbackGoal, accentColor: theme.startColor, showInline: false)
+                    }
+                }
             }
             .opacity(isPopup ? focusTitleOpacity : 1)
 
@@ -574,7 +609,15 @@ struct TaskOverviewView: View {
                                        startPoint: .top, endPoint: .bottom)
                     )
                     .frame(width: 3)
-                focusGoalText("Understand the topic first, identify key words, then follow the steps to practice speaking.", isPopup: isPopup)
+                let fbGoal = "Understand the topic first, identify key words, then follow the steps to practice speaking."
+                let fbKey = fbGoal.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !isPopup, TranslationCache.shared.visibleKeys.contains(fbKey), let chinese = TranslationCache.shared.cached(fbKey) {
+                    Text(chinese)
+                        .font(.subheadline).foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    focusGoalText(fbGoal, isPopup: isPopup)
+                }
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isPopup ? focusGoalOpacity : 1)
@@ -696,16 +739,14 @@ struct TaskOverviewView: View {
                 HStack(spacing: 6) {
                     Image(systemName: step.icon).font(.system(size: 12, weight: .bold))
                         .foregroundStyle(stepTitleColor(for: step, index: index, state: state))
-                    if isTranslated, let translated = translatedText {
-                        Text(translated)
-                            .font(.system(size: 14, weight: .semibold)).foregroundStyle(AppColors.primaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else {
-                        Text(stepTitleText(for: step, at: index))
-                            .font(.system(size: 16, weight: .bold)).foregroundStyle(AppColors.primaryText)
-                    }
+                    Text(stepTitleText(for: step, at: index))
+                        .font(.system(size: 16, weight: .bold)).foregroundStyle(AppColors.primaryText)
                 }
-                if !isTranslated {
+                if isTranslated, let translated = translatedText {
+                    Text(translated)
+                        .font(.system(size: 13, weight: .medium)).foregroundStyle(AppColors.secondText)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
                     Text(stepSubtitleText(for: step, at: index, state: state))
                         .font(.system(size: 13)).foregroundStyle(AppColors.tertiaryText)
                 }
@@ -743,7 +784,7 @@ struct TaskOverviewView: View {
     }
 
     private func stepSubtitle(for step: LearningStep, state: OverviewStepDisplayState) -> String {
-        state == .locked ? "Complete previous step to unlock" : step.subtitle
+        step.subtitle
     }
 
     private func stepTitleText(for step: LearningStep, at index: Int) -> String {
@@ -810,8 +851,12 @@ struct TaskOverviewView: View {
         guard !Task.isCancelled else { return }
 
         phase = .heroDescriptionReveal
-        await typeHeroPrompt()
-        await pause(0.1)
+        let heroPid = await typeHeroPrompt()
+        // Wait for hero prompt audio to finish
+        if let pid = heroPid {
+            await waitForPlaybackToFinish(pid: pid, timeout: 15)
+        }
+        await pause(0.5)
         guard !Task.isCancelled else { return }
 
         withAnimation(.easeOut(duration: 0.3)) { heroMetaOpacity = 1 }
@@ -856,14 +901,33 @@ struct TaskOverviewView: View {
         withAnimation(.easeOut(duration: 0.5)) { focusTitleOpacity = 1 }
         await pause(0.4)
         guard !Task.isCancelled else { return }
-        // Goal / description — typewriter reveal
+        // Goal / description — typewriter reveal + wait for audio
         focusGoalOpacity = 1
-        await typeFocusGoal()
-        await pause(0.25)
+        let focusGoalPid = await typeFocusGoal()
+        // Wait for focus-goal audio to finish playing
+        if let pid = focusGoalPid {
+            await waitForPlaybackToFinish(pid: pid, timeout: 15)
+        }
+        await pause(0.5)
         guard !Task.isCancelled else { return }
-        // Angle chips
-        withAnimation(.easeOut(duration: 0.5)) { focusChipsOpacity = 1 }
-        await pause(0.4)
+        // Angle chips — reveal one by one with TTS
+        withAnimation(.easeOut(duration: 0.3)) { focusChipsOpacity = 1 }
+        if let lesson = lessonContent {
+            EnglishSpeechPlayer.shared.stopPlayback()
+            for (index, angle) in lesson.strategy.angles.enumerated() {
+                guard !Task.isCancelled else { return }
+                let pid = EnglishSpeechPlayer.playbackID(for: angle.title, category: "focus-angle")
+                withAnimation(.spring(duration: 0.35, bounce: 0.12)) {
+                    focusVisibleAngleCount = index + 1
+                }
+                EnglishSpeechPlayer.shared.togglePlayback(id: pid, text: angle.title, sourceLabel: "Focus Angle")
+                await waitForPlaybackToFinish(pid: pid, timeout: 8)
+                await pause(0.3)
+            }
+        } else {
+            focusVisibleAngleCount = 100
+            await pause(0.4)
+        }
         guard !Task.isCancelled else { return }
         // Stats
         withAnimation(.easeOut(duration: 0.5)) { focusStatsOpacity = 1 }
@@ -871,9 +935,13 @@ struct TaskOverviewView: View {
         guard !Task.isCancelled else { return }
         // Suggestion — typewriter reveal
         focusSuggestionOpacity = 1
-        await typeFocusSuggestion()
+        let suggestionPid = await typeFocusSuggestion()
+        // Wait for suggestion audio to finish
+        if let pid = suggestionPid {
+            await waitForPlaybackToFinish(pid: pid, timeout: 15)
+        }
         // Stabilization pause — give user time to read
-        await pause(1.8)
+        await pause(0.8)
         guard !Task.isCancelled else { return }
 
         // Focus dock — popup flies up, docked drops in
@@ -932,8 +1000,11 @@ struct TaskOverviewView: View {
             EnglishSpeechPlayer.shared.togglePlayback(id: pid, text: stepFullText, sourceLabel: "Step Overview")
             await typeStepText(index: index, totalChars: totalChars, duration: typeDuration)
             guard !Task.isCancelled else { return }
-            // Brief reading pause
-            await pause(0.3)
+            // Wait for audio to finish playing before moving on
+            await waitForPlaybackToFinish(pid: pid, timeout: 10)
+            guard !Task.isCancelled else { return }
+            // Brief reading pause after audio finishes
+            await pause(0.5)
             guard !Task.isCancelled else { return }
             // Settle to checkmark
             withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
@@ -983,9 +1054,11 @@ struct TaskOverviewView: View {
     }
 
     private func skipToReady() {
+        EnglishSpeechPlayer.shared.stopPlayback()
         showDockedHero = true
         showDockedFocus = true
         showDockedFlow = true
+        focusVisibleAngleCount = 100
         stepDisplayStates = task.steps.indices.map { settledStepState(for: $0) }
         stepTextChars = task.steps.map { $0.title.count + $0.subtitle.count }
         phase = .ready
@@ -998,20 +1071,27 @@ struct TaskOverviewView: View {
     }
 
     @MainActor
-    private func typeHeroPrompt() async {
+    private func typeHeroPrompt() async -> String? {
         let characters = Array(task.prompt)
-        guard !characters.isEmpty else { return }
-        let totalDuration = min(1.0, max(0.5, Double(characters.count) * 0.02))
+        guard !characters.isEmpty else { return nil }
+
+        // Play TTS synced with typewriter
+        let playbackId = EnglishSpeechPlayer.playbackID(for: task.prompt, category: "hero-prompt")
+        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: task.prompt, sourceLabel: "Topic")
+
+        let audioDuration = EnglishSpeechPlayer.shared.cachedDuration(id: playbackId)
+        let totalDuration = audioDuration ?? min(1.0, max(0.5, Double(characters.count) * 0.02))
         let interval = totalDuration / Double(characters.count)
         for index in characters.indices {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return playbackId }
             heroPromptChars = index + 1
             await pause(interval)
         }
+        return playbackId
     }
 
     @MainActor
-    private func typeFocusGoal() async {
+    private func typeFocusGoal() async -> String? {
         let text: String
         if let lessonContent {
             text = lessonContent.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples."
@@ -1019,7 +1099,7 @@ struct TaskOverviewView: View {
             text = "Understand the topic first, identify key words, then follow the steps to practice speaking."
         }
         let characters = Array(text)
-        guard !characters.isEmpty else { return }
+        guard !characters.isEmpty else { return nil }
 
         // Play TTS — audio was pre-loaded in TaskLoadingView, plays from local file instantly
         let playbackId = EnglishSpeechPlayer.playbackID(for: text, category: "focus-goal")
@@ -1030,24 +1110,32 @@ struct TaskOverviewView: View {
         let totalDuration = audioDuration ?? min(2.5, max(1.2, Double(characters.count) * 0.045))
         let interval = totalDuration / Double(characters.count)
         for index in characters.indices {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return playbackId }
             focusGoalChars = index + 1
             await pause(interval)
         }
+        return playbackId
     }
 
     @MainActor
-    private func typeFocusSuggestion() async {
+    private func typeFocusSuggestion() async -> String? {
         let text = "Start with strategy, then learn vocabulary and framework, finally practice with samples."
         let characters = Array(text)
-        guard !characters.isEmpty else { return }
-        let totalDuration = min(1.2, max(0.5, Double(characters.count) * 0.035))
+        guard !characters.isEmpty else { return nil }
+
+        // Play TTS synced with typewriter
+        let playbackId = EnglishSpeechPlayer.playbackID(for: text, category: "focus-suggestion")
+        EnglishSpeechPlayer.shared.togglePlayback(id: playbackId, text: text, sourceLabel: "Key Focus")
+
+        let audioDuration = EnglishSpeechPlayer.shared.cachedDuration(id: playbackId)
+        let totalDuration = audioDuration ?? min(1.2, max(0.5, Double(characters.count) * 0.035))
         let interval = totalDuration / Double(characters.count)
         for index in characters.indices {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled else { return playbackId }
             focusSuggestionChars = index + 1
             await pause(interval)
         }
+        return playbackId
     }
 
     @MainActor
@@ -1074,7 +1162,7 @@ struct TaskOverviewView: View {
         showCenteredFocus = false
         focusPopupScale = 0.6; focusPopupOpacity = 0; focusContentOpacity = 0
         focusPopupOffsetY = 0
-        focusTitleOpacity = 0; focusGoalOpacity = 0; focusGoalChars = 0; focusChipsOpacity = 0
+        focusTitleOpacity = 0; focusGoalOpacity = 0; focusGoalChars = 0; focusChipsOpacity = 0; focusVisibleAngleCount = 0
         focusStatsOpacity = 0; focusSuggestionOpacity = 0; focusSuggestionChars = 0
         // Flow
         showCenteredFlow = false
@@ -1083,6 +1171,21 @@ struct TaskOverviewView: View {
         stepTextChars = Array(repeating: 0, count: task.steps.count)
         // Docked
         showDockedHero = false; showDockedFocus = false; showDockedFlow = false
+    }
+
+    /// Wait until the given playback ID finishes (activePlaybackID becomes nil), with a timeout.
+    @MainActor
+    private func waitForPlaybackToFinish(pid: String, timeout: Double) async {
+        let player = EnglishSpeechPlayer.shared
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            guard !Task.isCancelled else { return }
+            // Audio finished or was never started
+            if player.activePlaybackID != pid && player.loadingPlaybackID != pid {
+                return
+            }
+            await pause(0.15)
+        }
     }
 
     private func pause(_ seconds: Double) async {

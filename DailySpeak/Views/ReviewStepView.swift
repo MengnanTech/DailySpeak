@@ -11,6 +11,7 @@ struct ReviewStepView: View {
     @State private var showReviewGuide = false
     @State private var reviewGuideStartIndex = 0
     @State private var reviewGuideEndIndex: Int? = nil
+    @State private var reviewGuideCompleted = false
     private var lesson: LessonContent? { task.lessonContent }
     private let reviewColor = Color(hex: "F97316")
 
@@ -60,8 +61,12 @@ struct ReviewStepView: View {
         .onAppear {
             appeared = true
             updateReviewProgress()
+            AudioPreloader.preloadStep(.review, task: task)
         }
         .onChange(of: listenedAudioIds.count) { _, _ in
+            updateReviewProgress()
+        }
+        .onChange(of: reviewGuideCompleted) { _, _ in
             updateReviewProgress()
         }
         .fullScreenCover(isPresented: $showReviewGuide) {
@@ -73,6 +78,7 @@ struct ReviewStepView: View {
                     endIndex: reviewGuideEndIndex,
                     onComplete: { completedIds in
                         listenedAudioIds.formUnion(completedIds)
+                        reviewGuideCompleted = true
                     }
                 )
             }
@@ -80,13 +86,13 @@ struct ReviewStepView: View {
     }
 
     private func updateReviewProgress() {
-        let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
-        if remaining == 0 {
-            canComplete = true
-            progressHint = nil
+        if lesson != nil {
+            canComplete = reviewGuideCompleted
+            progressHint = reviewGuideCompleted ? nil : "完成 Guide 学习"
         } else {
-            canComplete = false
-            progressHint = "还剩 \(remaining) 个语音未听"
+            let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
+            canComplete = remaining == 0
+            progressHint = remaining == 0 ? nil : "听完标记项 \(requiredAudioIds.intersection(listenedAudioIds).count)/\(requiredAudioIds.count)"
         }
     }
 
@@ -146,24 +152,11 @@ struct ReviewStepView: View {
                     .foregroundStyle(reviewColor)
                 Spacer()
 
-                Button {
+                GuideButton(isCompleted: reviewGuideCompleted, accentColor: reviewColor, label: "Guide All") {
                     reviewGuideStartIndex = 0
                     reviewGuideEndIndex = nil
                     showReviewGuide = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 9, weight: .bold))
-                        Text("Guide All")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(reviewColor)
-                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
             }
             .staggerIn(index: 1, appeared: appeared)
 
@@ -182,34 +175,26 @@ struct ReviewStepView: View {
 
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
+                    GuideButton(isCompleted: reviewGuideCompleted, accentColor: reviewColor) {
                         reviewGuideStartIndex = 0
                         reviewGuideEndIndex = tipCount
                         showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("Guide")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .fixedSize()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(reviewColor)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
 
-                    CompactPlayButton(
-                        text: allTipsText,
-                        playbackID: allTipsPlaybackId,
-                        sourceLabel: "Review Tips",
-                        accentColor: reviewColor,
-                        onPlay: { listenedAudioIds.insert(allTipsPlaybackId) }
-                    )
-                    BatchTranslateButton(texts: tipTexts, accentColor: reviewColor)
+                    if reviewGuideCompleted {
+                        CompactPlayButton(
+                            text: allTipsText,
+                            playbackID: allTipsPlaybackId,
+                            sourceLabel: "Review Tips",
+                            accentColor: reviewColor,
+                            onPlay: {
+                                for tip in tipTexts {
+                                    listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: tip, category: "review-tip"))
+                                }
+                            }
+                        )
+                        BatchTranslateButton(texts: tipTexts, accentColor: reviewColor)
+                    }
                 }
                 .fixedSize()
             }
@@ -217,6 +202,7 @@ struct ReviewStepView: View {
 
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(tipTexts.enumerated()), id: \.offset) { index, tip in
+                    let tipPlayId = EnglishSpeechPlayer.playbackID(for: tip, category: "review-tip")
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(alignment: .top, spacing: 10) {
                             Text("\(index + 1)")
@@ -231,6 +217,17 @@ struct ReviewStepView: View {
                                 .foregroundStyle(AppColors.secondText)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineSpacing(2)
+
+                            if reviewGuideCompleted {
+                                Spacer()
+                                CompactPlayButton(
+                                    text: tip,
+                                    playbackID: tipPlayId,
+                                    sourceLabel: "Review Tip",
+                                    accentColor: reviewColor,
+                                    onPlay: { listenedAudioIds.insert(tipPlayId) }
+                                )
+                            }
                         }
 
                         TranslationOverlay(englishText: tip, accentColor: reviewColor)
@@ -261,33 +258,21 @@ struct ReviewStepView: View {
 
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
+                    GuideButton(isCompleted: reviewGuideCompleted, accentColor: mistakeColor) {
                         reviewGuideStartIndex = tipCount
                         reviewGuideEndIndex = tipCount + contentCount
                         showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("Guide")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .fixedSize()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(mistakeColor)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
 
-                    CompactPlayButton(
-                        text: allContentText,
-                        playbackID: contentPlaybackId,
-                        sourceLabel: "Content Pitfalls",
-                        accentColor: mistakeColor
-                    )
-                    BatchTranslateButton(texts: contentFieldTexts, accentColor: mistakeColor)
+                    if reviewGuideCompleted {
+                        CompactPlayButton(
+                            text: allContentText,
+                            playbackID: contentPlaybackId,
+                            sourceLabel: "Content Pitfalls",
+                            accentColor: mistakeColor
+                        )
+                        BatchTranslateButton(texts: contentFieldTexts, accentColor: mistakeColor)
+                    }
                 }
                 .fixedSize()
             }
@@ -355,38 +340,26 @@ struct ReviewStepView: View {
 
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
+                    GuideButton(isCompleted: reviewGuideCompleted, accentColor: langColor) {
                         reviewGuideStartIndex = tipCount + contentCount
                         reviewGuideEndIndex = tipCount + contentCount + langCount
                         showReviewGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("Guide")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .fixedSize()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(langColor)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
 
-                    CompactPlayButton(
-                        text: allLangText,
-                        playbackID: langPlaybackId,
-                        sourceLabel: "Language Fix",
-                        accentColor: langColor,
-                        onPlay: {
-                            for m in lesson.strategy.commonMistakes.language {
-                                listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: m.betterExample, category: "review-lang"))
+                    if reviewGuideCompleted {
+                        CompactPlayButton(
+                            text: allLangText,
+                            playbackID: langPlaybackId,
+                            sourceLabel: "Language Fix",
+                            accentColor: langColor,
+                            onPlay: {
+                                for m in lesson.strategy.commonMistakes.language {
+                                    listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: m.betterExample, category: "review-lang"))
+                                }
                             }
-                        }
-                    )
-                    BatchTranslateButton(texts: langFieldTexts, accentColor: langColor)
+                        )
+                        BatchTranslateButton(texts: langFieldTexts, accentColor: langColor)
+                    }
                 }
                 .fixedSize()
             }
@@ -412,6 +385,7 @@ struct ReviewStepView: View {
                         }
                         TranslationOverlay(englishText: mistake.wrongExample, accentColor: mistakeColor)
 
+                        let betterPlayId = EnglishSpeechPlayer.playbackID(for: mistake.betterExample, category: "review-lang")
                         HStack(alignment: .top, spacing: 8) {
                             Text("Better")
                                 .font(.system(size: 9, weight: .bold, design: .rounded))
@@ -420,6 +394,16 @@ struct ReviewStepView: View {
                                 .font(.subheadline.bold())
                                 .foregroundStyle(AppColors.primaryText)
                                 .fixedSize(horizontal: false, vertical: true)
+                            if reviewGuideCompleted {
+                                Spacer()
+                                CompactPlayButton(
+                                    text: mistake.betterExample,
+                                    playbackID: betterPlayId,
+                                    sourceLabel: "Better Example",
+                                    accentColor: langColor,
+                                    onPlay: { listenedAudioIds.insert(betterPlayId) }
+                                )
+                            }
                         }
                         TranslationOverlay(englishText: mistake.betterExample, accentColor: AppColors.success)
 
@@ -624,15 +608,12 @@ private struct ReviewGuidedView: View {
                         .id(currentIndex)
                         .onAppear {
                             audioFinished = false
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                                 let item = items[currentIndex]
                                 let pid = item.playbackID
                                 if !player.isPlaying(id: pid) {
                                     player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                                 }
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                if !audioFinished { withAnimation { audioFinished = true } }
                             }
                         }
                 } else {
@@ -668,6 +649,12 @@ private struct ReviewGuidedView: View {
                 withAnimation { audioFinished = true }
                 completedAudioIds.insert(currentPid)
             }
+        }
+        .task {
+            let preloadItems: [AudioPreloader.AudioItem] = items.map { item in
+                (id: item.playbackID, text: item.playableText)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(preloadItems)
         }
         .background(ClearBackgroundView())
     }
@@ -858,8 +845,33 @@ private struct ReviewGuidedView: View {
                 BatchTranslateButton(texts: translateTexts, accentColor: color)
             }
 
-            // Confirm button
-            if audioFinished {
+            // Navigation buttons
+            HStack(spacing: 12) {
+                if currentIndex > 0 {
+                    Button {
+                        player.stopPlayback()
+                        if currentIndex > 0 {
+                            withAnimation {
+                                currentIndex -= 1
+                                audioFinished = false
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Back")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(color)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(color.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Button {
                     advanceToNext()
                 } label: {
@@ -876,7 +888,6 @@ private struct ReviewGuidedView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .padding(24)
@@ -886,6 +897,7 @@ private struct ReviewGuidedView: View {
     }
 
     private func advanceToNext() {
+        player.stopPlayback()
         let currentPid = items[currentIndex].playbackID
         completedAudioIds.insert(currentPid)
 

@@ -240,22 +240,6 @@ struct LearningFlowView: View {
         let canProceed = isCurrentCompleted || stepCanComplete
 
         return VStack(spacing: 0) {
-            // Progress hint when step not yet completable
-            if !canProceed, let hint = stepProgressHint {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 11, weight: .bold))
-                    Text(hint)
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .lineLimit(1)
-                }
-                .foregroundStyle(steps[currentStep].type.color)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity)
-                .background(steps[currentStep].type.color.opacity(0.08))
-            }
-
             HStack(spacing: 12) {
                 if currentStep > 0 {
                     Button {
@@ -301,7 +285,7 @@ struct LearningFlowView: View {
                         }
                         Text(
                             !canProceed
-                                ? "Complete this step"
+                                ? (stepProgressHint ?? "Complete this step")
                                 : isLastStep
                                     ? "Complete"
                                     : isCurrentCompleted
@@ -553,6 +537,8 @@ struct StrategyStepView: View {
     @State private var listenedAudioIds: Set<String> = []
     @State private var showKeyPointsGuide = false
     @State private var showSequenceGuide = false
+    @State private var keyPointsGuideCompleted = false
+    @State private var sequenceGuideCompleted = false
     private var lesson: LessonContent? { task.lessonContent }
 
     // The prompt is the main English content to listen to
@@ -655,8 +641,15 @@ struct StrategyStepView: View {
         .onAppear {
             appeared = true
             updateStrategyProgress()
+            AudioPreloader.preloadStep(.strategy, task: task)
         }
         .onChange(of: listenedAudioIds.count) { _, _ in
+            updateStrategyProgress()
+        }
+        .onChange(of: keyPointsGuideCompleted) { _, _ in
+            updateStrategyProgress()
+        }
+        .onChange(of: sequenceGuideCompleted) { _, _ in
             updateStrategyProgress()
         }
         .fullScreenCover(isPresented: $showKeyPointsGuide) {
@@ -666,6 +659,7 @@ struct StrategyStepView: View {
                     accentColor: stepColor,
                     onComplete: { completedIds in
                         listenedAudioIds.formUnion(completedIds)
+                        keyPointsGuideCompleted = true
                     }
                 )
             }
@@ -677,6 +671,7 @@ struct StrategyStepView: View {
                     accentColor: stepColor,
                     onComplete: { completedId in
                         listenedAudioIds.insert(completedId)
+                        sequenceGuideCompleted = true
                     }
                 )
             }
@@ -684,13 +679,23 @@ struct StrategyStepView: View {
     }
 
     private func updateStrategyProgress() {
-        let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
-        if remaining == 0 {
-            canComplete = true
-            progressHint = nil
+        if lesson != nil {
+            // Lesson mode: both guides must be completed
+            let done = keyPointsGuideCompleted && sequenceGuideCompleted
+            let count = (keyPointsGuideCompleted ? 1 : 0) + (sequenceGuideCompleted ? 1 : 0)
+            canComplete = done
+            progressHint = done ? nil : "完成 Guide 学习 \(count)/2"
         } else {
-            canComplete = false
-            progressHint = "还剩 \(remaining) 个语音未听"
+            // Standard mode: listen to all required audio
+            let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
+            if remaining == 0 {
+                canComplete = true
+                progressHint = nil
+            } else {
+                let listened = requiredAudioIds.intersection(listenedAudioIds).count
+                canComplete = false
+                progressHint = "听完标记项 \(listened)/\(requiredAudioIds.count)"
+            }
         }
     }
 
@@ -706,13 +711,14 @@ struct StrategyStepView: View {
                         NumberedItemRow(index: index + 1, text: tip, color: stepColor)
 
                         HStack(spacing: 8) {
+                            let tipPlayId = EnglishSpeechPlayer.playbackID(for: tip, category: "tip")
                             InlineAudioPlayerControl(
                                 text: tip,
-                                playbackID: EnglishSpeechPlayer.playbackID(for: tip, category: "tip"),
+                                playbackID: tipPlayId,
                                 sourceLabel: "Tip",
                                 accentColor: stepColor,
                                 style: .compact,
-                                onPlay: { listenedAudioIds.insert(EnglishSpeechPlayer.playbackID(for: tip, category: "tip")) }
+                                onPlay: { listenedAudioIds.insert(tipPlayId) }
                             )
                             TranslateButton(englishText: tip, accentColor: stepColor)
                         }
@@ -798,22 +804,9 @@ struct StrategyStepView: View {
                     .foregroundStyle(stepColor)
                 Spacer()
 
-                Button {
+                GuideButton(isCompleted: keyPointsGuideCompleted, accentColor: stepColor) {
                     showKeyPointsGuide = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 9, weight: .bold))
-                        Text("Guide")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(stepColor)
-                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
             }
             .staggerIn(index: 2, appeared: appeared)
 
@@ -839,17 +832,19 @@ struct StrategyStepView: View {
 
                         Spacer(minLength: 8)
 
-                        HStack(spacing: 8) {
-                            CompactPlayButton(
-                                text: angleText,
-                                playbackID: anglePlaybackId,
-                                sourceLabel: "Strategy Angle",
-                                accentColor: stepColor,
-                                onPlay: { listenedAudioIds.insert(anglePlaybackId) }
-                            )
-                            TranslateButton(englishText: angleText, accentColor: stepColor, showInline: false)
+                        if keyPointsGuideCompleted {
+                            HStack(spacing: 8) {
+                                CompactPlayButton(
+                                    text: angleText,
+                                    playbackID: anglePlaybackId,
+                                    sourceLabel: "Strategy Angle",
+                                    accentColor: stepColor,
+                                    onPlay: { listenedAudioIds.insert(anglePlaybackId) }
+                                )
+                                TranslateButton(englishText: angleText, accentColor: stepColor, showInline: false)
+                            }
+                            .layoutPriority(1)
                         }
-                        .layoutPriority(1)
                     }
 
                     // Content items
@@ -892,32 +887,20 @@ struct StrategyStepView: View {
                 Spacer()
 
                 HStack(spacing: 6) {
-                    Button {
+                    GuideButton(isCompleted: sequenceGuideCompleted, accentColor: stepColor) {
                         showSequenceGuide = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("Guide")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .fixedSize()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(stepColor)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
 
-                    CompactPlayButton(
-                        text: allSeqText,
-                        playbackID: allSeqPlaybackId,
-                        sourceLabel: "Strategy Sequence",
-                        accentColor: stepColor,
-                        onPlay: { listenedAudioIds.insert(allSeqPlaybackId) }
-                    )
-                    TranslateButton(englishText: allSeqText, accentColor: stepColor, showInline: false)
+                    if sequenceGuideCompleted {
+                        CompactPlayButton(
+                            text: allSeqText,
+                            playbackID: allSeqPlaybackId,
+                            sourceLabel: "Strategy Sequence",
+                            accentColor: stepColor,
+                            onPlay: { listenedAudioIds.insert(allSeqPlaybackId) }
+                        )
+                        TranslateButton(englishText: allSeqText, accentColor: stepColor, showInline: false)
+                    }
                 }
             }
             .staggerIn(index: lesson.strategy.angles.count + 3, appeared: appeared)
@@ -1024,10 +1007,10 @@ private struct KeyPointsGuidedView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex = 0
-    @State private var cardAppeared = false
-    @State private var audioFinished = false
     @State private var completedAudioIds: Set<String> = []
     @State private var allDone = false
+    @State private var goingBack = false
+    @State private var pendingAdvance: DispatchWorkItem?
 
     private func angleText(for angle: LessonContent.Strategy.Angle) -> String {
         angle.title + ". " + angle.content.joined(separator: ". ")
@@ -1161,15 +1144,34 @@ private struct KeyPointsGuidedView: View {
 
                         TranslationOverlay(englishText: text, accentColor: accentColor)
 
-                        // Confirmation button — shown after audio finishes
-                        if audioFinished {
+                        // Navigation buttons — always visible
+                        HStack(spacing: 12) {
+                            if currentIndex > 0 {
+                                Button {
+                                    goToPrevious()
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 13, weight: .bold))
+                                        Text("Back")
+                                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    }
+                                    .foregroundStyle(accentColor)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(accentColor.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             Button {
                                 advanceToNext()
                             } label: {
                                 HStack(spacing: 8) {
                                     Image(systemName: currentIndex < angles.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
-                                    Text(currentIndex < angles.count - 1 ? "Got it, next" : "All Done")
+                                    Text(currentIndex < angles.count - 1 ? "Next" : "All Done")
                                         .font(.system(size: 15, weight: .bold, design: .rounded))
                                 }
                                 .foregroundStyle(.white)
@@ -1179,7 +1181,6 @@ private struct KeyPointsGuidedView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             }
                             .buttonStyle(.plain)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
                     }
                     .padding(24)
@@ -1188,25 +1189,19 @@ private struct KeyPointsGuidedView: View {
                     .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     .padding(.horizontal, 20)
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: goingBack ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: goingBack ? .trailing : .leading).combined(with: .opacity)
                     ))
-                    .id(currentIndex) // force re-create for transition
+                    .id(currentIndex)
                     .onAppear {
-                        cardAppeared = true
-                        audioFinished = false
-                        // Auto-play after a short delay
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        // Auto-play after card settles in
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                             let angle = angles[currentIndex]
                             let text = angleText(for: angle)
                             let pid = playbackID(for: angle)
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Angle")
                             }
-                        }
-                        // Fallback: ensure button appears even if audio fails
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
@@ -1237,35 +1232,58 @@ private struct KeyPointsGuidedView: View {
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
         .animation(.spring(duration: 0.4), value: allDone)
         .onChange(of: player.activePlaybackID) { oldValue, newValue in
-            // Detect when current angle's audio finishes playing
+            // Detect when current angle's audio finishes playing → auto-advance
             let currentPid = playbackID(for: angles[currentIndex])
             if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
-                // Audio finished naturally
-                withAnimation {
-                    audioFinished = true
-                }
                 completedAudioIds.insert(currentPid)
+                // Schedule auto-advance (cancellable if user taps Next first)
+                pendingAdvance?.cancel()
+                let work = DispatchWorkItem { advanceToNext() }
+                pendingAdvance = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8, execute: work)
             }
+        }
+        .task {
+            // Preload all angle audio
+            let items: [AudioPreloader.AudioItem] = angles.map { angle in
+                let text = angleText(for: angle)
+                let id = playbackID(for: angle)
+                return (id: id, text: text)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(items)
         }
         .background(ClearBackgroundView())
     }
 
     private func advanceToNext() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
         let currentPid = playbackID(for: angles[currentIndex])
         completedAudioIds.insert(currentPid)
+        goingBack = false
 
         if currentIndex < angles.count - 1 {
             withAnimation {
                 currentIndex += 1
-                audioFinished = false
             }
         } else {
             withAnimation {
                 allDone = true
             }
+        }
+    }
+
+    private func goToPrevious() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
+        guard currentIndex > 0 else { return }
+        goingBack = true
+        withAnimation {
+            currentIndex -= 1
         }
     }
 }
@@ -1291,8 +1309,9 @@ private struct SequenceGuidedView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex = 0
-    @State private var audioFinished = false
     @State private var allDone = false
+    @State private var goingBack = false
+    @State private var pendingAdvance: DispatchWorkItem?
 
     private func stepText(for step: LessonContent.Strategy.SequenceStep) -> String {
         "\(step.phase). \(step.focus). \(step.target)"
@@ -1425,15 +1444,34 @@ private struct SequenceGuidedView: View {
 
                         TranslationOverlay(englishText: text, accentColor: accentColor)
 
-                        // Confirm button
-                        if audioFinished {
+                        // Navigation buttons
+                        HStack(spacing: 12) {
+                            if currentIndex > 0 {
+                                Button {
+                                    goToPrevious()
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 13, weight: .bold))
+                                        Text("Back")
+                                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    }
+                                    .foregroundStyle(accentColor)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(accentColor.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             Button {
                                 advanceToNext()
                             } label: {
                                 HStack(spacing: 8) {
                                     Image(systemName: currentIndex < steps.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
-                                    Text(currentIndex < steps.count - 1 ? "Got it, next" : "All Done")
+                                    Text(currentIndex < steps.count - 1 ? "Next" : "All Done")
                                         .font(.system(size: 15, weight: .bold, design: .rounded))
                                 }
                                 .foregroundStyle(.white)
@@ -1443,7 +1481,6 @@ private struct SequenceGuidedView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             }
                             .buttonStyle(.plain)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
                     }
                     .padding(24)
@@ -1452,22 +1489,18 @@ private struct SequenceGuidedView: View {
                     .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     .padding(.horizontal, 20)
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: goingBack ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: goingBack ? .trailing : .leading).combined(with: .opacity)
                     ))
                     .id(currentIndex)
                     .onAppear {
-                        audioFinished = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                             let step = steps[currentIndex]
                             let text = stepText(for: step)
                             let pid = stepPlaybackID(for: step)
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Sequence")
                             }
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
@@ -1497,29 +1530,51 @@ private struct SequenceGuidedView: View {
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
         .animation(.spring(duration: 0.4), value: allDone)
         .onChange(of: player.activePlaybackID) { oldValue, newValue in
             let currentPid = stepPlaybackID(for: steps[currentIndex])
             if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
-                withAnimation {
-                    audioFinished = true
-                }
+                pendingAdvance?.cancel()
+                let work = DispatchWorkItem { advanceToNext() }
+                pendingAdvance = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8, execute: work)
             }
+        }
+        .task {
+            let items: [AudioPreloader.AudioItem] = steps.map { step in
+                let text = stepText(for: step)
+                let id = stepPlaybackID(for: step)
+                return (id: id, text: text)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(items)
         }
         .background(ClearBackgroundView())
     }
 
     private func advanceToNext() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
+        goingBack = false
         if currentIndex < steps.count - 1 {
             withAnimation {
                 currentIndex += 1
-                audioFinished = false
             }
         } else {
             withAnimation {
                 allDone = true
             }
+        }
+    }
+
+    private func goToPrevious() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
+        guard currentIndex > 0 else { return }
+        goingBack = true
+        withAnimation {
+            currentIndex -= 1
         }
     }
 }
@@ -1698,7 +1753,7 @@ struct VocabularyStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "\(total - viewed) cards remaining"
+            progressHint = "翻完所有卡片 \(viewed)/\(total)"
         }
     }
 
@@ -2300,6 +2355,7 @@ struct PhrasesStepView: View {
     @State private var appeared = false
     @State private var listenedPhrases: Set<String> = []
     @State private var showPhrasesGuide = false
+    @State private var phrasesGuideCompleted = false
     private var hasLessonContent: Bool { task.lessonContent != nil }
     private let phraseColor = Color(hex: "10B981")
 
@@ -2339,27 +2395,14 @@ struct PhrasesStepView: View {
 
                 Spacer()
 
-                Button {
+                GuideButton(isCompleted: phrasesGuideCompleted, accentColor: phraseColor) {
                     showPhrasesGuide = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "book.fill")
-                            .font(.system(size: 9, weight: .bold))
-                        Text("Guide")
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(phraseColor)
-                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
             }
             .staggerIn(index: 1, appeared: appeared)
 
             ForEach(Array(task.phrases.enumerated()), id: \.element.id) { index, phrase in
-                PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor, onListen: {
+                PhraseCard(phrase: phrase, index: index + 1, accentColor: accentColor, isListened: listenedPhrases.contains(phrase.phrase), showPlayButton: phrasesGuideCompleted, onListen: {
                     listenedPhrases.insert(phrase.phrase)
                 })
                     .staggerIn(index: index + 2, appeared: appeared)
@@ -2368,8 +2411,9 @@ struct PhrasesStepView: View {
         .onAppear {
             appeared = true
             updatePhrasesProgress()
+            AudioPreloader.preloadStep(.phrases, task: task)
         }
-        .onChange(of: listenedPhrases.count) { _, _ in
+        .onChange(of: phrasesGuideCompleted) { _, _ in
             updatePhrasesProgress()
         }
         .fullScreenCover(isPresented: $showPhrasesGuide) {
@@ -2378,15 +2422,20 @@ struct PhrasesStepView: View {
                 accentColor: phraseColor,
                 onComplete: { listened in
                     listenedPhrases.formUnion(listened)
+                    phrasesGuideCompleted = true
                 }
             )
         }
     }
 
     private func updatePhrasesProgress() {
-        // Low bar: viewing the page is enough to proceed
-        canComplete = appeared
-        progressHint = appeared ? nil : "Browse phrase content"
+        if phrasesGuideCompleted {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "完成 Guide 学习"
+        }
     }
 }
 
@@ -2394,6 +2443,8 @@ struct PhraseCard: View {
     let phrase: PhraseItem
     let index: Int
     let accentColor: Color
+    var isListened: Bool = false
+    var showPlayButton: Bool = true
     var onListen: (() -> Void)? = nil
 
     @State private var exampleVisible = false
@@ -2430,20 +2481,22 @@ struct PhraseCard: View {
 
                 Spacer()
 
-                Button {
-                    WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46, sourceLabel: "Phrase")
-                    onListen?()
-                } label: {
-                    ZStack {
-                        Circle()
-                            .fill(accentColor.opacity(0.1))
-                            .frame(width: 38, height: 38)
-                        Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(accentColor)
+                if showPlayButton {
+                    Button {
+                        WordPronouncer.shared.speak(phrase.phrase, locale: "en-US", rate: 0.46, sourceLabel: "Phrase")
+                        onListen?()
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(accentColor.opacity(0.1))
+                                .frame(width: 38, height: 38)
+                            Image(systemName: "speaker.wave.2.fill")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(accentColor)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             .padding(.bottom, 12)
 
@@ -2548,10 +2601,11 @@ private struct PhrasesGuidedView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex = 0
-    @State private var audioFinished = false
     @State private var listenedPhrases: Set<String> = []
     @State private var allDone = false
     @State private var showExample = false
+    @State private var goingBack = false
+    @State private var pendingAdvance: DispatchWorkItem?
 
     private func phrasePlaybackID(_ phrase: PhraseItem) -> String {
         EnglishSpeechPlayer.playbackID(for: phrase.phrase, category: "phrase-guide")
@@ -2698,15 +2752,34 @@ private struct PhrasesGuidedView: View {
 
                         TranslationOverlay(englishText: phrase.phrase + ". " + phrase.example, accentColor: accentColor)
 
-                        // Confirm
-                        if audioFinished {
+                        // Navigation buttons
+                        HStack(spacing: 12) {
+                            if currentIndex > 0 {
+                                Button {
+                                    goToPrevious()
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 13, weight: .bold))
+                                        Text("Back")
+                                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    }
+                                    .foregroundStyle(accentColor)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(accentColor.opacity(0.12))
+                                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                             Button {
                                 advanceToNext()
                             } label: {
                                 HStack(spacing: 8) {
                                     Image(systemName: currentIndex < phrases.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                         .font(.system(size: 14, weight: .bold))
-                                    Text(currentIndex < phrases.count - 1 ? "Got it" : "All Done")
+                                    Text(currentIndex < phrases.count - 1 ? "Next" : "All Done")
                                         .font(.system(size: 15, weight: .bold, design: .rounded))
                                 }
                                 .foregroundStyle(.white)
@@ -2716,7 +2789,6 @@ private struct PhrasesGuidedView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             }
                             .buttonStyle(.plain)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
                     }
                     .padding(24)
@@ -2725,22 +2797,18 @@ private struct PhrasesGuidedView: View {
                     .shadow(color: .black.opacity(0.3), radius: 30, y: 10)
                     .padding(.horizontal, 20)
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: goingBack ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: goingBack ? .trailing : .leading).combined(with: .opacity)
                     ))
                     .id(currentIndex)
                     .onAppear {
-                        audioFinished = false
                         showExample = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                             let phrase = phrases[currentIndex]
                             let pid = phrasePlaybackID(phrase)
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: phrase.phrase, sourceLabel: "Guided Phrase")
                             }
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
@@ -2768,27 +2836,50 @@ private struct PhrasesGuidedView: View {
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
         .animation(.spring(duration: 0.4), value: allDone)
         .onChange(of: player.activePlaybackID) { oldValue, newValue in
             let currentPid = phrasePlaybackID(phrases[currentIndex])
             if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
-                withAnimation { audioFinished = true }
                 listenedPhrases.insert(phrases[currentIndex].phrase)
+                pendingAdvance?.cancel()
+                let work = DispatchWorkItem { advanceToNext() }
+                pendingAdvance = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8, execute: work)
             }
+        }
+        .task {
+            let items: [AudioPreloader.AudioItem] = phrases.map { phrase in
+                let id = phrasePlaybackID(phrase)
+                return (id: id, text: phrase.phrase)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(items)
         }
         .background(ClearBackgroundView())
     }
 
     private func advanceToNext() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
         listenedPhrases.insert(phrases[currentIndex].phrase)
+        goingBack = false
         if currentIndex < phrases.count - 1 {
             withAnimation {
                 currentIndex += 1
-                audioFinished = false
             }
         } else {
             withAnimation { allDone = true }
+        }
+    }
+
+    private func goToPrevious() {
+        pendingAdvance?.cancel()
+        pendingAdvance = nil
+        player.stopPlayback()
+        guard currentIndex > 0 else { return }
+        goingBack = true
+        withAnimation {
+            currentIndex -= 1
         }
     }
 }
@@ -2809,6 +2900,7 @@ struct FrameworkStepView: View {
     @State private var listenedSentences: Set<Int> = []
     @State private var listenedAudioIds: Set<String> = []
     @State private var frameworkGuideConfig: FrameworkGuideConfig? = nil
+    @State private var frameworkGuideCompleted = false
     private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
@@ -2847,11 +2939,15 @@ struct FrameworkStepView: View {
         .onAppear {
             appeared = true
             updateFrameworkProgress()
+            AudioPreloader.preloadStep(.framework, task: task)
         }
         .onChange(of: listenedSentences.count) { _, _ in
             updateFrameworkProgress()
         }
         .onChange(of: listenedAudioIds.count) { _, _ in
+            updateFrameworkProgress()
+        }
+        .onChange(of: frameworkGuideCompleted) { _, _ in
             updateFrameworkProgress()
         }
         .fullScreenCover(item: $frameworkGuideConfig) { config in
@@ -2862,6 +2958,7 @@ struct FrameworkStepView: View {
                     startIndex: config.startIndex,
                     onComplete: { ids in
                         listenedAudioIds.formUnion(ids)
+                        frameworkGuideCompleted = true
                     }
                 )
             }
@@ -2869,10 +2966,9 @@ struct FrameworkStepView: View {
     }
 
     private func updateFrameworkProgress() {
-        // Lesson content: complete on appear (content is self-paced)
         if lesson != nil {
-            canComplete = true
-            progressHint = nil
+            canComplete = frameworkGuideCompleted
+            progressHint = frameworkGuideCompleted ? nil : "完成 Guide 学习"
             return
         }
         if totalSentences == 0 {
@@ -2880,13 +2976,13 @@ struct FrameworkStepView: View {
             progressHint = nil
             return
         }
-        let remaining = totalSentences - listenedSentences.count
-        if remaining <= 0 {
+        let listened = listenedSentences.count
+        if listened >= totalSentences {
             canComplete = true
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "\(remaining) framework sentences remaining"
+            progressHint = "听完标记项 \(listened)/\(totalSentences)"
         }
     }
 
@@ -2903,6 +2999,7 @@ struct FrameworkStepView: View {
                             sentence: sentence,
                             accentColor: frameworkColor,
                             isLast: index == task.frameworkSentences.count - 1,
+                            isListened: listenedSentences.contains(index),
                             onListen: { listenedSentences.insert(index) }
                         )
                     }
@@ -2981,7 +3078,6 @@ struct FrameworkStepView: View {
     }
 
     private func lessonFrameworkContent(_ lesson: LessonContent) -> some View {
-        let totalItems = 1 + lesson.framework.defaultStructure.count + lesson.framework.deliveryMarkers.count
         return VStack(alignment: .leading, spacing: 16) {
             // Framework Goal
             let goalText = lesson.framework.goal
@@ -3038,31 +3134,19 @@ struct FrameworkStepView: View {
                     .foregroundStyle(frameworkColor)
                 Spacer()
                 HStack(spacing: 6) {
-                    Button {
+                    GuideButton(isCompleted: frameworkGuideCompleted, accentColor: frameworkColor) {
                         frameworkGuideConfig = FrameworkGuideConfig(startIndex: 1)
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "book.fill")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("Guide")
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        }
-                        .fixedSize()
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(frameworkColor)
-                        .clipShape(Capsule())
                     }
-                    .buttonStyle(.plain)
 
-                    CompactPlayButton(
-                        text: allStructureText,
-                        playbackID: structurePlaybackId,
-                        sourceLabel: "Speaking Structure",
-                        accentColor: frameworkColor
-                    )
-                    BatchTranslateButton(texts: allStructureTexts, accentColor: frameworkColor)
+                    if frameworkGuideCompleted {
+                        CompactPlayButton(
+                            text: allStructureText,
+                            playbackID: structurePlaybackId,
+                            sourceLabel: "Speaking Structure",
+                            accentColor: frameworkColor
+                        )
+                        BatchTranslateButton(texts: allStructureTexts, accentColor: frameworkColor)
+                    }
                 }
                 .fixedSize()
             }
@@ -3231,6 +3315,7 @@ struct FrameworkSentenceCard: View {
     let sentence: String
     let accentColor: Color
     let isLast: Bool
+    var isListened: Bool = false
     var onListen: (() -> Void)? = nil
 
     private var playbackId: String {
@@ -3397,7 +3482,7 @@ private struct FrameworkGuidedView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex: Int
-    @State private var audioFinished = false
+    @State private var goingBack = false
 
     init(framework: LessonContent.Framework, accentColor: Color, startIndex: Int = 0, onComplete: @escaping (Set<String>) -> Void = { _ in }) {
         self.framework = framework
@@ -3490,21 +3575,17 @@ private struct FrameworkGuidedView: View {
                     cardForItem(items[currentIndex])
                         .padding(.horizontal, 20)
                         .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .move(edge: .leading).combined(with: .opacity)
+                            insertion: .move(edge: goingBack ? .leading : .trailing).combined(with: .opacity),
+                            removal: .move(edge: goingBack ? .trailing : .leading).combined(with: .opacity)
                         ))
                         .id(currentIndex)
                         .onAppear {
-                            audioFinished = false
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                                 let item = items[currentIndex]
                                 let pid = item.playbackID
                                 if !player.isPlaying(id: pid) {
                                     player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                                 }
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                if !audioFinished { withAnimation { audioFinished = true } }
                             }
                         }
                 } else {
@@ -3532,14 +3613,21 @@ private struct FrameworkGuidedView: View {
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
         .animation(.spring(duration: 0.4), value: allDone)
         .onChange(of: player.activePlaybackID) { oldValue, newValue in
             let currentPid = items[currentIndex].playbackID
             if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
-                withAnimation { audioFinished = true }
                 completedIds.insert(currentPid)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    advanceToNext()
+                }
             }
+        }
+        .task {
+            let preloadItems: [AudioPreloader.AudioItem] = items.map { item in
+                (id: item.playbackID, text: item.playableText)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(preloadItems)
         }
         .background(ClearBackgroundView())
     }
@@ -3644,14 +3732,34 @@ private struct FrameworkGuidedView: View {
 
             TranslationOverlay(englishText: item.playableText, accentColor: color)
 
-            if audioFinished {
+            // Navigation buttons
+            HStack(spacing: 12) {
+                if currentIndex > 0 {
+                    Button {
+                        goToPrevious()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("Back")
+                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        }
+                        .foregroundStyle(color)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(color.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Button {
                     advanceToNext()
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: currentIndex < items.count - 1 ? "checkmark" : "checkmark.circle.fill")
                             .font(.system(size: 14, weight: .bold))
-                        Text(currentIndex < items.count - 1 ? "Got it" : "All Done")
+                        Text(currentIndex < items.count - 1 ? "Next" : "All Done")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(.white)
@@ -3661,7 +3769,6 @@ private struct FrameworkGuidedView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .padding(24)
@@ -3671,14 +3778,24 @@ private struct FrameworkGuidedView: View {
     }
 
     private func advanceToNext() {
+        player.stopPlayback()
         completedIds.insert(items[currentIndex].playbackID)
+        goingBack = false
         if currentIndex < items.count - 1 {
             withAnimation {
                 currentIndex += 1
-                audioFinished = false
             }
         } else {
             withAnimation { allDone = true }
+        }
+    }
+
+    private func goToPrevious() {
+        player.stopPlayback()
+        guard currentIndex > 0 else { return }
+        goingBack = true
+        withAnimation {
+            currentIndex -= 1
         }
     }
 }
@@ -3698,7 +3815,8 @@ struct SamplesStepView: View {
 
     @State private var selectedBand = 0
     @State private var appeared = false
-    @State private var listenedBands: Set<Int> = []
+    @State private var listenedSampleBands: Set<Int> = []
+    @State private var listenedUpgradeBands: Set<Int> = []
     @State private var sampleGuideConfig: SampleGuideConfig? = nil
     private var hasLessonContent: Bool { task.lessonContent != nil }
     private var lesson: LessonContent? { task.lessonContent }
@@ -3837,34 +3955,22 @@ struct SamplesStepView: View {
                         .foregroundStyle(bandColor)
                     Spacer()
                     HStack(spacing: 6) {
-                        Button {
+                        GuideButton(isCompleted: listenedSampleBands.contains(selectedBand), accentColor: bandColor) {
                             sampleGuideConfig = SampleGuideConfig(bandIndex: selectedBand, startIndex: 0)
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "book.fill")
-                                    .font(.system(size: 8, weight: .bold))
-                                Text("Guide")
-                                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            }
-                            .fixedSize()
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(bandColor)
-                            .clipShape(Capsule())
                         }
-                        .buttonStyle(.plain)
 
-                        CompactPlayButton(
-                            text: sample.content,
-                            playbackID: samplePlaybackId,
-                            sourceLabel: "Sample Answer",
-                            accentColor: bandColor,
-                            onPlay: { listenedBands.insert(selectedBand) }
-                        )
+                        if listenedSampleBands.contains(selectedBand) {
+                            CompactPlayButton(
+                                text: sample.content,
+                                playbackID: samplePlaybackId,
+                                sourceLabel: "Sample Answer",
+                                accentColor: bandColor,
+                                onPlay: { listenedSampleBands.insert(selectedBand) }
+                            )
 
-                        let sampleSentences = sample.content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
-                        BatchTranslateButton(texts: sampleSentences, accentColor: bandColor)
+                            let sampleSentences = sample.content.components(separatedBy: ". ").map { $0.hasSuffix(".") ? $0 : $0 + "." }.filter { $0.count > 2 }
+                            BatchTranslateButton(texts: sampleSentences, accentColor: bandColor)
+                        }
                     }
                     .fixedSize()
                 }
@@ -3905,31 +4011,19 @@ struct SamplesStepView: View {
                             .foregroundStyle(bandColor)
                         Spacer()
                         HStack(spacing: 6) {
-                            Button {
+                            GuideButton(isCompleted: listenedUpgradeBands.contains(selectedBand), accentColor: bandColor) {
                                 sampleGuideConfig = SampleGuideConfig(bandIndex: selectedBand, startIndex: 1)
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "book.fill")
-                                        .font(.system(size: 8, weight: .bold))
-                                    Text("Guide")
-                                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                                }
-                                .fixedSize()
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(bandColor)
-                                .clipShape(Capsule())
                             }
-                            .buttonStyle(.plain)
 
-                            CompactPlayButton(
-                                text: upgradePlayText,
-                                playbackID: EnglishSpeechPlayer.playbackID(for: upgradePlayText, category: "upgrades-\(selectedBand)"),
-                                sourceLabel: "Expression Upgrades",
-                                accentColor: bandColor
-                            )
-                            BatchTranslateButton(texts: upgradeTexts, accentColor: bandColor)
+                            if listenedUpgradeBands.contains(selectedBand) {
+                                CompactPlayButton(
+                                    text: upgradePlayText,
+                                    playbackID: EnglishSpeechPlayer.playbackID(for: upgradePlayText, category: "upgrades-\(selectedBand)"),
+                                    sourceLabel: "Expression Upgrades",
+                                    accentColor: bandColor
+                                )
+                                BatchTranslateButton(texts: upgradeTexts, accentColor: bandColor)
+                            }
                         }
                         .fixedSize()
                     }
@@ -3992,8 +4086,14 @@ struct SamplesStepView: View {
         }
         .onAppear {
             appeared = true
-            canComplete = true
-            progressHint = nil
+            updateSamplesProgress()
+            AudioPreloader.preloadStep(.samples, task: task)
+        }
+        .onChange(of: listenedSampleBands.count) { _, _ in
+            updateSamplesProgress()
+        }
+        .onChange(of: listenedUpgradeBands.count) { _, _ in
+            updateSamplesProgress()
         }
         .fullScreenCover(item: $sampleGuideConfig) { config in
             if config.bandIndex < task.sampleAnswers.count {
@@ -4002,10 +4102,24 @@ struct SamplesStepView: View {
                     bandColor: bandColors[config.bandIndex],
                     startIndex: config.startIndex,
                     onComplete: {
-                        listenedBands.insert(config.bandIndex)
+                        if config.startIndex == 0 {
+                            listenedSampleBands.insert(config.bandIndex)
+                        } else {
+                            listenedUpgradeBands.insert(config.bandIndex)
+                        }
                     }
                 )
             }
+        }
+    }
+
+    private func updateSamplesProgress() {
+        if listenedSampleBands.count >= 1 {
+            canComplete = true
+            progressHint = nil
+        } else {
+            canComplete = false
+            progressHint = "完成 Guide 学习"
         }
     }
 
@@ -4083,25 +4197,25 @@ private struct SampleGuidedView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject private var player = EnglishSpeechPlayer.shared
     @State private var currentIndex: Int
-    @State private var audioFinished = false
     @State private var allDone = false
+    @State private var goingBack = false
 
     init(sample: SampleAnswer, bandColor: Color, startIndex: Int = 0, onComplete: @escaping () -> Void = {}) {
         self.sample = sample
         self.bandColor = bandColor
         self.startIndex = startIndex
         self.onComplete = onComplete
-        self._currentIndex = State(initialValue: startIndex)
+        self._currentIndex = State(initialValue: 0)
     }
 
     private var items: [SampleGuideItem] {
-        var result: [SampleGuideItem] = [
-            .sampleText(band: sample.band, content: sample.content, wordCount: sample.wordCount)
-        ]
-        for (i, upgrade) in sample.upgrades.enumerated() {
-            result.append(.upgrade(index: i, upgrade: upgrade))
+        if startIndex == 0 {
+            // 范文 Guide：只显示范文本身
+            return [.sampleText(band: sample.band, content: sample.content, wordCount: sample.wordCount)]
+        } else {
+            // Expression Upgrades Guide：只显示 upgrades
+            return sample.upgrades.enumerated().map { .upgrade(index: $0.offset, upgrade: $0.element) }
         }
-        return result
     }
 
     private func playbackID(for item: SampleGuideItem) -> String {
@@ -4152,7 +4266,7 @@ private struct SampleGuidedView: View {
 
                     Spacer()
 
-                    Text("\(currentIndex - startIndex + 1) / \(items.count - startIndex)")
+                    Text("\(currentIndex + 1) / \(items.count)")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                 }
@@ -4160,14 +4274,13 @@ private struct SampleGuidedView: View {
                 .padding(.top, 16)
 
                 GeometryReader { geo in
-                    let visibleCount = items.count - startIndex
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(.white.opacity(0.15))
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(bandColor)
-                            .frame(width: geo.size.width * CGFloat(currentIndex - startIndex + 1) / CGFloat(visibleCount), height: 4)
+                            .frame(width: geo.size.width * CGFloat(currentIndex + 1) / CGFloat(items.count), height: 4)
                             .animation(.spring(duration: 0.5), value: currentIndex)
                     }
                 }
@@ -4307,14 +4420,34 @@ private struct SampleGuidedView: View {
 
                             TranslationOverlay(englishText: item.playableText, accentColor: bandColor)
 
-                            if audioFinished {
+                            // Navigation buttons
+                            HStack(spacing: 12) {
+                                if currentIndex > 0 {
+                                    Button {
+                                        goToPrevious()
+                                    } label: {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "chevron.left")
+                                                .font(.system(size: 13, weight: .bold))
+                                            Text("Back")
+                                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                        }
+                                        .foregroundStyle(bandColor)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 14)
+                                        .background(bandColor.opacity(0.12))
+                                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
                                 Button {
                                     advanceToNext()
                                 } label: {
                                     HStack(spacing: 8) {
                                         Image(systemName: currentIndex < items.count - 1 ? "checkmark" : "checkmark.circle.fill")
                                             .font(.system(size: 14, weight: .bold))
-                                        Text(currentIndex < items.count - 1 ? "Got it" : "All Done")
+                                        Text(currentIndex < items.count - 1 ? "Next" : "All Done")
                                             .font(.system(size: 15, weight: .bold, design: .rounded))
                                     }
                                     .foregroundStyle(.white)
@@ -4324,7 +4457,6 @@ private struct SampleGuidedView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                 }
                                 .buttonStyle(.plain)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
                             }
                         }
                         .padding(24)
@@ -4334,21 +4466,17 @@ private struct SampleGuidedView: View {
                     }
                     .padding(.horizontal, 20)
                     .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
+                        insertion: .move(edge: goingBack ? .leading : .trailing).combined(with: .opacity),
+                        removal: .move(edge: goingBack ? .trailing : .leading).combined(with: .opacity)
                     ))
                     .id(currentIndex)
                     .onAppear {
-                        audioFinished = false
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                             let item = items[currentIndex]
                             let pid = playbackID(for: item)
                             if !player.isPlaying(id: pid) {
                                 player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
                             }
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            if !audioFinished { withAnimation { audioFinished = true } }
                         }
                     }
                 } else {
@@ -4376,37 +4504,47 @@ private struct SampleGuidedView: View {
             }
         }
         .animation(.spring(duration: 0.45, bounce: 0.15), value: currentIndex)
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: audioFinished)
         .animation(.spring(duration: 0.4), value: allDone)
         .onChange(of: player.activePlaybackID) { oldValue, newValue in
             let currentPid = playbackID(for: items[currentIndex])
             if oldValue == currentPid && newValue == nil && player.pausedPlaybackID != currentPid {
-                withAnimation { audioFinished = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    advanceToNext()
+                }
             }
+        }
+        .task {
+            let preloadItems: [AudioPreloader.AudioItem] = items.map { item in
+                (id: playbackID(for: item), text: item.playableText)
+            }
+            await EnglishSpeechPlayer.shared.preloadBatch(preloadItems)
         }
         .background(ClearBackgroundView())
     }
 
     private func advanceToNext() {
+        player.stopPlayback()
+        goingBack = false
         if currentIndex < items.count - 1 {
             withAnimation {
                 currentIndex += 1
-                audioFinished = false
             }
         } else {
             withAnimation { allDone = true }
         }
     }
+
+    private func goToPrevious() {
+        player.stopPlayback()
+        guard currentIndex > 0 else { return }
+        goingBack = true
+        withAnimation {
+            currentIndex -= 1
+        }
+    }
 }
 
 // MARK: - Practice Prompt
-private enum PracticeInputMode: String, CaseIterable, Identifiable {
-    case text = "Text"
-    case voice = "Voice"
-
-    var id: String { rawValue }
-}
-
 private enum PracticeLanguageMode: String, CaseIterable, Identifiable {
     case native = "Native"
     case english = "English"
@@ -4424,7 +4562,6 @@ struct PracticePromptView: View {
     private var lesson: LessonContent? { task.lessonContent }
 
     @StateObject private var speechInput = SpeechInputManager()
-    @State private var inputMode: PracticeInputMode = .text
     @State private var languageMode: PracticeLanguageMode = .native
     @State private var draftInput: String
     @State private var translatedEnglish: String
@@ -4548,15 +4685,14 @@ struct PracticePromptView: View {
 
             inputCard
                 .staggerIn(index: 4, appeared: appeared)
-            actionArea
-                .staggerIn(index: 5, appeared: appeared)
 
             if !translatedEnglish.isEmpty {
                 resultCard(
                     title: "English Result",
                     text: translatedEnglish,
-                    tint: Color(hex: "4A90D9")
+                    tint: practiceColor
                 )
+                .staggerIn(index: 5, appeared: appeared)
             }
 
             if let errorMessage {
@@ -4606,7 +4742,7 @@ struct PracticePromptView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "Submit your answer and get translation"
+            progressHint = "Submit your response to continue"
         }
     }
 
@@ -4670,28 +4806,102 @@ struct PracticePromptView: View {
     }
 
     private var inputCard: some View {
-        GradientAccentCard(color: Color(hex: "4A90D9"), spacing: 14) {
-            StepSectionLabel(icon: "square.and.pencil", title: "Write Your Draft", color: Color(hex: "4A90D9"))
+        VStack(alignment: .leading, spacing: 14) {
+            // Header row: title + language toggle + mic button
+            HStack(spacing: 8) {
+                Image(systemName: "pencil.line")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(practiceColor)
+                Text("Your Response")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(practiceColor)
+                Spacer()
 
-            modeSelector(
-                title: "Input Mode",
-                items: PracticeInputMode.allCases,
-                selected: inputMode
-            ) { inputMode = $0 }
+                // Compact language toggle
+                HStack(spacing: 0) {
+                    ForEach(PracticeLanguageMode.allCases) { mode in
+                        let isSelected = mode == languageMode
+                        Button {
+                            withAnimation(.spring(duration: 0.24)) { languageMode = mode }
+                        } label: {
+                            Text(mode == .native ? "中文" : "EN")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(isSelected ? .white : AppColors.tertiaryText)
+                                .frame(width: 36, height: 24)
+                                .background(isSelected ? practiceColor : Color.clear)
+                                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(2)
+                .background(AppColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(AppColors.border, lineWidth: 0.5)
+                )
 
-            if inputMode == .text {
-                modeSelector(
-                    title: "Content Type",
-                    items: PracticeLanguageMode.allCases,
-                    selected: languageMode
-                ) { languageMode = $0 }
+                // Mic button
+                Button {
+                    Task { await speechInput.toggleRecording() }
+                } label: {
+                    Image(systemName: speechInput.isRecording ? "stop.circle.fill" : "mic.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(speechInput.isRecording ? Color(hex: "DC2626") : practiceColor)
+                        .frame(width: 28, height: 28)
+                        .background(
+                            speechInput.isRecording
+                                ? Color(hex: "DC2626").opacity(0.12)
+                                : practiceColor.opacity(0.1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                .buttonStyle(.plain)
             }
 
-            if inputMode == .voice {
-                voiceTools
+            if speechInput.isRecording {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color(hex: "DC2626"))
+                        .frame(width: 6, height: 6)
+                    Text("Listening...")
+                        .font(.caption.bold())
+                        .foregroundStyle(Color(hex: "DC2626"))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color(hex: "DC2626").opacity(0.08))
+                .clipShape(Capsule())
             }
 
-            draftEditor
+            // Text editor
+            TextEditor(text: $draftInput)
+                .focused($isInputFocused)
+                .frame(minHeight: 110)
+                .scrollContentBackground(.hidden)
+                .padding(12)
+                .background(AppColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(
+                            isInputFocused ? practiceColor.opacity(0.5) : AppColors.border.opacity(0.5),
+                            lineWidth: 1
+                        )
+                )
+                .overlay(alignment: .topLeading) {
+                    if draftInput.isEmpty {
+                        Text(languageMode == .native
+                             ? "用中文写你的回答，4-6句..."
+                             : "Write your English response here...")
+                            .font(.subheadline)
+                            .foregroundStyle(AppColors.tertiaryText)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 20)
+                            .allowsHitTesting(false)
+                    }
+                }
 
             if let speechError = speechInput.lastError {
                 Text(speechError)
@@ -4699,106 +4909,43 @@ struct PracticePromptView: View {
                     .foregroundStyle(Color(hex: "DC2626"))
             }
 
-            Text("Draft auto-saves. You can write in your native language first, then convert to English.")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-                .lineSpacing(2)
-        }
-    }
-
-    private var voiceTools: some View {
-        HStack(spacing: 10) {
+            // Submit button inside the card
             Button {
-                Task { await speechInput.toggleRecording() }
+                runPipeline()
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: speechInput.isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                        .font(.system(size: 16, weight: .bold))
-                    Text(speechInput.isRecording ? "Stop" : "Record")
-                        .font(.subheadline.bold())
+                    if isProcessing {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Image(systemName: languageMode == .native ? "arrow.right.circle.fill" : "checkmark.circle.fill")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    Text(languageMode == .native ? "Translate to English" : "Submit English Draft")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(.white)
-                .frame(height: 40)
                 .frame(maxWidth: .infinity)
-                .background(speechInput.isRecording ? Color(hex: "DC2626") : accentColor)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .frame(height: 44)
+                .background(
+                    draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing
+                        ? AnyShapeStyle(AppColors.border)
+                        : AnyShapeStyle(practiceColor)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .buttonStyle(.plain)
-
-            if speechInput.isRecording {
-                Text("识别中...")
-                    .font(.caption.bold())
-                    .foregroundStyle(accentColor)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .background(accentColor.opacity(0.12))
-                    .clipShape(Capsule())
-            }
+            .disabled(draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing)
         }
+        .padding(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                .foregroundStyle(practiceColor.opacity(0.3))
+        )
     }
 
-    private var draftEditor: some View {
-        TextEditor(text: $draftInput)
-            .focused($isInputFocused)
-            .frame(minHeight: 120)
-            .padding(10)
-            .background(AppColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isInputFocused ? accentColor : AppColors.border, lineWidth: 1)
-            )
-            .overlay(alignment: .topLeading) {
-                if draftInput.isEmpty {
-                    Text(languageMode == .native ? "Write in your native language, 4-6 sentences..." : "Write your English draft here...")
-                        .font(.subheadline)
-                        .foregroundStyle(AppColors.tertiaryText)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 18)
-                        .allowsHitTesting(false)
-                }
-            }
-    }
-
-    private var actionArea: some View {
-        Button {
-            runPipeline()
-        } label: {
-            HStack(spacing: 8) {
-                if isProcessing {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Image(systemName: "wand.and.stars")
-                        .font(.subheadline.bold())
-                }
-                Text(languageMode == .native ? "Native → English" : "Keep English draft")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-            }
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(
-                draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing
-                    ? AnyShapeStyle(AppColors.border)
-                    : AnyShapeStyle(
-                        LinearGradient(
-                            colors: [practiceColor, practiceColor.opacity(0.8)],
-                            startPoint: .leading, endPoint: .trailing
-                        )
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
-            .shadow(
-                color: draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    ? .clear
-                    : practiceColor.opacity(0.3),
-                radius: 10, x: 0, y: 4
-            )
-        }
-        .buttonStyle(.plain)
-        .disabled(draftInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isProcessing)
-    }
+    private var actionArea: some View { EmptyView() }
 
     private func resultCard(title: String, text: String, tint: Color) -> some View {
         let resultPlaybackId = EnglishSpeechPlayer.playbackID(for: text, category: "practice")
@@ -4838,38 +4985,6 @@ struct PracticePromptView: View {
         )
     }
 
-    private func modeSelector<Item: Identifiable>(
-        title: String,
-        items: [Item],
-        selected: Item,
-        onSelect: @escaping (Item) -> Void
-    ) -> some View where Item: RawRepresentable, Item.RawValue == String {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption.bold())
-                .foregroundStyle(AppColors.tertiaryText)
-
-            HStack(spacing: 8) {
-                ForEach(items) { item in
-                    let isSelected = item.id == selected.id
-                    Button {
-                        withAnimation(.spring(duration: 0.24)) {
-                            onSelect(item)
-                        }
-                    } label: {
-                        Text(item.rawValue)
-                            .font(.caption.bold())
-                            .foregroundStyle(isSelected ? .white : AppColors.secondText)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 34)
-                            .background(isSelected ? accentColor : AppColors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-    }
 
     private func runPipeline() {
         let source = draftInput.trimmingCharacters(in: .whitespacesAndNewlines)

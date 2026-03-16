@@ -23,7 +23,9 @@ struct DailySpeakApp: App {
         WindowGroup {
             ZStack {
                 Group {
-                    if showOnboarding {
+                    if showSplash {
+                        Color.clear
+                    } else if showOnboarding {
                         OnboardingView(isPresented: $showOnboarding)
                     } else {
                         ContentView()
@@ -45,6 +47,10 @@ struct DailySpeakApp: App {
             }
             .onAppear {
                 checkFirstLaunch()
+            }
+            .onChange(of: showSplash) { oldValue, newValue in
+                // Splash just finished — start services or wait for onboarding
+                guard oldValue, !newValue else { return }
                 if showOnboarding {
                     shouldStartRuntimeAfterOnboarding = true
                 } else {
