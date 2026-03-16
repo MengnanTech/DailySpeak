@@ -27,6 +27,7 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
     private var cachedAudioURLs: [String: URL] = [:]
     private var cachedAudioDurations: [String: Double] = [:]
     private var requestSequence = 0
+    private var activeDownloads: [String: Task<URL?, Never>] = [:]
 
     private static var cacheDirectory: URL {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
@@ -165,43 +166,63 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
 
     /// Download a single MP3 from a known remote URL to local cache.
     private func downloadMP3(id: String, from remoteURL: URL) async -> Bool {
-        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            cachedAudioURLs[id] = localURL
-            return true
-        }
-        do {
+        let result = await downloadWithDedup(id: id) {
             let (data, _) = try await URLSession.shared.data(from: remoteURL)
-            try data.write(to: localURL)
-            cachedAudioURLs[id] = localURL
-            print("✅ [TTS] cached: \(id) (\(data.count) bytes)")
-            return true
-        } catch {
-            print("❌ [TTS] download failed: \(id) - \(error.localizedDescription)")
-            return false
+            return data
         }
+        return result != nil
     }
 
     /// Download MP3 from API to local Caches directory and populate cachedAudioURLs.
     private func downloadToLocal(id: String, text: String) async -> URL? {
-        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
-        if FileManager.default.fileExists(atPath: localURL.path) {
-            cachedAudioURLs[id] = localURL
-            return localURL
-        }
-        do {
+        await downloadWithDedup(id: id) {
             let voiceId = VoiceManager.shared.selectedVoiceId
             let remoteURL = try await DailySpeakAPIService.shared.generateEnglishAudioURL(id: id, text: text, voiceId: voiceId)
             print("⬇️ [TTS] downloading audio: id=\(id)")
             let (data, _) = try await URLSession.shared.data(from: remoteURL)
-            try data.write(to: localURL)
-            cachedAudioURLs[id] = localURL
-            print("✅ [TTS] cached audio: id=\(id) size=\(data.count)")
-            return localURL
-        } catch {
-            print("❌ [TTS] download failed: \(error.localizedDescription)")
-            return nil
+            return data
         }
+    }
+
+    /// Ensures only one download per id at a time, uses atomic write.
+    private func downloadWithDedup(id: String, fetch: @escaping () async throws -> Data) async -> URL? {
+        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+
+        // Already cached in memory
+        if cachedAudioURLs[id] != nil { return localURL }
+
+        // Already on disk
+        if FileManager.default.fileExists(atPath: localURL.path) {
+            cachedAudioURLs[id] = localURL
+            return localURL
+        }
+
+        // Join existing download if in progress
+        if let existing = activeDownloads[id] {
+            return await existing.value
+        }
+
+        // Start new download
+        let task = Task<URL?, Never> {
+            do {
+                let data = try await fetch()
+                // Atomic write: write to temp file, then move
+                let tempURL = Self.cacheDirectory.appendingPathComponent("\(id)_\(UUID().uuidString).tmp")
+                try data.write(to: tempURL)
+                try? FileManager.default.removeItem(at: localURL)
+                try FileManager.default.moveItem(at: tempURL, to: localURL)
+                cachedAudioURLs[id] = localURL
+                print("✅ [TTS] cached: \(id) (\(data.count) bytes)")
+                return localURL
+            } catch {
+                print("❌ [TTS] download failed: \(id) - \(error.localizedDescription)")
+                return nil
+            }
+        }
+        activeDownloads[id] = task
+        let result = await task.value
+        activeDownloads.removeValue(forKey: id)
+        return result
     }
 
     var hasVisiblePlayback: Bool {
