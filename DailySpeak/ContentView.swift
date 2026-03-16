@@ -20,7 +20,7 @@ struct ContentView: View {
 
     private var previewStrategyView: some View {
         ScrollView(showsIndicators: false) {
-            StrategyStepView(task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
+            StrategyStepView(stageId: previewStage.id, task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
         }
@@ -31,7 +31,7 @@ struct ContentView: View {
 
     private var previewFrameworkView: some View {
         ScrollView(showsIndicators: false) {
-            FrameworkStepView(task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
+            FrameworkStepView(stageId: previewStage.id, task: previewTask, accentColor: previewStage.theme.startColor, canComplete: $previewCanComplete, progressHint: $previewProgressHint)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 100)
         }

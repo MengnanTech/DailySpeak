@@ -31,6 +31,7 @@ struct TaskOverviewView: View {
     @State private var tappedStepIndex: Int?
     @State private var phase: OverviewPresentationPhase = .idle
 
+
     private static let seenTasksKey = "overviewAnimationSeenTasks"
     private var hasSeenAnimation: Bool {
         let seen = UserDefaults.standard.stringArray(forKey: Self.seenTasksKey) ?? []
@@ -91,6 +92,7 @@ struct TaskOverviewView: View {
     @State private var showDockedFocus = false
     @State private var showDockedFlow = false
     @State private var scrollToFlow = false
+    @State private var revealTask: Task<Void, Never>?
 
     private var theme: StageTheme { stage.theme }
     private var lessonContent: LessonContent? { task.lessonContent }
@@ -225,10 +227,12 @@ struct TaskOverviewView: View {
         .navigationDestination(isPresented: $showLearning) {
             LearningFlowView(stage: stage, task: task, initialStep: tappedStepIndex)
         }
-        .task(id: task.id) {
-            await runRevealSequence()
+        .onAppear {
+            revealTask = Task { await runRevealSequence() }
         }
         .onDisappear {
+            revealTask?.cancel()
+            revealTask = nil
             EnglishSpeechPlayer.shared.stopPlayback()
         }
     }
@@ -402,9 +406,11 @@ struct TaskOverviewView: View {
                 if phase == .ready && !showCenteredFocus {
                     HStack(spacing: 6) {
                         let goalText = lesson.topic.learningGoal ?? "Start with strategy, then learn vocabulary and framework, finally practice with samples."
+                        let anglesText = lesson.strategy.angles.enumerated().map { "\($0.offset + 1). \($0.element.title)" }.joined(separator: ". ")
+                        let fullText = goalText + " " + anglesText
                         CompactPlayButton(
-                            text: goalText,
-                            playbackID: EnglishSpeechPlayer.playbackID(for: goalText, category: "focus-goal"),
+                            text: fullText,
+                            playbackID: EnglishSpeechPlayer.playbackID(for: fullText, category: "focus-goal"),
                             sourceLabel: "Key Focus",
                             accentColor: theme.startColor
                         )
@@ -666,9 +672,14 @@ struct TaskOverviewView: View {
                 Spacer()
                 if showCenteredFlow {
                     Button {
-                        withAnimation(.easeOut(duration: 0.3)) {
-                            skipToReady()
-                        }
+                        revealTask?.cancel()
+                        revealTask = nil
+                        showCenteredHero = false
+                        showCenteredFocus = false
+                        showCenteredFlow = false
+                        darkOverlayOpacity = 0
+                        skipToReady()
+                        markAnimationSeen()
                     } label: {
                         Text("跳过")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -1066,10 +1077,6 @@ struct TaskOverviewView: View {
 
     private func skipToReady() {
         EnglishSpeechPlayer.shared.stopPlayback()
-        showCenteredHero = false
-        showCenteredFocus = false
-        showCenteredFlow = false
-        darkOverlayOpacity = 0
         showDockedHero = true
         showDockedFocus = true
         showDockedFlow = true
@@ -1077,7 +1084,10 @@ struct TaskOverviewView: View {
         stepDisplayStates = task.steps.indices.map { settledStepState(for: $0) }
         stepTextChars = task.steps.map { $0.title.count + $0.subtitle.count }
         phase = .ready
-        markAnimationSeen()
+        // Scroll to Learning Flow card after layout settles
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            scrollToFlow = true
+        }
     }
 
     private func settledStepState(for index: Int) -> OverviewStepDisplayState {

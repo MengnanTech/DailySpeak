@@ -223,12 +223,12 @@ struct LearningFlowView: View {
     @ViewBuilder
     private func stepView(for type: StepType) -> some View {
         switch type {
-        case .strategy:   StrategyStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .strategy:   StrategyStepView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
         case .review:     ReviewStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
         case .vocabulary:  VocabularyStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
-        case .phrases:     PhrasesStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
-        case .framework:   FrameworkStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
-        case .samples:     SamplesStepView(task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .phrases:     PhrasesStepView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .framework:   FrameworkStepView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
+        case .samples:     SamplesStepView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
         case .practice:    PracticePromptView(stageId: stage.id, task: task, accentColor: theme.startColor, canComplete: $stepCanComplete, progressHint: $stepProgressHint)
         }
     }
@@ -528,11 +528,13 @@ extension View {
 
 // MARK: - Strategy Step
 struct StrategyStepView: View {
+    let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
 
+    @Environment(ProgressManager.self) private var progress
     @State private var appeared = false
     @State private var listenedAudioIds: Set<String> = []
     @State private var showKeyPointsGuide = false
@@ -640,6 +642,8 @@ struct StrategyStepView: View {
         }
         .onAppear {
             appeared = true
+            keyPointsGuideCompleted = progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "keyPoints")
+            sequenceGuideCompleted = progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "sequence")
             updateStrategyProgress()
             AudioPreloader.preloadStep(.strategy, task: task)
         }
@@ -660,6 +664,7 @@ struct StrategyStepView: View {
                     onComplete: { completedIds in
                         listenedAudioIds.formUnion(completedIds)
                         keyPointsGuideCompleted = true
+                        progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "keyPoints")
                     }
                 )
             }
@@ -672,6 +677,7 @@ struct StrategyStepView: View {
                     onComplete: { completedId in
                         listenedAudioIds.insert(completedId)
                         sequenceGuideCompleted = true
+                        progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "sequence")
                     }
                 )
             }
@@ -2373,11 +2379,13 @@ final class WordPronouncer {
 
 // MARK: - Phrases Step
 struct PhrasesStepView: View {
+    let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
 
+    @Environment(ProgressManager.self) private var progress
     @State private var appeared = false
     @State private var listenedPhrases: Set<String> = []
     @State private var showPhrasesGuide = false
@@ -2436,6 +2444,7 @@ struct PhrasesStepView: View {
         }
         .onAppear {
             appeared = true
+            phrasesGuideCompleted = progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "phrases")
             updatePhrasesProgress()
             AudioPreloader.preloadStep(.phrases, task: task)
         }
@@ -2449,6 +2458,7 @@ struct PhrasesStepView: View {
                 onComplete: { listened in
                     listenedPhrases.formUnion(listened)
                     phrasesGuideCompleted = true
+                    progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "phrases")
                 }
             )
         }
@@ -2929,11 +2939,13 @@ private struct FrameworkGuideConfig: Identifiable {
 }
 
 struct FrameworkStepView: View {
+    let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
 
+    @Environment(ProgressManager.self) private var progress
     @State private var appeared = false
     @State private var listenedSentences: Set<Int> = []
     @State private var listenedAudioIds: Set<String> = []
@@ -2976,6 +2988,7 @@ struct FrameworkStepView: View {
         }
         .onAppear {
             appeared = true
+            frameworkGuideCompleted = progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "framework")
             updateFrameworkProgress()
             AudioPreloader.preloadStep(.framework, task: task)
         }
@@ -2997,6 +3010,7 @@ struct FrameworkStepView: View {
                     onComplete: { ids in
                         listenedAudioIds.formUnion(ids)
                         frameworkGuideCompleted = true
+                        progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "framework")
                     }
                 )
             }
@@ -3858,11 +3872,13 @@ private struct SampleGuideConfig: Identifiable {
 }
 
 struct SamplesStepView: View {
+    let stageId: Int
     let task: SpeakingTask
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
 
+    @Environment(ProgressManager.self) private var progress
     @State private var selectedBand = 0
     @State private var appeared = false
     @State private var listenedSampleBands: Set<Int> = []
@@ -4136,6 +4152,15 @@ struct SamplesStepView: View {
         }
         .onAppear {
             appeared = true
+            // Restore saved guide completion state
+            for i in 0..<task.sampleAnswers.count {
+                if progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "sample_\(i)") {
+                    listenedSampleBands.insert(i)
+                }
+                if progress.isGuideCompleted(stageId: stageId, taskId: task.id, guideName: "upgrade_\(i)") {
+                    listenedUpgradeBands.insert(i)
+                }
+            }
             updateSamplesProgress()
             AudioPreloader.preloadStep(.samples, task: task)
         }
@@ -4154,8 +4179,10 @@ struct SamplesStepView: View {
                     onComplete: {
                         if config.startIndex == 0 {
                             listenedSampleBands.insert(config.bandIndex)
+                            progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "sample_\(config.bandIndex)")
                         } else {
                             listenedUpgradeBands.insert(config.bandIndex)
+                            progress.completeGuide(stageId: stageId, taskId: task.id, guideName: "upgrade_\(config.bandIndex)")
                         }
                     }
                 )

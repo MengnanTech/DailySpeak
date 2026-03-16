@@ -9,6 +9,7 @@ final class ProgressManager {
     private let activityDaysKey = "learningActivityDays"
     private let taskCompletionDatesKey = "taskCompletionDates"
     private let studyTimeKey = "dailyStudySeconds"
+    private let guidesKey = "completedGuides"
 
     private(set) var completedSteps: Set<String>
     private(set) var completedTasks: Set<String>
@@ -16,6 +17,7 @@ final class ProgressManager {
     private(set) var taskCompletionDates: [String: String]
     /// Daily study seconds: ["2026-03-14": 1234.5]
     private(set) var dailyStudySeconds: [String: Double]
+    private(set) var completedGuides: Set<String>
 
     // Active session tracking
     private var sessionStartTime: Date?
@@ -26,11 +28,13 @@ final class ProgressManager {
         let activityDays = UserDefaults.standard.stringArray(forKey: "learningActivityDays") ?? []
         let completionDates = UserDefaults.standard.dictionary(forKey: "taskCompletionDates") as? [String: String] ?? [:]
         let studyTime = UserDefaults.standard.dictionary(forKey: "dailyStudySeconds") as? [String: Double] ?? [:]
+        let guides = UserDefaults.standard.stringArray(forKey: "completedGuides") ?? []
         self.completedSteps = Set(steps)
         self.completedTasks = Set(tasks)
         self.learningActivityDays = Set(activityDays)
         self.taskCompletionDates = completionDates
         self.dailyStudySeconds = studyTime
+        self.completedGuides = Set(guides)
     }
 
     // MARK: - Step Progress
@@ -107,6 +111,20 @@ final class ProgressManager {
     /// Whether a stage needs payment (not accessible via subscription or purchase)
     func isStageLocked(stageId: Int, subscription: SubscriptionManager) -> Bool {
         stageId > 1 && !subscription.isStageAccessible(stageId)
+    }
+
+    // MARK: - Guide Completion
+    private func guideKey(_ stageId: Int, _ taskId: Int, _ guideName: String) -> String {
+        "s\(stageId)_t\(taskId)_\(guideName)"
+    }
+
+    func isGuideCompleted(stageId: Int, taskId: Int, guideName: String) -> Bool {
+        completedGuides.contains(guideKey(stageId, taskId, guideName))
+    }
+
+    func completeGuide(stageId: Int, taskId: Int, guideName: String) {
+        completedGuides.insert(guideKey(stageId, taskId, guideName))
+        save()
     }
 
     // MARK: - Daily Motivation
@@ -190,6 +208,7 @@ final class ProgressManager {
         defaults.set(Array(learningActivityDays), forKey: activityDaysKey)
         defaults.set(taskCompletionDates, forKey: taskCompletionDatesKey)
         defaults.set(dailyStudySeconds, forKey: studyTimeKey)
+        defaults.set(Array(completedGuides), forKey: guidesKey)
     }
 
     func resetAll() {
@@ -198,6 +217,7 @@ final class ProgressManager {
         learningActivityDays.removeAll()
         taskCompletionDates.removeAll()
         dailyStudySeconds.removeAll()
+        completedGuides.removeAll()
         save()
     }
 
