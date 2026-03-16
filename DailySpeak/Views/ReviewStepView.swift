@@ -855,6 +855,7 @@ private struct ReviewGuidedView: View {
                                 currentIndex -= 1
                                 audioFinished = false
                             }
+                            autoPlayCurrent()
                         }
                     } label: {
                         HStack(spacing: 6) {
@@ -906,9 +907,20 @@ private struct ReviewGuidedView: View {
                 currentIndex += 1
                 audioFinished = false
             }
+            autoPlayCurrent()
         } else {
             withAnimation {
                 allDone = true
+            }
+        }
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let item = items[currentIndex]
+            let pid = item.playbackID
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: item.playableText, sourceLabel: item.sectionLabel)
             }
         }
     }

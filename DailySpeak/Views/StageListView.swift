@@ -299,9 +299,26 @@ struct StageListView: View {
     }
 
     // MARK: - Task List Section
+    private func visibleTasks(for stage: Stage, maxCount: Int = 4) -> [SpeakingTask] {
+        let tasks = stage.tasks
+        guard tasks.count > maxCount else { return tasks }
+        // Find first uncompleted task
+        if let nextIndex = tasks.firstIndex(where: { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }) {
+            // Show 1 completed before current (if any), then fill forward
+            let start = max(0, nextIndex - 1)
+            let end = min(tasks.count, start + maxCount)
+            // If near the end, shift window back
+            let adjustedStart = max(0, end - maxCount)
+            return Array(tasks[adjustedStart..<end])
+        }
+        // All completed — show last N
+        return Array(tasks.suffix(maxCount))
+    }
+
     private func taskListSection(stage: Stage, visible: Bool) -> some View {
         let theme = stage.theme
         let nextTask = stage.tasks.first { !progress.isTaskCompleted(stageId: stage.id, taskId: $0.id) }
+        let displayTasks = visibleTasks(for: stage)
 
         return VStack(alignment: .leading, spacing: 0) {
             // Header — slides from left
@@ -335,7 +352,7 @@ struct StageListView: View {
                 .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: visible)
 
             // Task rows — deal from right with rotation
-            ForEach(Array(stage.tasks.prefix(4).enumerated()), id: \.element.id) { idx, task in
+            ForEach(Array(displayTasks.enumerated()), id: \.element.id) { idx, task in
                 let isCompleted = progress.isTaskCompleted(stageId: stage.id, taskId: task.id)
                 let isCurrent = task.id == nextTask?.id
                 let delay = 0.12 * Double(idx) + 0.15
@@ -403,7 +420,7 @@ struct StageListView: View {
                     }
                     .buttonStyle(.plain)
 
-                    if idx < min(stage.tasks.count, 4) - 1 {
+                    if idx < displayTasks.count - 1 {
                         Divider().background(AppColors.border).padding(.leading, 52)
                     }
                 }
@@ -413,8 +430,8 @@ struct StageListView: View {
                 .animation(.spring(response: 0.6, dampingFraction: 0.72).delay(delay), value: visible)
             }
 
-            if stage.tasks.count > 4 {
-                let footerDelay = 0.12 * Double(min(stage.tasks.count, 4)) + 0.15
+            if stage.tasks.count > displayTasks.count {
+                let footerDelay = 0.12 * Double(displayTasks.count) + 0.15
                 VStack(spacing: 0) {
                     Divider().background(AppColors.border).padding(.leading, 52)
                     Button {

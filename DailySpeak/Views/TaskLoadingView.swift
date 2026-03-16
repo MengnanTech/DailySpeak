@@ -37,6 +37,8 @@ struct TaskLoadingView: View {
     @State private var pulseScale: CGFloat = 1.0
     @State private var dotCount = 0
     @State private var isReady = false
+    @State private var loadFailed = false
+    @State private var failedCount = 0
 
     private var theme: StageTheme { stage.theme }
     private var goalText: String {
@@ -103,17 +105,50 @@ struct TaskLoadingView: View {
                 }
                 .frame(height: 6)
 
-                Text(statusText + String(repeating: ".", count: dotCount))
+                Text(statusText + (loadFailed ? "" : String(repeating: ".", count: dotCount)))
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(AppColors.tertiaryText)
+                    .foregroundStyle(loadFailed ? Color(hex: "EF4444") : AppColors.tertiaryText)
                     .animation(.none, value: dotCount)
             }
             .padding(.horizontal, 50)
 
+            if loadFailed {
+                Spacer().frame(height: 24)
+                VStack(spacing: 10) {
+                    Button {
+                        loadFailed = false
+                        Task { await runLoading() }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 13, weight: .bold))
+                            Text("重试")
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(width: 160, height: 44)
+                        .background(theme.startColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        loadFailed = false
+                        isReady = true
+                        onReady()
+                    } label: {
+                        Text("跳过，继续进入")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
             Spacer()
         }
         .background(AppColors.background.ignoresSafeArea())
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(loadFailed ? false : true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button { } label: {
@@ -121,7 +156,7 @@ struct TaskLoadingView: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(AppColors.tertiaryText)
                 }
-                .opacity(0) // hide during loading
+                .opacity(loadFailed ? 1 : 0)
             }
         }
         .task {
@@ -152,12 +187,11 @@ struct TaskLoadingView: View {
         statusText = "加载课程数据"
         try? await Task.sleep(nanoseconds: 300_000_000)
 
-        // Phase 2: Prepare focus-goal audio only (fast)
+        // Phase 2: Prepare intro animation audio
         withAnimation { progress = 0.4 }
         statusText = "准备语音内容"
 
-        // Preload all intro animation audio: hero-prompt, focus-goal, focus-suggestion, step-overview
-        // Must wait for completion — user can press back to exit if too slow
+        // Collect all priority items for intro animation
         var priorityItems: [AudioPreloader.AudioItem] = []
 
         // Hero prompt
@@ -191,27 +225,54 @@ struct TaskLoadingView: View {
         }
 
         if !priorityItems.isEmpty {
-            let total = priorityItems.count
-            // Download one by one to show progress
-            var done = 0
-            for item in priorityItems {
+            // Check how many are already cached
+            let uncachedItems = priorityItems.filter { !EnglishSpeechPlayer.shared.isAudioCached(id: $0.id) }
+
+            if uncachedItems.isEmpty {
+                // All cached (user pre-downloaded or revisiting) → skip quickly
+                withAnimation { progress = 0.85 }
+                statusText = "语音就绪"
+            } else {
+                // Use batch API for all uncached items at once, then parallel download
+                statusText = "准备语音 0/\(priorityItems.count)"
+                let success = await EnglishSpeechPlayer.shared.preloadBatch(uncachedItems)
                 guard !Task.isCancelled else { return }
-                _ = await EnglishSpeechPlayer.shared.prepareAudio(id: item.id, text: item.text)
-                done += 1
-                let pct = 0.4 + 0.45 * Double(done) / Double(total)
-                withAnimation { progress = pct }
-                statusText = "准备语音 \(done)/\(total)"
+                let failed = uncachedItems.count - success
+                if failed > 0 {
+                    failedCount = failed
+                    withAnimation { progress = 0.85 }
+                    statusText = "语音下载失败（\(failed)个）"
+                    withAnimation { loadFailed = true }
+                    return
+                }
+                withAnimation { progress = 0.85 }
+                statusText = "准备语音 \(priorityItems.count)/\(priorityItems.count)"
             }
         }
         withAnimation { progress = 0.85 }
         statusText = "语音就绪"
 
-        // Kick off guide audio preload in background (non-blocking)
-        AudioPreloader.preloadAll(for: task)
+        // Phase 3: Download remaining guide audio
+        let allItems = AudioPreloader.allItems(for: task)
+        let uncachedGuide = allItems.filter { !EnglishSpeechPlayer.shared.isAudioCached(id: $0.id) }
+        if !uncachedGuide.isEmpty {
+            statusText = "准备学习语音"
+            withAnimation { progress = 0.88 }
+            let guideSuccess = await EnglishSpeechPlayer.shared.preloadBatch(uncachedGuide)
+            guard !Task.isCancelled else { return }
+            let guideFailed = uncachedGuide.count - guideSuccess
+            if guideFailed > 0 {
+                failedCount = guideFailed
+                withAnimation { progress = 0.9 }
+                statusText = "语音下载失败（\(guideFailed)个）"
+                withAnimation { loadFailed = true }
+                return
+            }
+        }
 
         try? await Task.sleep(nanoseconds: 200_000_000)
 
-        // Phase 3: Done
+        // Phase 4: Done
         withAnimation { progress = 1.0 }
         statusText = "准备完成"
         try? await Task.sleep(nanoseconds: 400_000_000)

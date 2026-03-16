@@ -302,9 +302,7 @@ struct TimelineRow: View {
 
                 Spacer()
 
-                if state == .completed {
-                    // No extra chip needed, checkmark on node is enough
-                } else if state == .unlocked {
+                if state == .unlocked {
                     let stepsDone = progress.completedStepCount(stageId: stage.id, taskId: task.id, totalSteps: task.steps.count)
                     if stepsDone > 0 {
                         Text("\(stepsDone)/\(task.steps.count)")
@@ -313,14 +311,6 @@ struct TimelineRow: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 3)
                             .background(theme.startColor.opacity(0.08))
-                            .clipShape(Capsule())
-                    } else {
-                        Text(task.questionType)
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(theme.startColor.opacity(0.7))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(theme.startColor.opacity(0.06))
                             .clipShape(Capsule())
                     }
                 }
@@ -434,39 +424,40 @@ struct TimelineRow: View {
 
     @ViewBuilder
     private var audioDownloadButton: some View {
-        if task.lessonContent != nil {
+        if task.lessonContent != nil && !downloadState.isDone {
             Button {
-                guard downloadState == .idle else { return }
-                startDownload()
+                if downloadState.canRetry { startDownload() }
             } label: {
-                Group {
-                    switch downloadState {
-                    case .idle:
-                        Image(systemName: "arrow.down.circle")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(theme.startColor.opacity(0.5))
-                    case .downloading(let progress):
-                        ZStack {
-                            Circle()
-                                .stroke(theme.startColor.opacity(0.15), lineWidth: 2)
-                                .frame(width: 18, height: 18)
-                            Circle()
-                                .trim(from: 0, to: progress)
-                                .stroke(theme.startColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                                .frame(width: 18, height: 18)
-                                .rotationEffect(.degrees(-90))
-                        }
-                    case .done:
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(AppColors.success)
-                    }
-                }
-                .frame(width: 28, height: 28)
+                audioDownloadLabel
             }
             .buttonStyle(.plain)
-            .disabled(downloadState != .idle)
+            .disabled(downloadState.isDownloading)
         }
+    }
+
+    @ViewBuilder
+    private var audioDownloadLabel: some View {
+        let isFailed = downloadState.isFailed
+        let color = isFailed ? Color(hex: "EF4444") : theme.startColor
+        HStack(spacing: 4) {
+            switch downloadState {
+            case .idle:
+                Image(systemName: "icloud.and.arrow.down")
+                    .font(.system(size: 10, weight: .semibold))
+            case .downloading(let p):
+                DownloadProgressIndicator(progress: p, color: theme.startColor)
+                    .frame(width: 14, height: 14)
+            case .done:
+                EmptyView()
+            case .failed:
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 9, weight: .bold))
+            }
+        }
+        .foregroundStyle(color.opacity(isFailed ? 1 : 0.7))
+        .frame(width: 28, height: 28)
+        .background(color.opacity(0.08))
+        .clipShape(Circle())
     }
 
     private func checkDownloadState() {
@@ -486,21 +477,59 @@ struct TimelineRow: View {
         Task {
             let total = Double(items.count)
             var completed = 0.0
+            var failed = 0
             // Download in batches of 5 for progress feedback
             let batchSize = 5
             for batchStart in stride(from: 0, to: items.count, by: batchSize) {
                 let batchEnd = min(batchStart + batchSize, items.count)
                 let batch = Array(items[batchStart..<batchEnd])
-                await EnglishSpeechPlayer.shared.preloadBatch(batch)
+                let success = await EnglishSpeechPlayer.shared.preloadBatch(batch)
+                let batchFailed = batch.count - success
+                failed += batchFailed
                 completed += Double(batch.count)
                 withAnimation {
                     downloadState = .downloading(progress: completed / total)
                 }
             }
             withAnimation {
-                downloadState = .done
+                downloadState = failed == 0 ? .done : .failed(downloaded: Int(total) - failed, total: Int(total))
             }
         }
+    }
+}
+
+// MARK: - Download Progress Indicator
+
+private struct DownloadProgressIndicator: View {
+    let progress: Double
+    let color: Color
+    @State private var spinning = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(color.opacity(0.15), lineWidth: 2)
+                .frame(width: 18, height: 18)
+
+            if progress < 0.01 {
+                // Indeterminate spinner while waiting for first batch
+                Circle()
+                    .trim(from: 0, to: 0.25)
+                    .stroke(color, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .frame(width: 18, height: 18)
+                    .rotationEffect(.degrees(spinning ? 360 : 0))
+                    .animation(.linear(duration: 0.8).repeatForever(autoreverses: false), value: spinning)
+            } else {
+                // Determinate progress ring
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(color, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .frame(width: 18, height: 18)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.spring(duration: 0.3), value: progress)
+            }
+        }
+        .onAppear { spinning = true }
     }
 }
 
@@ -510,16 +539,24 @@ private enum AudioDownloadState: Equatable {
     case idle
     case downloading(progress: Double)
     case done
+    case failed(downloaded: Int, total: Int)
+
+    var isDone: Bool { if case .done = self { return true } else { return false } }
+    var isFailed: Bool { if case .failed = self { return true } else { return false } }
+    var isDownloading: Bool { if case .downloading = self { return true } else { return false } }
+    var canRetry: Bool {
+        switch self {
+        case .idle, .failed: return true
+        default: return false
+        }
+    }
 
     static func == (lhs: AudioDownloadState, rhs: AudioDownloadState) -> Bool {
         switch (lhs, rhs) {
         case (.idle, .idle), (.done, .done): return true
         case (.downloading, .downloading): return true
+        case (.failed, .failed): return true
         default: return false
         }
-    }
-
-    static func != (lhs: AudioDownloadState, rhs: AudioDownloadState) -> Bool {
-        !(lhs == rhs)
     }
 }

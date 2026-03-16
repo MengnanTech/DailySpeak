@@ -1,25 +1,36 @@
 import Foundation
 
 /// Collects all audio items for a task and provides batch preloading.
+/// IMPORTANT: IDs here MUST match exactly what the guided views use for playback.
 enum AudioPreloader {
 
     typealias AudioItem = (id: String, text: String)
 
     // MARK: - Collect audio items by step type
 
-    /// Strategy step: angles + sequence
+    /// Strategy step: angles (KeyPointsGuidedView) + sequence steps (SequenceGuidedView)
     static func strategyItems(for task: SpeakingTask) -> [AudioItem] {
         guard let lesson = task.lessonContent else { return [] }
         var items: [AudioItem] = []
 
-        // Angles
+        // Angles — matches KeyPointsGuidedView.playbackID(for:)
+        // category: "angle", text: angle.title + ". " + angle.content.joined(separator: ". ")
         for angle in lesson.strategy.angles {
             let text = angle.title + ". " + angle.content.joined(separator: ". ")
             let id = EnglishSpeechPlayer.playbackID(for: text, category: "angle")
             items.append((id: id, text: text))
         }
 
-        // Sequence (combined)
+        // Sequence individual steps — matches SequenceGuidedView.stepPlaybackID(for:)
+        // category: "seq-step", text: "\(step.phase). \(step.focus). \(step.target)"
+        for step in lesson.strategy.sequence {
+            let text = "\(step.phase). \(step.focus). \(step.target)"
+            let id = EnglishSpeechPlayer.playbackID(for: text, category: "seq-step")
+            items.append((id: id, text: text))
+        }
+
+        // Sequence combined — used in SequenceGuidedView onComplete
+        // category: "sequence-all"
         let seqText = lesson.strategy.sequence
             .map { "\($0.phase). \($0.focus). \($0.target)" }
             .joined(separator: " ")
@@ -31,25 +42,25 @@ enum AudioPreloader {
         return items
     }
 
-    /// Review step: tips + content mistakes + language mistakes
+    /// Review step — matches ReviewGuidedView (ReviewGuideItem.playbackCategory)
     static func reviewItems(for task: SpeakingTask) -> [AudioItem] {
         guard let lesson = task.lessonContent else { return [] }
         var items: [AudioItem] = []
 
-        // High score tips
+        // High score tips — category: "review-tip"
         for tip in lesson.strategy.highScoreTips {
             let id = EnglishSpeechPlayer.playbackID(for: tip, category: "review-tip")
             items.append((id: id, text: tip))
         }
 
-        // Content mistakes
+        // Content mistakes — category: "review-content", text: "\(problem). \(fix)"
         for m in lesson.strategy.commonMistakes.content {
             let text = "\(m.problem). \(m.fix)"
             let id = EnglishSpeechPlayer.playbackID(for: text, category: "review-content")
             items.append((id: id, text: text))
         }
 
-        // Language mistakes
+        // Language mistakes — category: "review-lang", text: betterExample
         for m in lesson.strategy.commonMistakes.language {
             let id = EnglishSpeechPlayer.playbackID(for: m.betterExample, category: "review-lang")
             items.append((id: id, text: m.betterExample))
@@ -58,16 +69,15 @@ enum AudioPreloader {
         return items
     }
 
-    /// Phrases step
+    /// Phrases step — matches PhrasesGuidedView.phrasePlaybackID(_:)
+    /// category: "phrase-guide", text: phrase.phrase
     static func phrasesItems(for task: SpeakingTask) -> [AudioItem] {
         guard let lesson = task.lessonContent else {
-            // Standard mode: use task.phrases
             return task.phrases.map { phrase in
                 let id = EnglishSpeechPlayer.playbackID(for: phrase.phrase, category: "phrase-guide")
                 return (id: id, text: phrase.phrase)
             }
         }
-        // Lesson mode: core + extended phrases
         var items: [AudioItem] = []
         for p in lesson.phrases.core {
             let id = EnglishSpeechPlayer.playbackID(for: p.phrase, category: "phrase-guide")
@@ -80,23 +90,27 @@ enum AudioPreloader {
         return items
     }
 
-    /// Framework step: goal + sections + markers
+    /// Framework step — matches FrameworkGuideItem.playbackID
     static func frameworkItems(for task: SpeakingTask) -> [AudioItem] {
         guard let lesson = task.lessonContent else { return [] }
         var items: [AudioItem] = []
 
-        // Goal
+        // Goal — category: "fw-goal", text: framework.goal
         let goalId = EnglishSpeechPlayer.playbackID(for: lesson.framework.goal, category: "fw-goal")
         items.append((id: goalId, text: lesson.framework.goal))
 
-        // Sections
+        // Sections — category: "fw-section", text: section.section + moves.joined(separator: ". ")
+        // FrameworkGuideItem.section: playbackID = playbackID(for: name + playableText, category: "fw-section")
+        // where name = section.section, playableText = moves.joined(separator: ". ")
         for section in lesson.framework.defaultStructure {
-            let text = section.section + ". " + section.moves.joined(separator: ". ")
-            let id = EnglishSpeechPlayer.playbackID(for: text, category: "fw-section")
-            items.append((id: id, text: text))
+            let movesText = section.moves.joined(separator: ". ")
+            let idText = section.section + movesText
+            let id = EnglishSpeechPlayer.playbackID(for: idText, category: "fw-section")
+            // togglePlayback uses playableText (just moves), but playbackID uses name + playableText
+            items.append((id: id, text: movesText))
         }
 
-        // Delivery markers
+        // Delivery markers — category: "fw-marker", text: marker
         for marker in lesson.framework.deliveryMarkers {
             let id = EnglishSpeechPlayer.playbackID(for: marker, category: "fw-marker")
             items.append((id: id, text: marker))
@@ -105,14 +119,21 @@ enum AudioPreloader {
         return items
     }
 
-    /// Samples step: sample content per band
+    /// Samples step — matches SampleGuideItem.playbackID
     static func samplesItems(for task: SpeakingTask) -> [AudioItem] {
         guard let lesson = task.lessonContent else { return [] }
         var items: [AudioItem] = []
 
         for sample in lesson.samples {
-            let id = EnglishSpeechPlayer.playbackID(for: sample.answer, category: "sample-\(sample.band)")
-            items.append((id: id, text: sample.answer))
+            // Sample text — category: "sample-guide", text: sample.answer (= SampleAnswer.content)
+            let sampleId = EnglishSpeechPlayer.playbackID(for: sample.answer, category: "sample-guide")
+            items.append((id: sampleId, text: sample.answer))
+
+            // Upgrade expressions — category: "sample-upgrade-guide", text: upgrade.improved
+            for upgrade in sample.upgrades {
+                let upgradeId = EnglishSpeechPlayer.playbackID(for: upgrade.improved, category: "sample-upgrade-guide")
+                items.append((id: upgradeId, text: upgrade.improved))
+            }
         }
 
         return items

@@ -1085,7 +1085,7 @@ struct TaskOverviewView: View {
         stepTextChars = task.steps.map { $0.title.count + $0.subtitle.count }
         phase = .ready
         // Scroll to Learning Flow card after layout settles
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             scrollToFlow = true
         }
     }
