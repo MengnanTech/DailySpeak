@@ -206,14 +206,26 @@ struct TimelineRow: View {
     }
 
     // MARK: - Timeline Column
+    private var lineColor: Color {
+        state == .completed ? theme.startColor.opacity(0.4) : AppColors.border
+    }
+
     private var timelineColumn: some View {
         VStack(spacing: 0) {
+            // Top connector: from previous row's bottom to this node
+            if index > 1 && state != .current {
+                Rectangle()
+                    .fill(lineColor)
+                    .frame(width: 2, height: 16)
+            } else if state != .current {
+                Spacer().frame(height: 16)
+            }
             // Node
             nodeView
-            // Connector line
+            // Bottom connector: from this node to next row
             if !isLast {
                 Rectangle()
-                    .fill(state == .completed ? theme.startColor.opacity(0.4) : AppColors.border)
+                    .fill(lineColor)
                     .frame(width: 2)
                     .frame(maxHeight: .infinity)
             }
@@ -280,7 +292,7 @@ struct TimelineRow: View {
     // MARK: - Compact Row (completed / unlocked / locked)
     private var compactTaskContent: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.title)
                         .font(.subheadline.bold())
@@ -317,6 +329,7 @@ struct TimelineRow: View {
 
                 if state != .locked {
                     audioDownloadButton
+                        .padding(.trailing, -4)
                     Image(systemName: "chevron.right")
                         .font(.system(size: 10))
                         .foregroundStyle(AppColors.border)
@@ -439,23 +452,23 @@ struct TimelineRow: View {
     private var audioDownloadLabel: some View {
         let isFailed = downloadState.isFailed
         let color = isFailed ? Color(hex: "EF4444") : theme.startColor
-        HStack(spacing: 4) {
+        Group {
             switch downloadState {
             case .idle:
                 Image(systemName: "icloud.and.arrow.down")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
             case .downloading(let p):
                 DownloadProgressIndicator(progress: p, color: theme.startColor)
-                    .frame(width: 14, height: 14)
+                    .frame(width: 20, height: 20)
             case .done:
                 EmptyView()
             case .failed:
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 9, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
             }
         }
-        .foregroundStyle(color.opacity(isFailed ? 1 : 0.7))
-        .frame(width: 28, height: 28)
+        .foregroundStyle(color.opacity(isFailed ? 1 : 0.6))
+        .frame(width: 40, height: 40)
         .background(color.opacity(0.08))
         .clipShape(Circle())
     }
