@@ -6,6 +6,8 @@ final class WebSocketInboxClient {
     private var session: URLSession?
     private var task: URLSessionWebSocketTask?
     private var isStarted = false
+    private var retryCount = 0
+    private static let maxRetryDelay: TimeInterval = 60
 
     private init() {}
 
@@ -20,8 +22,12 @@ final class WebSocketInboxClient {
             return
         }
 
+        connect(token: token)
+    }
+
+    private func connect(token: String) {
         let url = makeWebSocketURL(baseURL: APIConfig.baseURL, accessToken: token)
-        print("⬆️ [WS CONNECT] \(url.absoluteString)")
+        print("⬆️ [WS CONNECT] \(url.absoluteString.prefix(80))…")
 
         let request = URLRequest(url: url)
         let configuration = URLSessionConfiguration.default
@@ -38,6 +44,7 @@ final class WebSocketInboxClient {
 
     func stop() {
         isStarted = false
+        retryCount = 0
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
         session?.invalidateAndCancel()
@@ -50,6 +57,7 @@ final class WebSocketInboxClient {
             guard let self else { return }
             switch result {
             case .success(let message):
+                self.retryCount = 0
                 switch message {
                 case .string(let text):
                     self.handle(text)
@@ -61,12 +69,43 @@ final class WebSocketInboxClient {
                     break
                 }
                 self.receiveLoop()
-            case .failure:
-                print("❌ [WS] receive failed")
+            case .failure(let error):
+                print("❌ [WS] receive failed: \(error.localizedDescription)")
                 self.isStarted = false
                 self.task = nil
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    self.startIfPossible()
+                self.session?.invalidateAndCancel()
+                self.session = nil
+                self.reconnectWithTokenRefresh()
+            }
+        }
+    }
+
+    private func reconnectWithTokenRefresh() {
+        let delay = min(2 * pow(2, Double(retryCount)), Self.maxRetryDelay)
+        retryCount += 1
+        print("🔄 [WS] reconnect in \(Int(delay))s (attempt \(retryCount))")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard !self.isStarted else { return }
+            guard APIConfig.isConfigured else { return }
+
+            Task {
+                do {
+                    let response = try await AuthService.shared.refresh()
+                    let newToken = (response.accessToken ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !newToken.isEmpty {
+                        APIClient.shared.accessToken = newToken
+                        print("✅ [WS] token refreshed")
+                    }
+                } catch {
+                    print("⚠️ [WS] token refresh failed: \(error.localizedDescription)")
+                }
+
+                await MainActor.run {
+                    guard !self.isStarted else { return }
+                    if let token = APIClient.shared.accessToken, !token.isEmpty {
+                        self.connect(token: token)
+                    }
                 }
             }
         }
