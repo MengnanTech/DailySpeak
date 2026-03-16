@@ -29,27 +29,39 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
     private var requestSequence = 0
     private var activeDownloads: [String: Task<URL?, Never>] = [:]
 
-    private static var cacheDirectory: URL {
+    private static var cacheRoot: URL {
         let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
         return caches.appendingPathComponent("tts-audio", isDirectory: true)
     }
 
+    /// Per-voice cache directory: tts-audio/{voiceId}/
+    private static func cacheDirectory(for voiceId: String) -> URL {
+        cacheRoot.appendingPathComponent(voiceId, isDirectory: true)
+    }
+
+    private var currentCacheDirectory: URL {
+        Self.cacheDirectory(for: VoiceManager.shared.selectedVoiceId)
+    }
+
     private override init() {
         super.init()
-        let dir = Self.cacheDirectory
+        let dir = currentCacheDirectory
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         loadDiskCache()
     }
 
     private func loadDiskCache() {
-        let dir = Self.cacheDirectory
+        cachedAudioURLs.removeAll()
+        cachedAudioDurations.removeAll()
+        let dir = currentCacheDirectory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { return }
         for file in files where file.pathExtension == "mp3" {
             let id = file.deletingPathExtension().lastPathComponent
             cachedAudioURLs[id] = file
         }
         if !cachedAudioURLs.isEmpty {
-            print("ℹ️ [TTS] loaded \(cachedAudioURLs.count) cached audio files from disk")
+            print("ℹ️ [TTS] loaded \(cachedAudioURLs.count) cached audio files from disk for voice \(VoiceManager.shared.selectedVoiceId)")
         }
     }
 
@@ -59,16 +71,15 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
         return "\(category)-\(AppleSignInNonce.sha256(normalized))"
     }
 
-    func clearAudioCache() {
-        cachedAudioURLs.removeAll()
-        cachedAudioDurations.removeAll()
-        try? FileManager.default.removeItem(at: Self.cacheDirectory)
-        try? FileManager.default.createDirectory(at: Self.cacheDirectory, withIntermediateDirectories: true)
+    /// Called when user switches voice — reload cache from the new voice's directory.
+    func reloadCacheForCurrentVoice() {
+        stopPlayback()
+        loadDiskCache()
     }
 
     func isAudioCached(id: String) -> Bool {
         if cachedAudioURLs[id] != nil { return true }
-        let file = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+        let file = currentCacheDirectory.appendingPathComponent("\(id).mp3")
         if FileManager.default.fileExists(atPath: file.path) {
             cachedAudioURLs[id] = file
             return true
@@ -186,7 +197,7 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
 
     /// Ensures only one download per id at a time, uses atomic write.
     private func downloadWithDedup(id: String, fetch: @escaping () async throws -> Data) async -> URL? {
-        let localURL = Self.cacheDirectory.appendingPathComponent("\(id).mp3")
+        let localURL = currentCacheDirectory.appendingPathComponent("\(id).mp3")
 
         // Already cached in memory
         if cachedAudioURLs[id] != nil { return localURL }
@@ -207,7 +218,7 @@ final class EnglishSpeechPlayer: NSObject, ObservableObject {
             do {
                 let data = try await fetch()
                 // Atomic write: write to temp file, then move
-                let tempURL = Self.cacheDirectory.appendingPathComponent("\(id)_\(UUID().uuidString).tmp")
+                let tempURL = currentCacheDirectory.appendingPathComponent("\(id)_\(UUID().uuidString).tmp")
                 try data.write(to: tempURL)
                 try? FileManager.default.removeItem(at: localURL)
                 try FileManager.default.moveItem(at: tempURL, to: localURL)

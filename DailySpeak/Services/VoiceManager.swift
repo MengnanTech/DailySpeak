@@ -53,7 +53,7 @@ final class VoiceManager {
         selectedVoiceId = voiceId
         defaults.set(voiceId, forKey: selectedVoiceKey)
         Task { @MainActor in
-            EnglishSpeechPlayer.shared.clearAudioCache()
+            EnglishSpeechPlayer.shared.reloadCacheForCurrentVoice()
         }
     }
 }
