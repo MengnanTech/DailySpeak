@@ -664,7 +664,18 @@ struct TaskOverviewView: View {
             HStack {
                 Text("Learning Flow").font(.subheadline.bold()).foregroundStyle(AppColors.primaryText)
                 Spacer()
-                if phase == .ready && !showCenteredFlow {
+                if showCenteredFlow {
+                    Button {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            skipToReady()
+                        }
+                    } label: {
+                        Text("跳过")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundStyle(AppColors.tertiaryText)
+                    }
+                    .buttonStyle(.plain)
+                } else if phase == .ready {
                     HStack(spacing: 6) {
                         let allText = allStepTexts.joined(separator: ". ")
                         CompactPlayButton(
@@ -1055,6 +1066,10 @@ struct TaskOverviewView: View {
 
     private func skipToReady() {
         EnglishSpeechPlayer.shared.stopPlayback()
+        showCenteredHero = false
+        showCenteredFocus = false
+        showCenteredFlow = false
+        darkOverlayOpacity = 0
         showDockedHero = true
         showDockedFocus = true
         showDockedFlow = true
@@ -1062,6 +1077,7 @@ struct TaskOverviewView: View {
         stepDisplayStates = task.steps.indices.map { settledStepState(for: $0) }
         stepTextChars = task.steps.map { $0.title.count + $0.subtitle.count }
         phase = .ready
+        markAnimationSeen()
     }
 
     private func settledStepState(for index: Int) -> OverviewStepDisplayState {

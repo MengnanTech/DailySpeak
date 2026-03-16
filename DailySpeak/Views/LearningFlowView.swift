@@ -1269,6 +1269,7 @@ private struct KeyPointsGuidedView: View {
             withAnimation {
                 currentIndex += 1
             }
+            autoPlayCurrent()
         } else {
             withAnimation {
                 allDone = true
@@ -1284,6 +1285,18 @@ private struct KeyPointsGuidedView: View {
         goingBack = true
         withAnimation {
             currentIndex -= 1
+        }
+        autoPlayCurrent()
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let angle = angles[currentIndex]
+            let text = angleText(for: angle)
+            let pid = playbackID(for: angle)
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Angle")
+            }
         }
     }
 }
@@ -1560,6 +1573,7 @@ private struct SequenceGuidedView: View {
             withAnimation {
                 currentIndex += 1
             }
+            autoPlayCurrent()
         } else {
             withAnimation {
                 allDone = true
@@ -1575,6 +1589,18 @@ private struct SequenceGuidedView: View {
         goingBack = true
         withAnimation {
             currentIndex -= 1
+        }
+        autoPlayCurrent()
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let step = steps[currentIndex]
+            let text = stepText(for: step)
+            let pid = stepPlaybackID(for: step)
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: text, sourceLabel: "Guided Sequence")
+            }
         }
     }
 }
@@ -2867,6 +2893,7 @@ private struct PhrasesGuidedView: View {
             withAnimation {
                 currentIndex += 1
             }
+            autoPlayCurrent()
         } else {
             withAnimation { allDone = true }
         }
@@ -2880,6 +2907,17 @@ private struct PhrasesGuidedView: View {
         goingBack = true
         withAnimation {
             currentIndex -= 1
+        }
+        autoPlayCurrent()
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let phrase = phrases[currentIndex]
+            let pid = phrasePlaybackID(phrase)
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: phrase.phrase, sourceLabel: "Guided Phrase")
+            }
         }
     }
 }
@@ -3785,6 +3823,7 @@ private struct FrameworkGuidedView: View {
             withAnimation {
                 currentIndex += 1
             }
+            autoPlayCurrent()
         } else {
             withAnimation { allDone = true }
         }
@@ -3796,6 +3835,17 @@ private struct FrameworkGuidedView: View {
         goingBack = true
         withAnimation {
             currentIndex -= 1
+        }
+        autoPlayCurrent()
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let item = items[currentIndex]
+            let pid = item.playbackID
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: item.playableText, sourceLabel: "Guided Framework")
+            }
         }
     }
 }
@@ -4529,6 +4579,7 @@ private struct SampleGuidedView: View {
             withAnimation {
                 currentIndex += 1
             }
+            autoPlayCurrent()
         } else {
             withAnimation { allDone = true }
         }
@@ -4540,6 +4591,17 @@ private struct SampleGuidedView: View {
         goingBack = true
         withAnimation {
             currentIndex -= 1
+        }
+        autoPlayCurrent()
+    }
+
+    private func autoPlayCurrent() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            let item = items[currentIndex]
+            let pid = playbackID(for: item)
+            if !player.isPlaying(id: pid) {
+                player.togglePlayback(id: pid, text: item.playableText, sourceLabel: "Guided Sample")
+            }
         }
     }
 }

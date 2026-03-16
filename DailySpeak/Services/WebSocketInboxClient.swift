@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 final class WebSocketInboxClient {
     static let shared = WebSocketInboxClient()
@@ -7,9 +10,24 @@ final class WebSocketInboxClient {
     private var task: URLSessionWebSocketTask?
     private var isStarted = false
     private var retryCount = 0
+    private var pingTimer: Timer?
     private static let maxRetryDelay: TimeInterval = 60
+    private static let pingInterval: TimeInterval = 30
 
-    private init() {}
+    private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
 
     func startIfPossible() {
         guard !isStarted else { return }
@@ -40,16 +58,55 @@ final class WebSocketInboxClient {
         self.isStarted = true
         task.resume()
         receiveLoop()
+        startPing()
     }
 
     func stop() {
         isStarted = false
         retryCount = 0
+        stopPing()
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
         session?.invalidateAndCancel()
         session = nil
     }
+
+    // MARK: - Ping keep-alive
+
+    private func startPing() {
+        stopPing()
+        DispatchQueue.main.async {
+            self.pingTimer = Timer.scheduledTimer(withTimeInterval: Self.pingInterval, repeats: true) { [weak self] _ in
+                self?.sendPing()
+            }
+        }
+    }
+
+    private func stopPing() {
+        pingTimer?.invalidate()
+        pingTimer = nil
+    }
+
+    private func sendPing() {
+        task?.sendPing { [weak self] error in
+            if let error {
+                print("❌ [WS] ping failed: \(error.localizedDescription)")
+                self?.handleDisconnect()
+            }
+        }
+    }
+
+    // MARK: - App lifecycle
+
+    @objc private func appDidEnterBackground() {
+        stop()
+    }
+
+    @objc private func appWillEnterForeground() {
+        startIfPossible()
+    }
+
+    // MARK: - Receive
 
     private func receiveLoop() {
         guard let task else { return }
@@ -71,16 +128,22 @@ final class WebSocketInboxClient {
                 self.receiveLoop()
             case .failure(let error):
                 print("❌ [WS] receive failed: \(error.localizedDescription)")
-                self.isStarted = false
-                self.task = nil
-                self.session?.invalidateAndCancel()
-                self.session = nil
-                self.reconnectWithTokenRefresh()
+                self.handleDisconnect()
             }
         }
     }
 
-    private func reconnectWithTokenRefresh() {
+    private func handleDisconnect() {
+        guard isStarted else { return }
+        isStarted = false
+        stopPing()
+        task = nil
+        session?.invalidateAndCancel()
+        session = nil
+        scheduleReconnect()
+    }
+
+    private func scheduleReconnect() {
         let delay = min(2 * pow(2, Double(retryCount)), Self.maxRetryDelay)
         retryCount += 1
         print("🔄 [WS] reconnect in \(Int(delay))s (attempt \(retryCount))")
@@ -89,16 +152,21 @@ final class WebSocketInboxClient {
             guard !self.isStarted else { return }
             guard APIConfig.isConfigured else { return }
 
+            // Only refresh token after multiple failed attempts (likely token expired)
+            let shouldRefreshToken = self.retryCount > 2
+
             Task {
-                do {
-                    let response = try await AuthService.shared.refresh()
-                    let newToken = (response.accessToken ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !newToken.isEmpty {
-                        APIClient.shared.accessToken = newToken
-                        print("✅ [WS] token refreshed")
+                if shouldRefreshToken {
+                    do {
+                        let response = try await AuthService.shared.refresh()
+                        let newToken = (response.accessToken ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !newToken.isEmpty {
+                            APIClient.shared.accessToken = newToken
+                            print("✅ [WS] token refreshed")
+                        }
+                    } catch {
+                        print("⚠️ [WS] token refresh failed: \(error.localizedDescription)")
                     }
-                } catch {
-                    print("⚠️ [WS] token refresh failed: \(error.localizedDescription)")
                 }
 
                 await MainActor.run {
