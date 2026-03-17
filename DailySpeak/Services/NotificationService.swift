@@ -22,22 +22,22 @@ enum ReminderTone: String, CaseIterable, Identifiable {
     var notificationTitle: String {
         switch self {
         case .focused:
-            return "DailySpeak 提醒"
+            return String(localized: "DailySpeak Reminder")
         case .gentle:
-            return "留 10 分钟给今天的英语"
+            return String(localized: "Save 10 minutes for today's English")
         case .streak:
-            return "别让 streak 断在今天"
+            return String(localized: "Don't break the streak today")
         }
     }
 
     var notificationBody: String {
         switch self {
         case .focused:
-            return "用 10 分钟完成今天的一次口语练习。"
+            return String(localized: "Complete today's speaking practice in 10 minutes.")
         case .gentle:
-            return "现在开始一小段练习，明天会轻松很多。"
+            return String(localized: "Start a short practice now, tomorrow will be much easier.")
         case .streak:
-            return "继续今天的一次练习，把连续学习保持下去。"
+            return String(localized: "Continue today's practice and keep the streak going.")
         }
     }
 }

@@ -28,13 +28,13 @@ final class SpeechInputManager: ObservableObject {
         do {
             let granted = await requestAuthorization()
             guard granted else {
-                lastError = "语音权限未开启，请在系统设置中允许麦克风和语音识别。"
+                lastError = String(localized: "Voice permission not enabled. Please allow microphone and speech recognition in Settings.")
                 return
             }
             try startRecording()
         } catch {
             stopRecording()
-            lastError = "启动录音失败：\(error.localizedDescription)"
+            lastError = String(localized: "Failed to start recording: \(error.localizedDescription)")
         }
     }
 
@@ -106,7 +106,7 @@ final class SpeechInputManager: ObservableObject {
         guard let speechRecognizer, speechRecognizer.isAvailable else {
             throw NSError(
                 domain: "SpeechInputManager", code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "当前设备不支持语音识别"]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "This device does not support speech recognition")]
             )
         }
 
@@ -135,7 +135,7 @@ final class SpeechInputManager: ObservableObject {
                 }
 
                 if let errorMsg, !isFinal {
-                    self.lastError = "语音识别失败：\(errorMsg)"
+                    self.lastError = String(localized: "Speech recognition failed: \(errorMsg)")
                 }
 
                 if isFinal || error != nil {

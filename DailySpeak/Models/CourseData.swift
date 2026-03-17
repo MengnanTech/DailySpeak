@@ -13,25 +13,13 @@ enum StepType: Int, CaseIterable, Codable {
 
     var title: String {
         switch self {
-        case .strategy:   "Answer Strategy"
-        case .review:     "Score Check"
-        case .vocabulary:  "Key Vocabulary"
-        case .phrases:     "Useful Phrases"
-        case .framework:   "Expression Framework"
-        case .samples:     "Sample Answers"
-        case .practice:    "Speaking Practice"
-        }
-    }
-
-    var chineseTitle: String {
-        switch self {
-        case .strategy:   "答题策略"
-        case .review:     "高分检查"
-        case .vocabulary:  "词汇与词组"
-        case .phrases:     "实用词组"
-        case .framework:   "表达框架"
-        case .samples:     "范文学习"
-        case .practice:    "口语练习"
+        case .strategy:   String(localized: "Answer Strategy")
+        case .review:     String(localized: "Score Check")
+        case .vocabulary:  String(localized: "Key Vocabulary")
+        case .phrases:     String(localized: "Useful Phrases")
+        case .framework:   String(localized: "Expression Framework")
+        case .samples:     String(localized: "Sample Answers")
+        case .practice:    String(localized: "Speaking Practice")
         }
     }
 
@@ -299,20 +287,20 @@ struct SpeakingTask: Identifiable {
             englishTitle: englishTitle,
             prompt: prompt,
             questionType: "Task #\(id)",
-            suggestedTime: "准备1分钟；作答1-2分钟",
+            suggestedTime: String(localized: "Prepare 1 min; Answer 1-2 min"),
             difficulty: "L\(id) → L\(id + 1)",
             passCriteria: [
-                "无稿连续说满90秒",
-                "至少使用6个关键词",
-                "至少给出1个具体小故事",
-                "长停顿不超过3次"
+                String(localized: "Speak continuously for 90 seconds without notes"),
+                String(localized: "Use at least 6 keywords"),
+                String(localized: "Give at least 1 specific story"),
+                String(localized: "No more than 3 long pauses")
             ],
             steps: LearningStep.allSteps,
             tips: [
-                "先确定描述对象，选择你真正熟悉的",
-                "围绕外观、功能、使用场景展开",
-                "加入个人经历让回答更生动",
-                "使用时间顺序或逻辑顺序组织语言"
+                String(localized: "Identify your subject — choose something you truly know"),
+                String(localized: "Focus on appearance, function, and usage scenarios"),
+                String(localized: "Add personal experiences to make your answer vivid"),
+                String(localized: "Use chronological or logical order to organize")
             ],
             vocabulary: VocabItem.placeholders,
             phrases: PhraseItem.placeholders,
@@ -602,63 +590,63 @@ enum CourseData {
             id: 1,
             title: "Basic Description",
             chineseTitle: "基础描述",
-            description: "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。",
+            description: String(localized: "Purpose: Build basic description skills\nGoal: Clearly describe people, objects, and places in 90 seconds."),
             tasks: LessonRepository.loadTasks(forStage: 1)
         ),
         Stage(
             id: 2,
             title: "Events & Early Reflection",
             chineseTitle: "事件叙述与初级认知",
-            description: "作用：训练事件讲述与初步反思\n目标：把发生了什么、为什么重要说完整。",
+            description: String(localized: "Purpose: Train event narration and initial reflection\nGoal: Tell what happened and why it matters."),
             tasks: LessonRepository.loadTasks(forStage: 2)
         ),
         Stage(
             id: 3,
             title: "Process, Problems & Judgment",
             chineseTitle: "过程、问题与判断",
-            description: "作用：解释做事过程与决策依据\n目标：说清步骤、取舍和判断逻辑。",
+            description: String(localized: "Purpose: Explain processes and decision-making\nGoal: Clearly describe steps, trade-offs, and judgment logic."),
             tasks: LessonRepository.loadTasks(forStage: 3)
         ),
         Stage(
             id: 4,
             title: "Opinions & Comparisons",
             chineseTitle: "观点、比较与不确定性",
-            description: "作用：进入观点题与比较题\n目标：表达立场时保留弹性，不走极端。",
+            description: String(localized: "Purpose: Enter opinion and comparison topics\nGoal: Express views with flexibility, avoiding extremes."),
             tasks: LessonRepository.loadTasks(forStage: 4)
         ),
         Stage(
             id: 5,
             title: "Real-life Communication",
             chineseTitle: "现实情境与沟通策略",
-            description: "作用：覆盖真实服务沟通场景\n目标：提出需求、拒绝和协商时保持分寸。",
+            description: String(localized: "Purpose: Cover real-life communication scenarios\nGoal: Make requests, refuse, and negotiate with tact."),
             tasks: LessonRepository.loadTasks(forStage: 5)
         ),
         Stage(
             id: 6,
             title: "Workplace Responsibility",
             chineseTitle: "职场表达与责任意识",
-            description: "作用：进入工作语境和责任表达\n目标：汇报、解释和分歧沟通都更稳。",
+            description: String(localized: "Purpose: Enter workplace context and responsibility\nGoal: Report, explain, and handle disagreements steadily."),
             tasks: LessonRepository.loadTasks(forStage: 6)
         ),
         Stage(
             id: 7,
             title: "Relationships & Emotions",
             chineseTitle: "人际关系与情感沟通",
-            description: "作用：练真实但克制的人际表达\n目标：支持、拒绝、道歉和担忧都说得自然。",
+            description: String(localized: "Purpose: Practice authentic but measured interpersonal expression\nGoal: Support, refuse, apologize, and express concern naturally."),
             tasks: LessonRepository.loadTasks(forStage: 7)
         ),
         Stage(
             id: 8,
             title: "Abstract Topics & Values",
             chineseTitle: "抽象话题与价值判断",
-            description: "作用：过渡到抽象价值讨论\n目标：能谈理念，但不空泛。",
+            description: String(localized: "Purpose: Transition to abstract value discussions\nGoal: Discuss ideas without being vague."),
             tasks: LessonRepository.loadTasks(forStage: 8)
         ),
         Stage(
             id: 9,
             title: "Reflection & Self-Positioning",
             chineseTitle: "反思、整合与自我定位",
-            description: "作用：把经验和价值整合成闭环表达\n目标：回顾变化，也能谈未来的不确定性。",
+            description: String(localized: "Purpose: Integrate experience and values into coherent expression\nGoal: Reflect on change and discuss future uncertainty."),
             tasks: LessonRepository.loadTasks(forStage: 9)
         ),
     ]

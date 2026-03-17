@@ -639,7 +639,7 @@ struct CarouselStageCard: View {
                                 HStack(spacing: 3) {
                                     Image(systemName: "lock.fill")
                                         .font(.system(size: 8, weight: .bold))
-                                    Text("点击解锁")
+                                    Text("Tap to unlock")
                                         .font(.system(size: 9, weight: .heavy, design: .rounded))
                                 }
                                 .foregroundStyle(.white.opacity(0.9))

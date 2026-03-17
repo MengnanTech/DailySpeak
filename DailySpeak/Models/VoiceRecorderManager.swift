@@ -3,13 +3,13 @@ import Combine
 import Foundation
 
 /// Pure audio recorder + playback for self-practice.
-/// Records user's voice to a file and plays it back — no speech recognition.
+/// Supports multiple recordings per task.
 @MainActor
 final class VoiceRecorderManager: ObservableObject {
     enum State: Equatable {
         case idle
         case recording
-        case playing
+        case playing(index: Int)
     }
 
     @Published var state: State = .idle
@@ -17,10 +17,17 @@ final class VoiceRecorderManager: ObservableObject {
     @Published var hasRecording = false
     /// Elapsed recording time in seconds.
     @Published var recordingDuration: TimeInterval = 0
+    /// All recorded audio file URLs.
+    @Published var recordings: [RecordingEntry] = []
+
+    struct RecordingEntry: Identifiable {
+        let id: Int
+        let url: URL
+        let duration: TimeInterval
+    }
 
     private var recorder: AVAudioRecorder?
     private var player: AVAudioPlayer?
-    private var recordingURL: URL?
     private var durationTimer: Timer?
 
     /// Unique key used to persist recordings per practice task.
@@ -28,11 +35,7 @@ final class VoiceRecorderManager: ObservableObject {
 
     init(storageKey: String = "") {
         self.storageKey = storageKey
-        if !storageKey.isEmpty {
-            let url = Self.fileURL(for: storageKey)
-            hasRecording = FileManager.default.fileExists(atPath: url.path)
-            recordingURL = url
-        }
+        loadExistingRecordings()
     }
 
     // MARK: - Public
@@ -42,29 +45,31 @@ final class VoiceRecorderManager: ObservableObject {
             stopRecording()
             return
         }
-        if state == .playing {
-            stopPlayback()
-        }
+        stopPlayback()
 
         do {
             let granted = await requestMicPermission()
             guard granted else {
-                lastError = "麦克风权限未开启，请在系统设置中允许。"
+                lastError = String(localized: "Microphone permission not enabled. Please allow it in Settings.")
                 return
             }
             try startRecording()
         } catch {
             stopRecording()
-            lastError = "启动录音失败：\(error.localizedDescription)"
+            lastError = String(localized: "Failed to start recording: \(error.localizedDescription)")
         }
     }
 
-    func togglePlayback() {
-        if state == .playing {
+    func togglePlayback(at index: Int) {
+        if case .playing(let currentIndex) = state, currentIndex == index {
             stopPlayback()
             return
         }
-        guard let url = recordingURL, FileManager.default.fileExists(atPath: url.path) else { return }
+        stopPlayback()
+
+        guard index < recordings.count else { return }
+        let url = recordings[index].url
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
 
         do {
             let session = AVAudioSession.sharedInstance()
@@ -75,24 +80,26 @@ final class VoiceRecorderManager: ObservableObject {
             audioPlayer.delegate = playbackDelegate
             audioPlayer.play()
             player = audioPlayer
-            state = .playing
+            state = .playing(index: index)
         } catch {
-            lastError = "播放失败：\(error.localizedDescription)"
+            lastError = String(localized: "Playback failed: \(error.localizedDescription)")
         }
     }
 
     func stopAll() {
-        stopRecording()
+        if state == .recording { stopRecording() }
         stopPlayback()
     }
 
-    func deleteRecording() {
+    func deleteRecording(at index: Int) {
         stopAll()
-        if let url = recordingURL {
-            try? FileManager.default.removeItem(at: url)
-        }
-        hasRecording = false
-        recordingDuration = 0
+        guard index < recordings.count else { return }
+        let entry = recordings[index]
+        try? FileManager.default.removeItem(at: entry.url)
+        recordings.remove(at: index)
+        // Rename remaining files to keep indices sequential
+        renumberRecordings()
+        hasRecording = !recordings.isEmpty
     }
 
     // MARK: - Private
@@ -104,8 +111,8 @@ final class VoiceRecorderManager: ObservableObject {
         try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
         try session.setActive(true, options: .notifyOthersOnDeactivation)
 
-        let url = Self.fileURL(for: storageKey)
-        recordingURL = url
+        let nextIndex = recordings.count
+        let url = Self.fileURL(for: storageKey, index: nextIndex)
 
         // Create parent directory if needed
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -124,7 +131,6 @@ final class VoiceRecorderManager: ObservableObject {
         lastError = nil
         recordingDuration = 0
 
-        // Timer to track elapsed recording time
         durationTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 guard let self, self.state == .recording else { return }
@@ -138,22 +144,26 @@ final class VoiceRecorderManager: ObservableObject {
         durationTimer = nil
 
         guard let recorder else { return }
+        let duration = recorder.currentTime
+        let url = recorder.url
         if recorder.isRecording {
             recorder.stop()
-            recordingDuration = recorder.currentTime
         }
         self.recorder = nil
 
-        if let url = recordingURL, FileManager.default.fileExists(atPath: url.path) {
+        if FileManager.default.fileExists(atPath: url.path), duration > 0.5 {
+            let entry = RecordingEntry(id: recordings.count, url: url, duration: duration)
+            recordings.append(entry)
             hasRecording = true
         }
         if state == .recording { state = .idle }
+        recordingDuration = 0
     }
 
     private func stopPlayback() {
         player?.stop()
         player = nil
-        if state == .playing { state = .idle }
+        if case .playing = state { state = .idle }
     }
 
     private func requestMicPermission() async -> Bool {
@@ -162,6 +172,42 @@ final class VoiceRecorderManager: ObservableObject {
                 continuation.resume(returning: granted)
             }
         }
+    }
+
+    // MARK: - Persistence
+
+    private func loadExistingRecordings() {
+        guard !storageKey.isEmpty else { return }
+        var entries: [RecordingEntry] = []
+        for i in 0..<100 {
+            let url = Self.fileURL(for: storageKey, index: i)
+            if FileManager.default.fileExists(atPath: url.path) {
+                // Get duration
+                let duration: TimeInterval
+                if let audioPlayer = try? AVAudioPlayer(contentsOf: url) {
+                    duration = audioPlayer.duration
+                } else {
+                    duration = 0
+                }
+                entries.append(RecordingEntry(id: i, url: url, duration: duration))
+            } else {
+                break
+            }
+        }
+        recordings = entries
+        hasRecording = !entries.isEmpty
+    }
+
+    private func renumberRecordings() {
+        var newEntries: [RecordingEntry] = []
+        for (newIndex, entry) in recordings.enumerated() {
+            let newURL = Self.fileURL(for: storageKey, index: newIndex)
+            if entry.url != newURL {
+                try? FileManager.default.moveItem(at: entry.url, to: newURL)
+            }
+            newEntries.append(RecordingEntry(id: newIndex, url: newURL, duration: entry.duration))
+        }
+        recordings = newEntries
     }
 
     // MARK: - Playback delegate
@@ -180,10 +226,21 @@ final class VoiceRecorderManager: ObservableObject {
 
     // MARK: - File path
 
-    private static func fileURL(for key: String) -> URL {
+    private static func fileURL(for key: String, index: Int) -> URL {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("voice-recordings", isDirectory: true)
         let safeName = key.isEmpty ? "temp" : key
-        return dir.appendingPathComponent("\(safeName).m4a")
+        return dir.appendingPathComponent("\(safeName)_\(index).m4a")
+    }
+
+    /// Migration: check for old single-file format and convert
+    static func migrateIfNeeded(storageKey: String) {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("voice-recordings", isDirectory: true)
+        let oldURL = dir.appendingPathComponent("\(storageKey).m4a")
+        let newURL = dir.appendingPathComponent("\(storageKey)_0.m4a")
+        if FileManager.default.fileExists(atPath: oldURL.path) && !FileManager.default.fileExists(atPath: newURL.path) {
+            try? FileManager.default.moveItem(at: oldURL, to: newURL)
+        }
     }
 }

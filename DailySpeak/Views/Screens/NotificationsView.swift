@@ -8,11 +8,11 @@ private enum InboxFilter: String, CaseIterable {
     var title: String {
         switch self {
         case .all:
-            return "全部"
+            return String(localized: "All")
         case .other:
-            return "提醒"
+            return String(localized: "Reminders")
         case .system:
-            return "系统"
+            return String(localized: "System")
         }
     }
 }
@@ -49,10 +49,10 @@ struct NotificationsView: View {
                     Image(systemName: "bell.slash")
                         .font(.system(size: 36, weight: .semibold))
                         .foregroundColor(.textMuted)
-                    Text("还没有消息")
+                    Text("No messages yet")
                         .font(.headline)
                         .foregroundColor(.textPrimary)
-                    Text("API 推送、inbox 拉取和本地通知都会汇总在这里。")
+                    Text("Push notifications, inbox messages and local alerts will appear here.")
                         .font(.subheadline)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -81,10 +81,10 @@ struct NotificationsView: View {
                     Section {
                         if filteredItems.isEmpty {
                             VStack(spacing: 8) {
-                                Text("当前筛选没有内容")
+                                Text("No content for current filter")
                                     .font(.subheadline.weight(.semibold))
                                     .foregroundColor(.textPrimary)
-                                Text("下拉刷新后会重新同步消息。")
+                                Text("Pull to refresh and resync messages.")
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                                     .multilineTextAlignment(.center)
@@ -108,7 +108,7 @@ struct NotificationsView: View {
                             }
                         }
                     } header: {
-                        Text("最近更新")
+                        Text("Recent Updates")
                             .foregroundColor(.textSecondary)
                     }
                 }
@@ -122,13 +122,13 @@ struct NotificationsView: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.backgroundDark)
-        .navigationTitle("消息通知")
+        .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         // Keep the test marker aligned with the shell regression check: navigationBarBackButtonHiddentrue
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("全部已读") {
+                Button("Mark All Read") {
                     markAllAsRead()
                 }
                 .font(.subheadline.weight(.semibold))
@@ -148,7 +148,7 @@ struct NotificationsView: View {
                 }
                 .foregroundStyle(Color.textPrimary)
                 .disabled(isDetailSheetDismissing)
-                .accessibilityLabel(Text("关闭"))
+                .accessibilityLabel(Text("Close"))
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .pushInboxDidUpdate)) { _ in
@@ -233,7 +233,7 @@ private struct NotificationDetailSheet: View {
                 .padding(20)
             }
             .background(Color.backgroundDark.ignoresSafeArea())
-            .navigationTitle("消息通知")
+            .navigationTitle("Notifications")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -244,7 +244,7 @@ private struct NotificationDetailSheet: View {
                             .font(.subheadline.weight(.semibold))
                     }
                     .foregroundStyle(Color.textPrimary)
-                    .accessibilityLabel(Text("关闭"))
+                    .accessibilityLabel(Text("Close"))
                 }
             }
         }
@@ -289,7 +289,7 @@ private struct NotificationRow: View {
                         .font(.caption)
                         .foregroundColor(.textMuted)
 
-                    Text(item.isUnread ? "未读" : "已读")
+                    Text(item.isUnread ? String(localized: "Unread") : String(localized: "Read"))
                         .font(.caption2.weight(.semibold))
                         .foregroundColor(item.isUnread ? .primaryCyan : .textMuted)
                         .padding(.horizontal, 7)

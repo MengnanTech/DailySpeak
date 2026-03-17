@@ -13,20 +13,20 @@ extension APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "接口地址无效。"
+            return String(localized: "Invalid API endpoint.")
         case .decoding:
-            return "服务器返回无法解析。"
+            return String(localized: "Unable to parse server response.")
         case .http(let code, let message):
             if let message, !message.isEmpty {
-                return "网络请求失败（\(code)）：\(message)"
+                return String(localized: "Network request failed (\(code)): \(message)")
             }
-            return "网络请求失败（\(code)）。"
+            return String(localized: "Network request failed (\(code)).")
         case .api(_, let message):
-            return message ?? "服务器处理失败，请稍后再试。"
+            return message ?? String(localized: "Server error, please try again later.")
         case .transport(let message):
             return message
         case .unknown:
-            return "发生未知错误。"
+            return String(localized: "An unknown error occurred.")
         }
     }
 }

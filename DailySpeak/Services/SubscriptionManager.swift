@@ -83,13 +83,15 @@ final class SubscriptionManager {
                 break
 
             case .pending:
-                purchaseError = "购买正在等待审批"
+                purchaseError = String(localized: "Purchase is pending approval")
+                ToastManager.shared.show(String(localized: "Purchase is pending approval"), style: .warning)
 
             @unknown default:
                 break
             }
         } catch {
-            purchaseError = "购买失败：\(error.localizedDescription)"
+            purchaseError = String(localized: "Purchase failed: \(error.localizedDescription)")
+            ToastManager.shared.show(String(localized: "Purchase failed, please try again later"), style: .error)
             print("[SubscriptionManager] Purchase error: \(error)")
         }
     }

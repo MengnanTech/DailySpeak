@@ -33,7 +33,7 @@ struct TaskLoadingView: View {
     let onReady: () -> Void
 
     @State private var progress: Double = 0
-    @State private var statusText = "准备学习内容..."
+    @State private var statusText = String(localized: "Preparing content...")
     @State private var pulseScale: CGFloat = 1.0
     @State private var dotCount = 0
     @State private var isReady = false
@@ -122,7 +122,7 @@ struct TaskLoadingView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 13, weight: .bold))
-                            Text("重试")
+                            Text("Retry")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
                         }
                         .foregroundStyle(.white)
@@ -137,7 +137,7 @@ struct TaskLoadingView: View {
                         isReady = true
                         onReady()
                     } label: {
-                        Text("跳过，继续进入")
+                        Text("Skip, continue")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
                             .foregroundStyle(AppColors.tertiaryText)
                     }
@@ -174,12 +174,12 @@ struct TaskLoadingView: View {
     private func runLoading() async {
         // Phase 1: Immediate progress for local setup
         withAnimation { progress = 0.2 }
-        statusText = "加载课程数据"
+        statusText = String(localized: "Loading course data")
         try? await Task.sleep(nanoseconds: 300_000_000)
 
         // Phase 2: Prepare intro animation audio
         withAnimation { progress = 0.4 }
-        statusText = "准备语音内容"
+        statusText = String(localized: "Preparing voice content")
 
         // Collect all priority items for intro animation
         var priorityItems: [AudioPreloader.AudioItem] = []
@@ -230,32 +230,32 @@ struct TaskLoadingView: View {
             if uncachedItems.isEmpty {
                 // All cached (user pre-downloaded or revisiting) → skip quickly
                 withAnimation { progress = 0.85 }
-                statusText = "语音就绪"
+                statusText = String(localized: "Voice ready")
             } else {
                 // Use batch API for all uncached items at once, then parallel download
-                statusText = "准备语音 0/\(priorityItems.count)"
+                statusText = String(localized: "Preparing voice 0/\(priorityItems.count)")
                 let success = await EnglishSpeechPlayer.shared.preloadBatch(uncachedItems)
                 guard !Task.isCancelled else { return }
                 let failed = uncachedItems.count - success
                 if failed > 0 {
                     failedCount = failed
                     withAnimation { progress = 0.85 }
-                    statusText = "语音下载失败（\(failed)个）"
+                    statusText = String(localized: "Voice download failed (\(failed) items)")
                     withAnimation { loadFailed = true }
                     return
                 }
                 withAnimation { progress = 0.85 }
-                statusText = "准备语音 \(priorityItems.count)/\(priorityItems.count)"
+                statusText = String(localized: "Preparing voice \(priorityItems.count)/\(priorityItems.count)")
             }
         }
         withAnimation { progress = 0.85 }
-        statusText = "语音就绪"
+        statusText = String(localized: "Voice ready")
 
         // Phase 3: Download remaining guide audio
         let allItems = AudioPreloader.allItems(for: task)
         let uncachedGuide = allItems.filter { !EnglishSpeechPlayer.shared.isAudioCached(id: $0.id) }
         if !uncachedGuide.isEmpty {
-            statusText = "准备学习语音"
+            statusText = String(localized: "Preparing learning voice")
             withAnimation { progress = 0.88 }
             let guideSuccess = await EnglishSpeechPlayer.shared.preloadBatch(uncachedGuide)
             guard !Task.isCancelled else { return }
@@ -263,7 +263,7 @@ struct TaskLoadingView: View {
             if guideFailed > 0 {
                 failedCount = guideFailed
                 withAnimation { progress = 0.9 }
-                statusText = "语音下载失败（\(guideFailed)个）"
+                statusText = String(localized: "Voice download failed (\(guideFailed) items)")
                 withAnimation { loadFailed = true }
                 return
             }
@@ -273,7 +273,7 @@ struct TaskLoadingView: View {
 
         // Phase 4: Done
         withAnimation { progress = 1.0 }
-        statusText = "准备完成"
+        statusText = String(localized: "Preparation complete")
         try? await Task.sleep(nanoseconds: 400_000_000)
 
         isReady = true

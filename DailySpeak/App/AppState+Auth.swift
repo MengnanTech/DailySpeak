@@ -179,7 +179,7 @@ extension AppState {
         switch result {
         case .success(let authorization):
             guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                return .failure(message: "Apple 登录能力未正确配置。")
+                return .failure(message: String(localized: "Apple Sign In capability not configured properly."))
             }
 
             completeAppleSignIn(with: credential)
@@ -190,7 +190,7 @@ extension AppState {
                   let rawNonce = appleSignInRawNonce?.trimmingCharacters(in: .whitespacesAndNewlines),
                   !rawNonce.isEmpty else {
                 signOut()
-                return .failure(message: "Apple 登录返回无效，请重试。")
+                return .failure(message: String(localized: "Apple Sign In returned invalid data, please try again."))
             }
 
             let fullName: String? = {
@@ -213,10 +213,10 @@ extension AppState {
                 return .success
             } catch let APIError.api(_, message) {
                 signOut()
-                return .failure(message: message ?? "Apple 登录失败，请稍后再试。")
+                return .failure(message: message ?? String(localized: "Apple Sign In failed, please try again later."))
             } catch {
                 signOut()
-                return .failure(message: "Apple 登录失败，请稍后再试。")
+                return .failure(message: String(localized: "Apple Sign In failed, please try again later."))
             }
 
         case .failure(let error):
@@ -284,30 +284,30 @@ extension AppState {
         if let authError = error as? ASAuthorizationError {
             switch authError.code {
             case .failed:
-                return "Apple 登录失败，请稍后再试。"
+                return String(localized: "Apple Sign In failed, please try again later.")
             case .invalidResponse:
-                return "Apple 登录返回无效，请重试。"
+                return String(localized: "Apple Sign In returned invalid data, please try again.")
             case .notHandled, .notInteractive:
-                return "当前设备暂时无法完成 Apple 登录。"
+                return String(localized: "This device cannot complete Apple Sign In at this time.")
             case .matchedExcludedCredential,
                  .credentialImport,
                  .credentialExport,
                  .preferSignInWithApple,
                  .deviceNotConfiguredForPasskeyCreation,
                  .unknown:
-                return "Apple 登录能力未正确配置。"
+                return String(localized: "Apple Sign In capability not configured properly.")
             case .canceled:
-                return "你已取消 Apple 登录。"
+                return String(localized: "You cancelled Apple Sign In.")
             @unknown default:
-                return "Apple 登录失败，请稍后再试。"
+                return String(localized: "Apple Sign In failed, please try again later.")
             }
         }
 
         let nsError = error as NSError
         if nsError.domain == NSURLErrorDomain {
-            return "网络异常，暂时无法连接 Apple 登录服务。"
+            return String(localized: "Network error, unable to connect to Apple Sign In service.")
         }
 
-        return "Apple 登录失败，请稍后再试。"
+        return String(localized: "Apple Sign In failed, please try again later.")
     }
 }

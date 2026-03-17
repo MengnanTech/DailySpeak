@@ -25,7 +25,7 @@ struct ContentView: View {
                 .padding(.bottom, 100)
         }
         .background(AppColors.background.ignoresSafeArea())
-        .navigationTitle("答题策略")
+        .navigationTitle("Answer Strategy")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -36,7 +36,7 @@ struct ContentView: View {
                 .padding(.bottom, 100)
         }
         .background(AppColors.background.ignoresSafeArea())
-        .navigationTitle("表达框架")
+        .navigationTitle("Expression Framework")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -47,7 +47,7 @@ struct ContentView: View {
                 .padding(.bottom, 100)
         }
         .background(AppColors.background.ignoresSafeArea())
-        .navigationTitle("口语练习")
+        .navigationTitle("Speaking Practice")
         .navigationBarTitleDisplayMode(.inline)
     }
 

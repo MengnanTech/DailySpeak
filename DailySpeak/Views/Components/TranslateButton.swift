@@ -24,7 +24,7 @@ struct TranslateButton: View {
                         Image(systemName: "globe")
                             .font(.system(size: 12, weight: .medium))
                     }
-                    Text(isExpanded ? "收起" : "翻译")
+                    Text(isExpanded ? String(localized: "Collapse") : String(localized: "Translate"))
                         .font(.system(size: 12, weight: .medium))
                 }
                 .fixedSize()
@@ -73,7 +73,8 @@ struct TranslateButton: View {
                 cache.visibleKeys.insert(key)
                 errorMessage = nil
             } catch {
-                errorMessage = "翻译失败"
+                errorMessage = String(localized: "Translation failed")
+                ToastManager.shared.show(String(localized: "Translation failed, please check your network and try again"), style: .error)
             }
         }
     }

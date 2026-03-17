@@ -19,11 +19,11 @@ struct InitialAuthChoiceView: View {
                             .font(.system(size: 54, weight: .semibold))
                             .foregroundStyle(LinearGradient.primaryGradient)
 
-                        Text("选择进入方式")
+                        Text("Choose how to get started")
                             .font(.title3.weight(.bold))
                             .foregroundColor(.textPrimary)
 
-                        Text("你可以先游客进入，也可以直接绑定 Apple 或邮箱账号。")
+                        Text("Start as a guest, or sign in with Apple or email.")
                             .font(.subheadline)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)
@@ -41,7 +41,7 @@ struct InitialAuthChoiceView: View {
                             AuthLoginRegisterView(initialMode: .login)
                                 .environmentObject(appState)
                         } label: {
-                            Text("邮箱登录 / 注册")
+                            Text("Email Sign In / Register")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.textPrimary)
                                 .frame(maxWidth: .infinity)
@@ -54,7 +54,7 @@ struct InitialAuthChoiceView: View {
                         .buttonStyle(.plain)
 
                         Button(action: continueAsGuest) {
-                            Text("继续以游客身份使用")
+                            Text("Continue as Guest")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.textPrimary)
                                 .frame(maxWidth: .infinity)
@@ -75,15 +75,15 @@ struct InitialAuthChoiceView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
         }
-        .alert("登录失败", isPresented: Binding(
+        .alert("Sign In Failed", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
-            Button("好的", role: .cancel) {
+            Button("OK", role: .cancel) {
                 errorMessage = nil
             }
         } message: {
-            Text(errorMessage ?? "请稍后重试。")
+            Text(errorMessage ?? String(localized: "Please try again later."))
         }
         .onAppear {
             appState.resetAppleSignInProgress()

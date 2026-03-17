@@ -23,8 +23,8 @@ struct PaywallPlaceholderView: View {
         case subscribe, stage
         var label: String {
             switch self {
-            case .subscribe: return "订阅全部"
-            case .stage: return "单独解锁"
+            case .subscribe: return String(localized: "Subscribe All")
+            case .stage: return String(localized: "Unlock Individually")
             }
         }
     }
@@ -49,12 +49,12 @@ struct PaywallPlaceholderView: View {
         return CourseData.stages.first { $0.id == id }
     }
 
-    private let features: [(icon: String, color: String, text: String)] = [
-        ("book.fill", "4F6BED", "解锁全部 9 个阶段的口语课程"),
-        ("waveform.path", "8B5CF6", "AI 发音指导与个性化练习"),
-        ("arrow.triangle.2.circlepath", "10B981", "智能复习，针对薄弱环节强化"),
-        ("icloud.and.arrow.up.fill", "0EA5E9", "跨设备同步学习进度"),
-    ]
+    private var features: [(icon: String, color: String, text: String)] {[
+        ("book.fill", "4F6BED", String(localized: "Unlock all 9 stages of speaking courses")),
+        ("waveform.path", "8B5CF6", String(localized: "AI pronunciation guidance and personalized practice")),
+        ("arrow.triangle.2.circlepath", "10B981", String(localized: "Smart review to strengthen weak areas")),
+        ("icloud.and.arrow.up.fill", "0EA5E9", String(localized: "Cross-device learning progress sync")),
+    ]}
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -163,14 +163,14 @@ struct PaywallPlaceholderView: View {
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                         .multilineTextAlignment(.center)
-                    Text("Stage \(stage.id) · \(stage.taskCount) 节课程")
+                    Text("Stage \(stage.id) · \(stage.taskCount) lessons")
                         .font(.subheadline)
                         .foregroundStyle(AppColors.secondText)
                 } else {
-                    Text("解锁完整口语之旅")
+                    Text("Unlock Your Complete Speaking Journey")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
-                    Text("\(proTaskCount)+ 节精品课程，系统提升你的口语表达")
+                    Text("\(proTaskCount)+ premium courses to systematically improve your speaking")
                         .font(.subheadline)
                         .foregroundStyle(AppColors.secondText)
                         .multilineTextAlignment(.center)
@@ -194,10 +194,10 @@ struct PaywallPlaceholderView: View {
                     .foregroundStyle(Color(hex: "10B981"))
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text("PRO 已激活")
+                Text("PRO Activated")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(AppColors.primaryText)
-                Text("你已解锁所有高级内容")
+                Text("All premium content is unlocked")
                     .font(.caption)
                     .foregroundStyle(AppColors.secondText)
             }
@@ -268,13 +268,13 @@ struct PaywallPlaceholderView: View {
 
             // CTA
             purchaseButton(
-                title: "立即订阅",
+                title: "Subscribe Now",
                 product: selectedSubProduct
             )
             .padding(.horizontal, 24)
             .padding(.top, 24)
 
-            Text("可随时取消 · 自动续费")
+            Text("Cancel anytime · Auto-renew")
                 .font(.system(size: 12))
                 .foregroundStyle(AppColors.tertiaryText)
                 .padding(.top, 10)
@@ -299,7 +299,7 @@ struct PaywallPlaceholderView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 24)
 
-                    Text("一次购买，永久使用")
+                    Text("One-time purchase, lifetime access")
                         .font(.system(size: 12))
                         .foregroundStyle(AppColors.tertiaryText)
                         .padding(.top, 10)
@@ -367,7 +367,7 @@ struct PaywallPlaceholderView: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(AppColors.primaryText)
                         if plan == .yearly {
-                            Text("推荐")
+                            Text("Recommended")
                                 .font(.system(size: 10, weight: .heavy, design: .rounded))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 8).padding(.vertical, 3)
@@ -442,11 +442,11 @@ struct PaywallPlaceholderView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(accent)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("订阅 PRO 解锁全部阶段")
+                    Text("Subscribe PRO to unlock all stages")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(AppColors.primaryText)
                     if let weekly = subscription.weeklyProduct {
-                        Text("低至 \(weekly.displayPrice)/周")
+                        Text("As low as \(weekly.displayPrice)/week")
                             .font(.caption)
                             .foregroundStyle(AppColors.tertiaryText)
                     }
@@ -498,7 +498,7 @@ struct PaywallPlaceholderView: View {
             if subscription.products.isEmpty {
                 HStack(spacing: 6) {
                     ProgressView().scaleEffect(0.7)
-                    Text("加载中…")
+                    Text("Loading...")
                         .font(.caption).foregroundStyle(AppColors.tertiaryText)
                 }
                 .padding(.top, 8)
@@ -512,7 +512,7 @@ struct PaywallPlaceholderView: View {
             Button {
                 Task { await subscription.restore() }
             } label: {
-                Text("恢复购买")
+                Text("Restore Purchases")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(accent)
             }
@@ -520,11 +520,11 @@ struct PaywallPlaceholderView: View {
 
             HStack(spacing: 12) {
                 if let url = URL(string: Constants.privacyPolicyURL) {
-                    Link("隐私政策", destination: url)
+                    Link("Privacy Policy", destination: url)
                 }
                 Text("·")
                 if let url = URL(string: Constants.termsOfServiceURL) {
-                    Link("使用条款", destination: url)
+                    Link("Terms of Use", destination: url)
                 }
             }
             .font(.system(size: 12))
@@ -593,24 +593,24 @@ struct PaywallPlaceholderView: View {
 
     private func planTitle(_ plan: SubPlan) -> String {
         switch plan {
-        case .weekly:  return "周订阅"
-        case .monthly: return "月订阅"
-        case .yearly:  return "年订阅"
+        case .weekly:  return String(localized: "Weekly")
+        case .monthly: return String(localized: "Monthly")
+        case .yearly:  return String(localized: "Yearly")
         }
     }
 
     private func periodLabel(_ plan: SubPlan) -> String {
         switch plan {
-        case .weekly:  return "/周"
-        case .monthly: return "/月"
-        case .yearly:  return "/年"
+        case .weekly:  return String(localized: "/week")
+        case .monthly: return String(localized: "/month")
+        case .yearly:  return String(localized: "/year")
         }
     }
 
     private func monthlyEquivalent(_ yearly: Product) -> String {
         let monthly = yearly.price / 12
         let formatted = String(format: "%.2f", NSDecimalNumber(decimal: monthly).doubleValue)
-        return "约 ¥\(formatted)/月，节省 55%"
+        return String(localized: "About \(formatted)/month, save 55%")
     }
 }
 

@@ -85,11 +85,11 @@ struct ReviewStepView: View {
     private func updateReviewProgress() {
         if lesson != nil {
             canComplete = reviewGuideCompleted
-            progressHint = reviewGuideCompleted ? nil : "完成 Guide 学习"
+            progressHint = reviewGuideCompleted ? nil : String(localized: "Complete the Guide")
         } else {
             let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
             canComplete = remaining == 0
-            progressHint = remaining == 0 ? nil : "听完标记项 \(requiredAudioIds.intersection(listenedAudioIds).count)/\(requiredAudioIds.count)"
+            progressHint = remaining == 0 ? nil : String(localized: "Listened \(requiredAudioIds.intersection(listenedAudioIds).count)/\(requiredAudioIds.count) items")
         }
     }
 
@@ -947,7 +947,7 @@ struct BatchTranslateButton: View {
                     Image(systemName: "globe")
                         .font(.system(size: 12, weight: .medium))
                 }
-                Text(allVisible ? "收起" : "翻译")
+                Text(allVisible ? String(localized: "Collapse") : String(localized: "Translate"))
                     .font(.system(size: 12, weight: .medium))
             }
             .fixedSize()

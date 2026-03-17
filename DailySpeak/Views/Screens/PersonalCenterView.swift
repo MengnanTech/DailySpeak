@@ -36,7 +36,7 @@ struct PersonalCenterView: View {
     }
 
     private var headerSubtitle: String {
-        "持续练习，提升口语表达能力"
+        String(localized: "Practice consistently to improve your speaking skills")
     }
 
     private var proTaskCount: Int {
@@ -53,9 +53,9 @@ struct PersonalCenterView: View {
                     ProfileHeaderCard(
                         displayName: headerDisplayName,
                         subtitle: headerSubtitle,
-                        primaryStatTitle: "已完成任务",
+                        primaryStatTitle: "Tasks Completed",
                         primaryStatValue: "\(totalCompleted)",
-                        secondaryStatTitle: "已完成阶段",
+                        secondaryStatTitle: "Stages Completed",
                         secondaryStatValue: "\(completedStages)",
                         themeColor: Color(hex: "4F6BED"),
                         showsVIPCrown: subscription.isPro
@@ -98,7 +98,7 @@ struct PersonalCenterView: View {
             }
             .scrollBounceBehavior(.basedOnSize, axes: .vertical)
         }
-        .navigationTitle("个人中心")
+        .navigationTitle("Personal Center")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             appState.refreshAppleCredentialStateIfNeeded()
@@ -139,13 +139,13 @@ struct PersonalCenterView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(subscription.isPro ? "DailySpeak PRO" : "升级到 DailySpeak PRO")
+                    Text(subscription.isPro ? "DailySpeak PRO" : "Upgrade to DailySpeak PRO")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
 
                     Text(subscription.isPro
-                         ? "已解锁全部高级内容"
-                         : "解锁全部 \(CourseData.stages.count) 个阶段和 \(proTaskCount)+ 口语课程")
+                         ? "All premium content unlocked"
+                         : "Unlock all \(CourseData.stages.count) stages and \(proTaskCount)+ speaking courses")
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.8))
                 }
@@ -189,7 +189,7 @@ struct PersonalCenterView: View {
     private var loginPromptCard: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 14) {
-                Text("登录后可同步学习进度、接收消息通知和解锁更多功能。")
+                Text("Sign in to sync progress, receive notifications, and unlock more features.")
                     .font(.subheadline)
                     .foregroundStyle(AppColors.secondText)
 
@@ -198,7 +198,7 @@ struct PersonalCenterView: View {
                         AuthLoginRegisterView(initialMode: .login)
                             .environmentObject(appState)
                     } label: {
-                        Text("登录")
+                        Text("Sign In")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AppColors.primaryText)
                             .frame(maxWidth: .infinity)
@@ -214,7 +214,7 @@ struct PersonalCenterView: View {
                         AuthLoginRegisterView(initialMode: .register)
                             .environmentObject(appState)
                     } label: {
-                        Text("注册")
+                        Text("Sign Up")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AppColors.primaryText)
                             .frame(maxWidth: .infinity)
@@ -235,12 +235,12 @@ struct PersonalCenterView: View {
     private var learningStatsCard: some View {
         SettingsCard {
             VStack(alignment: .leading, spacing: 14) {
-                sectionHeader(title: "学习概览", icon: "chart.bar.fill", color: Color(hex: "4F6BED"))
+                sectionHeader(title: "Learning Overview", icon: "chart.bar.fill", color: Color(hex: "4F6BED"))
 
                 HStack(spacing: 12) {
-                    metricView(value: "\(totalCompleted)", label: "已完成")
-                    metricView(value: "\(max(totalTasks - totalCompleted, 0))", label: "未完成")
-                    metricView(value: "\(CourseData.stages.count)", label: "总阶段")
+                    metricView(value: "\(totalCompleted)", label: "Completed")
+                    metricView(value: "\(max(totalTasks - totalCompleted, 0))", label: "Incomplete")
+                    metricView(value: "\(CourseData.stages.count)", label: "Total Stages")
                 }
                 .padding(.horizontal, 16)
 
@@ -259,14 +259,14 @@ struct PersonalCenterView: View {
     private var preferencesSection: some View {
         SettingsCard {
             VStack(spacing: 0) {
-                sectionHeader(title: "偏好设置", icon: "slider.horizontal.3", color: Color(hex: "8B5CF6"))
+                sectionHeader(title: "Preferences", icon: "slider.horizontal.3", color: Color(hex: "8B5CF6"))
 
                 NavigationLink {
                     VoiceSettingsView()
                 } label: {
                     NavigationMenuRow(
                         icon: "waveform.circle.fill",
-                        title: "语音选择",
+                        title: "Voice Selection",
                         subtitle: VoiceManager.shared.selectedVoice.name,
                         iconColor: Color(hex: "4F6BED")
                     )
@@ -275,25 +275,17 @@ struct PersonalCenterView: View {
 
                 Divider().background(AppColors.border).padding(.leading, dividerInset)
 
-                // Translation engine picker
-                Menu {
-                    Button { translationProvider = "auto" } label: {
-                        Label("Auto (DeepL)", systemImage: translationProvider == "auto" ? "checkmark" : "")
-                    }
-                    Button { translationProvider = "deepl" } label: {
-                        Label("DeepL", systemImage: translationProvider == "deepl" ? "checkmark" : "")
-                    }
-                    Button { translationProvider = "deepseek" } label: {
-                        Label("DeepSeek AI", systemImage: translationProvider == "deepseek" ? "checkmark" : "")
-                    }
+                NavigationLink {
+                    TranslationProviderPickerView(selection: $translationProvider)
                 } label: {
                     NavigationMenuRow(
                         icon: "globe",
-                        title: "翻译引擎",
+                        title: "Translation Engine",
                         subtitle: translationProviderLabel,
                         iconColor: Color(hex: "0EA5E9")
                     )
                 }
+                .buttonStyle(.plain)
 
                 Divider().background(AppColors.border).padding(.leading, dividerInset)
 
@@ -302,8 +294,8 @@ struct PersonalCenterView: View {
                 } label: {
                     NavigationMenuRow(
                         icon: "bell.badge.fill",
-                        title: "通知设置",
-                        subtitle: "提醒和通知",
+                        title: "Notification Settings",
+                        subtitle: "Reminders and notifications",
                         iconColor: Color(hex: "10B981")
                     )
                 }
@@ -324,7 +316,7 @@ struct PersonalCenterView: View {
     private var actionsCard: some View {
         SettingsCard {
             VStack(spacing: 0) {
-                sectionHeader(title: "账号", icon: "person.circle.fill", color: Color(hex: "4A90D9"))
+                sectionHeader(title: "Account", icon: "person.circle.fill", color: Color(hex: "4A90D9"))
 
                 NavigationLink {
                     NotificationsView()
@@ -332,7 +324,7 @@ struct PersonalCenterView: View {
                 } label: {
                     NavigationMenuRow(
                         icon: "bell.fill",
-                        title: "消息通知",
+                        title: "Messages",
                         subtitle: unreadSubtitle,
                         iconColor: Color(hex: "4A90D9")
                     )
@@ -343,8 +335,8 @@ struct PersonalCenterView: View {
 
                 ActionMenuRow(
                     icon: appState.isLoggedIn ? "person.crop.circle.badge.checkmark" : "person.crop.circle",
-                    title: appState.isLoggedIn ? "当前账号" : "当前身份",
-                    subtitle: appState.isLoggedIn ? (appState.authEmail ?? appState.authMode.rawValue.capitalized) : "游客模式",
+                    title: appState.isLoggedIn ? "Current Account" : "Current Identity",
+                    subtitle: appState.isLoggedIn ? (appState.authEmail ?? appState.authMode.rawValue.capitalized) : "Guest Mode",
                     iconColor: .primaryCyan
                 )
 
@@ -356,8 +348,8 @@ struct PersonalCenterView: View {
                     } label: {
                         ActionMenuRow(
                             icon: "rectangle.portrait.and.arrow.right",
-                            title: "退出登录",
-                            subtitle: "退出后将清除登录状态",
+                            title: "Sign Out",
+                            subtitle: "Signing out will clear your login state",
                             isDestructive: true
                         )
                     }
@@ -371,13 +363,13 @@ struct PersonalCenterView: View {
     private var supportSection: some View {
         SettingsCard {
             VStack(spacing: 0) {
-                sectionHeader(title: "支持", icon: "questionmark.circle.fill", color: Color(hex: "4A90D9"))
+                sectionHeader(title: "Support", icon: "questionmark.circle.fill", color: Color(hex: "4A90D9"))
 
                 Button { showOnboarding = true } label: {
                     NavigationMenuRow(
                         icon: "hand.wave.fill",
-                        title: "新手引导",
-                        subtitle: "重新查看使用教程",
+                        title: "Getting Started",
+                        subtitle: "Review the usage tutorial",
                         iconColor: Color(hex: "8B5CF6")
                     )
                 }
@@ -388,8 +380,8 @@ struct PersonalCenterView: View {
                 Button { sendFeedback() } label: {
                     NavigationMenuRow(
                         icon: "envelope.open.fill",
-                        title: "意见反馈",
-                        subtitle: "帮助我们改进 DailySpeak",
+                        title: "Feedback",
+                        subtitle: "Help us improve DailySpeak",
                         iconColor: Color(hex: "4A90D9")
                     )
                 }
@@ -402,8 +394,8 @@ struct PersonalCenterView: View {
                 } label: {
                     NavigationMenuRow(
                         icon: "star.fill",
-                        title: "给个好评",
-                        subtitle: "在 App Store 上评价",
+                        title: "Rate Us",
+                        subtitle: "Rate on App Store",
                         iconColor: Color(hex: "F59E0B")
                     )
                 }
@@ -416,13 +408,13 @@ struct PersonalCenterView: View {
     private var legalAndDangerSection: some View {
         SettingsCard {
             VStack(spacing: 0) {
-                sectionHeader(title: "其他", icon: "ellipsis.circle.fill", color: AppColors.tertiaryText)
+                sectionHeader(title: "Other", icon: "ellipsis.circle.fill", color: AppColors.tertiaryText)
 
                 if let privacy = URL(string: Constants.privacyPolicyURL) {
                     Link(destination: privacy) {
                         NavigationMenuRow(
                             icon: "hand.raised.fill",
-                            title: "隐私政策",
+                            title: "Privacy Policy",
                             subtitle: nil,
                             iconColor: Color(hex: "10B981")
                         )
@@ -436,7 +428,7 @@ struct PersonalCenterView: View {
                     Link(destination: terms) {
                         NavigationMenuRow(
                             icon: "doc.plaintext.fill",
-                            title: "用户协议",
+                            title: "Terms of Service",
                             subtitle: nil,
                             iconColor: AppColors.tertiaryText
                         )
@@ -451,8 +443,8 @@ struct PersonalCenterView: View {
                 } label: {
                     ActionMenuRow(
                         icon: "trash.fill",
-                        title: "重置学习进度",
-                        subtitle: "清除所有已完成的任务和步骤",
+                        title: "Reset Learning Progress",
+                        subtitle: "Clear all completed tasks and steps",
                         isDestructive: true
                     )
                 }
@@ -464,7 +456,7 @@ struct PersonalCenterView: View {
     // MARK: - Helpers
     private var unreadSubtitle: String {
         let unread = appState.unreadNotificationCount
-        return unread == 0 ? "目前没有未读消息" : "还有 \(unread) 条未读消息"
+        return unread == 0 ? String(localized: "No unread messages") : String(localized: "\(unread) unread messages")
     }
 
     private func sectionHeader(title: String, icon: String, color: Color) -> some View {

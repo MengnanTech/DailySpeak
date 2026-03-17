@@ -1,6 +1,19 @@
 import SwiftUI
 import AVFoundation
 
+// MARK: - ScrollProxy Environment Key
+
+private struct ScrollProxyKey: EnvironmentKey {
+    static let defaultValue: ScrollViewProxy? = nil
+}
+
+extension EnvironmentValues {
+    var scrollProxy: ScrollViewProxy? {
+        get { self[ScrollProxyKey.self] }
+        set { self[ScrollProxyKey.self] = newValue }
+    }
+}
+
 struct LearningFlowView: View {
     @Environment(ProgressManager.self) private var progress
     @Environment(\.dismiss) private var dismiss
@@ -163,13 +176,16 @@ struct LearningFlowView: View {
             ForEach(0..<steps.count, id: \.self) { index in
                 Group {
                     if isStepUnlocked(index) {
-                        ScrollView(showsIndicators: false) {
-                            stepView(for: steps[index].type)
-                                .padding(.horizontal, 20)
-                                .padding(.top, 4)
-                                .padding(.bottom, 100)
+                        ScrollViewReader { scrollProxy in
+                            ScrollView(showsIndicators: false) {
+                                stepView(for: steps[index].type)
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 4)
+                                    .padding(.bottom, 100)
+                            }
+                            .scrollDismissesKeyboard(.interactively)
+                            .environment(\.scrollProxy, scrollProxy)
                         }
-                        .scrollDismissesKeyboard(.interactively)
                     } else {
                         lockedStepOverlay(step: steps[index], index: index)
                     }
@@ -347,6 +363,9 @@ struct LearningFlowView: View {
 
     private func finishTask() {
         progress.completeTask(stageId: stage.id, taskId: task.id)
+        ReviewPromptService.shared.requestReviewIfAppropriate(
+            completedTaskCount: progress.completedTasks.count
+        )
         dismiss()
     }
 }
@@ -688,7 +707,7 @@ struct StrategyStepView: View {
             let done = keyPointsGuideCompleted && sequenceGuideCompleted
             let count = (keyPointsGuideCompleted ? 1 : 0) + (sequenceGuideCompleted ? 1 : 0)
             canComplete = done
-            progressHint = done ? nil : "完成 Guide 学习 \(count)/2"
+            progressHint = done ? nil : String(localized: "Complete the Guide \(count)/2")
         } else {
             // Standard mode: listen to all required audio
             let remaining = requiredAudioIds.subtracting(listenedAudioIds).count
@@ -698,7 +717,7 @@ struct StrategyStepView: View {
             } else {
                 let listened = requiredAudioIds.intersection(listenedAudioIds).count
                 canComplete = false
-                progressHint = "听完标记项 \(listened)/\(requiredAudioIds.count)"
+                progressHint = String(localized: "Listened \(listened)/\(requiredAudioIds.count) items")
             }
         }
     }
@@ -711,21 +730,23 @@ struct StrategyStepView: View {
                 StepSectionLabel(icon: "lightbulb.fill", title: "Response Tips", color: stepColor)
 
                 ForEach(Array(task.tips.enumerated()), id: \.offset) { index, tip in
+                    let tipPlayId = EnglishSpeechPlayer.playbackID(for: tip, category: "tip")
                     VStack(alignment: .leading, spacing: 8) {
-                        NumberedItemRow(index: index + 1, text: tip, color: stepColor)
-
-                        HStack(spacing: 8) {
-                            let tipPlayId = EnglishSpeechPlayer.playbackID(for: tip, category: "tip")
-                            InlineAudioPlayerControl(
-                                text: tip,
-                                playbackID: tipPlayId,
-                                sourceLabel: "Tip",
-                                accentColor: stepColor,
-                                style: .compact,
-                                onPlay: { listenedAudioIds.insert(tipPlayId) }
-                            )
-                            TranslateButton(englishText: tip, accentColor: stepColor)
+                        HStack(alignment: .top) {
+                            NumberedItemRow(index: index + 1, text: tip, color: stepColor)
+                            Spacer()
+                            HStack(spacing: 6) {
+                                CompactPlayButton(
+                                    text: tip,
+                                    playbackID: tipPlayId,
+                                    sourceLabel: "Tip",
+                                    accentColor: stepColor,
+                                    onPlay: { listenedAudioIds.insert(tipPlayId) }
+                                )
+                                TranslateButton(englishText: tip, accentColor: stepColor, showInline: false)
+                            }
                         }
+                        TranslationOverlay(englishText: tip, accentColor: stepColor)
                     }
                 }
             }
@@ -1526,7 +1547,7 @@ private struct SequenceGuidedView: View {
                             .font(.system(size: 56))
                             .foregroundStyle(accentColor)
 
-                        Text("Speaking Order 已掌握！")
+                        Text("Speaking Order mastered!")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
 
@@ -1780,7 +1801,7 @@ struct VocabularyStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "翻完所有卡片 \(viewed)/\(total)"
+            progressHint = String(localized: "Flip all cards \(viewed)/\(total)")
         }
     }
 
@@ -2230,20 +2251,22 @@ struct VocabDetailSheet: View {
                             .foregroundStyle(accentColor)
 
                         if !item.englishMeaning.isEmpty {
-                            Text(item.englishMeaning)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.secondText)
-
-                            HStack(spacing: 8) {
-                                InlineAudioPlayerControl(
-                                    text: item.englishMeaning,
-                                    playbackID: EnglishSpeechPlayer.playbackID(for: item.englishMeaning, category: "vocab-meaning"),
-                                    sourceLabel: "Vocab Meaning",
-                                    accentColor: accentColor,
-                                    style: .compact
-                                )
-                                TranslateButton(englishText: item.englishMeaning, accentColor: accentColor)
+                            HStack(alignment: .top) {
+                                Text(item.englishMeaning)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                Spacer()
+                                HStack(spacing: 6) {
+                                    CompactPlayButton(
+                                        text: item.englishMeaning,
+                                        playbackID: EnglishSpeechPlayer.playbackID(for: item.englishMeaning, category: "vocab-meaning"),
+                                        sourceLabel: "Vocab Meaning",
+                                        accentColor: accentColor
+                                    )
+                                    TranslateButton(englishText: item.englishMeaning, accentColor: accentColor, showInline: false)
+                                }
                             }
+                            TranslationOverlay(englishText: item.englishMeaning, accentColor: accentColor)
                         }
 
                         if let sourceBand = item.sourceBand {
@@ -2289,21 +2312,24 @@ struct VocabDetailSheet: View {
 
                     if !item.example.isEmpty || !item.exampleTranslation.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Example")
-                                .font(.subheadline.bold())
-                                .foregroundStyle(AppColors.primaryText)
+                            HStack {
+                                Text("Example")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(AppColors.primaryText)
+                                Spacer()
+                                if !item.example.isEmpty {
+                                    CompactPlayButton(
+                                        text: item.example,
+                                        playbackID: EnglishSpeechPlayer.playbackID(for: item.example, category: "vocab-example"),
+                                        sourceLabel: "Vocab Example",
+                                        accentColor: accentColor
+                                    )
+                                }
+                            }
                             if !item.example.isEmpty {
                                 Text(item.example)
                                     .font(.body)
                                     .foregroundStyle(AppColors.primaryText)
-
-                                InlineAudioPlayerControl(
-                                    text: item.example,
-                                    playbackID: EnglishSpeechPlayer.playbackID(for: item.example, category: "vocab-example"),
-                                    sourceLabel: "Vocab Example",
-                                    accentColor: accentColor,
-                                    style: .compact
-                                )
                             }
                             if !item.exampleTranslation.isEmpty {
                                 Text(item.exampleTranslation)
@@ -2462,7 +2488,7 @@ struct PhrasesStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "完成 Guide 学习"
+            progressHint = String(localized: "Complete the Guide")
         }
     }
 }
@@ -2559,27 +2585,29 @@ struct PhraseCard: View {
 
                     if exampleVisible {
                         if !phrase.example.isEmpty {
-                            Text(phrase.example)
-                                .font(.subheadline)
-                                .foregroundStyle(AppColors.secondText)
-                                .italic()
-                                .lineSpacing(4)
-                                .transition(.asymmetric(
-                                    insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
-                                    removal: .opacity
-                                ))
-
-                            HStack(spacing: 8) {
-                                InlineAudioPlayerControl(
-                                    text: phrase.example,
-                                    playbackID: EnglishSpeechPlayer.playbackID(for: phrase.example, category: "phrase-ex"),
-                                    sourceLabel: "Phrase Example",
-                                    accentColor: accentColor,
-                                    style: .compact
-                                )
-                                TranslateButton(englishText: phrase.example, accentColor: accentColor)
+                            HStack(alignment: .top) {
+                                Text(phrase.example)
+                                    .font(.subheadline)
+                                    .foregroundStyle(AppColors.secondText)
+                                    .italic()
+                                    .lineSpacing(4)
+                                Spacer()
+                                HStack(spacing: 6) {
+                                    CompactPlayButton(
+                                        text: phrase.example,
+                                        playbackID: EnglishSpeechPlayer.playbackID(for: phrase.example, category: "phrase-ex"),
+                                        sourceLabel: "Phrase Example",
+                                        accentColor: accentColor
+                                    )
+                                    TranslateButton(englishText: phrase.example, accentColor: accentColor, showInline: false)
+                                }
                             }
-                            .transition(.opacity)
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .scale(scale: 0.95, anchor: .top)),
+                                removal: .opacity
+                            ))
+                            TranslationOverlay(englishText: phrase.example, accentColor: accentColor)
+                                .transition(.opacity)
                         }
 
                         if let nativeNote = phrase.nativeNote {
@@ -3009,7 +3037,7 @@ struct FrameworkStepView: View {
     private func updateFrameworkProgress() {
         if lesson != nil {
             canComplete = frameworkGuideCompleted
-            progressHint = frameworkGuideCompleted ? nil : "完成 Guide 学习"
+            progressHint = frameworkGuideCompleted ? nil : String(localized: "Complete the Guide")
             return
         }
         if totalSentences == 0 {
@@ -3023,7 +3051,7 @@ struct FrameworkStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "听完标记项 \(listened)/\(totalSentences)"
+            progressHint = String(localized: "Listened \(listened)/\(totalSentences) items")
         }
     }
 
@@ -3090,18 +3118,18 @@ struct FrameworkStepView: View {
                                         .font(.subheadline.bold())
                                         .foregroundStyle(AppColors.primaryText)
                                         .fixedSize(horizontal: false, vertical: true)
+                                    Spacer()
+                                    HStack(spacing: 6) {
+                                        CompactPlayButton(
+                                            text: pair.upgraded,
+                                            playbackID: EnglishSpeechPlayer.playbackID(for: pair.upgraded, category: "fw-upgrade"),
+                                            sourceLabel: "Upgrade",
+                                            accentColor: Color(hex: "F59E0B")
+                                        )
+                                        TranslateButton(englishText: pair.upgraded, accentColor: Color(hex: "F59E0B"), showInline: false)
+                                    }
                                 }
-
-                                HStack(spacing: 8) {
-                                    InlineAudioPlayerControl(
-                                        text: pair.upgraded,
-                                        playbackID: EnglishSpeechPlayer.playbackID(for: pair.upgraded, category: "fw-upgrade"),
-                                        sourceLabel: "Upgrade",
-                                        accentColor: Color(hex: "F59E0B"),
-                                        style: .compact
-                                    )
-                                    TranslateButton(englishText: pair.upgraded, accentColor: Color(hex: "F59E0B"))
-                                }
+                                TranslationOverlay(englishText: pair.upgraded, accentColor: Color(hex: "F59E0B"))
                             }
                             .padding(10)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -3331,19 +3359,19 @@ struct FrameworkStepView: View {
                             .font(.subheadline)
                             .foregroundStyle(AppColors.primaryText)
                             .fixedSize(horizontal: false, vertical: true)
+                        Spacer()
+                        HStack(spacing: 6) {
+                            CompactPlayButton(
+                                text: marker,
+                                playbackID: EnglishSpeechPlayer.playbackID(for: marker, category: "fw-marker"),
+                                sourceLabel: "Delivery Marker",
+                                accentColor: Color(hex: "5B6EF5")
+                            )
+                            TranslateButton(englishText: marker, accentColor: Color(hex: "5B6EF5"), showInline: false)
+                        }
                     }
-
-                    HStack(spacing: 8) {
-                        InlineAudioPlayerControl(
-                            text: marker,
-                            playbackID: EnglishSpeechPlayer.playbackID(for: marker, category: "fw-marker"),
-                            sourceLabel: "Delivery Marker",
-                            accentColor: Color(hex: "5B6EF5"),
-                            style: .compact
-                        )
-                        TranslateButton(englishText: marker, accentColor: Color(hex: "5B6EF5"))
-                    }
-                    .padding(.leading, 21)
+                    TranslationOverlay(englishText: marker, accentColor: Color(hex: "5B6EF5"))
+                        .padding(.leading, 21)
                 }
             }
         }
@@ -4182,7 +4210,7 @@ struct SamplesStepView: View {
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "完成 Guide 学习"
+            progressHint = String(localized: "Complete the Guide")
         }
     }
 
@@ -4633,13 +4661,13 @@ struct PracticePromptView: View {
     let accentColor: Color
     @Binding var canComplete: Bool
     @Binding var progressHint: String?
+    @Environment(\.scrollProxy) private var scrollProxy
     private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
     @StateObject private var voiceRecorder: VoiceRecorderManager
     @State private var draftInput: String
-    @State private var translatedEnglish: String
-    @State private var polishedEnglish: String
+    @State private var translatedResults: [String]
     @State private var isProcessing = false
     @State private var errorMessage: String?
     @State private var appeared = false
@@ -4656,8 +4684,8 @@ struct PracticePromptView: View {
         let base = "practice_s\(stageId)_t\(task.id)"
         let defaults = UserDefaults.standard
         _draftInput = State(initialValue: defaults.string(forKey: "\(base)_draft") ?? "")
-        _translatedEnglish = State(initialValue: defaults.string(forKey: "\(base)_translated") ?? "")
-        _polishedEnglish = State(initialValue: defaults.string(forKey: "\(base)_polished") ?? "")
+        _translatedResults = State(initialValue: defaults.stringArray(forKey: "\(base)_results") ?? [])
+        VoiceRecorderManager.migrateIfNeeded(storageKey: base)
         _voiceRecorder = StateObject(wrappedValue: VoiceRecorderManager(storageKey: base))
     }
 
@@ -4702,6 +4730,12 @@ struct PracticePromptView: View {
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(practiceColor)
                     Spacer()
+                    CompactPlayButton(
+                        text: (checklistTexts + promptTexts).joined(separator: ". "),
+                        playbackID: EnglishSpeechPlayer.playbackID(for: "guide_\(task.id)", category: "guide"),
+                        sourceLabel: "Speaking Guide",
+                        accentColor: practiceColor
+                    )
                     BatchTranslateButton(texts: checklistTexts + promptTexts, accentColor: practiceColor)
                 }
                 .staggerIn(index: 2, appeared: appeared)
@@ -4761,15 +4795,17 @@ struct PracticePromptView: View {
 
             // ── Text input card (AI help) ──
             inputCard
+                .id("inputCard")
                 .staggerIn(index: 5, appeared: appeared)
 
-            if !translatedEnglish.isEmpty {
+            ForEach(Array(translatedResults.enumerated()), id: \.offset) { index, text in
                 resultCard(
-                    title: "English Result",
-                    text: translatedEnglish,
-                    tint: practiceColor
+                    title: "English Result \(translatedResults.count > 1 ? "#\(index + 1)" : "")",
+                    text: text,
+                    tint: practiceColor,
+                    index: index
                 )
-                .staggerIn(index: 6, appeared: appeared)
+                .staggerIn(index: 6 + index, appeared: appeared)
             }
 
             if let errorMessage {
@@ -4786,11 +4822,21 @@ struct PracticePromptView: View {
         .onChange(of: draftInput) { _, newValue in
             save(newValue, key: "\(baseKey)_draft")
         }
-        .onChange(of: translatedEnglish) { _, newValue in
-            save(newValue, key: "\(baseKey)_translated")
+        .onChange(of: translatedResults) { _, newValue in
+            UserDefaults.standard.set(newValue, forKey: "\(baseKey)_results")
+            updatePracticeProgress()
         }
-        .onChange(of: polishedEnglish) { _, newValue in
-            save(newValue, key: "\(baseKey)_polished")
+        .onTapGesture {
+            isInputFocused = false
+        }
+        .onChange(of: isInputFocused) { _, focused in
+            if focused {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        scrollProxy?.scrollTo("inputCard", anchor: .center)
+                    }
+                }
+            }
         }
         .onDisappear {
             voiceRecorder.stopAll()
@@ -4799,25 +4845,18 @@ struct PracticePromptView: View {
             appeared = true
             updatePracticeProgress()
         }
-        .onChange(of: translatedEnglish) { _, _ in
-            updatePracticeProgress()
-        }
-        .onChange(of: listenedResultAudio) { _, _ in
-            updatePracticeProgress()
-        }
         .onChange(of: voiceRecorder.hasRecording) { _, _ in
             updatePracticeProgress()
         }
     }
 
     private func updatePracticeProgress() {
-        let hasTranslation = !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        if hasTranslation || voiceRecorder.hasRecording {
+        if voiceRecorder.hasRecording {
             canComplete = true
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "录音练习或输入文字获取AI帮助"
+            progressHint = String(localized: "Record at least one voice clip to complete")
         }
     }
 
@@ -4857,8 +4896,6 @@ struct PracticePromptView: View {
                 .foregroundStyle(AppColors.primaryText)
                 .italic()
                 .lineSpacing(4)
-
-            TranslateButton(englishText: task.prompt, accentColor: practiceColor)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -4888,34 +4925,79 @@ struct PracticePromptView: View {
                 Image(systemName: "mic.fill")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(practiceColor)
-                Text("录音练习")
+                Text("Recording Practice")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(practiceColor)
                 Spacer()
-                Text("大声说出来，录完回听")
+                Text("Speak out loud, then listen back")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(AppColors.tertiaryText)
             }
 
-            // Record / Stop button
-            HStack(spacing: 12) {
-                Button {
-                    Task { await voiceRecorder.toggleRecording() }
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: voiceRecorder.state == .recording ? "stop.circle.fill" : "mic.circle.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text(voiceRecorder.state == .recording ? "停止录音" : "开始录音")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+            // Existing recordings list
+            ForEach(Array(voiceRecorder.recordings.enumerated()), id: \.element.id) { index, entry in
+                let isPlaying: Bool = {
+                    if case .playing(let i) = voiceRecorder.state { return i == index }
+                    return false
+                }()
+
+                HStack(spacing: 12) {
+                    Button {
+                        voiceRecorder.togglePlayback(at: index)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 11, weight: .semibold))
+                            Text("Recording \(index + 1)")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                            Spacer()
+                            Text(formatDuration(entry.duration))
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundStyle(AppColors.tertiaryText)
+                        }
+                        .foregroundStyle(isPlaying ? .white : practiceColor)
+                        .padding(.horizontal, 14)
+                        .frame(height: 38)
+                        .background(isPlaying ? practiceColor : practiceColor.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(voiceRecorder.state == .recording ? Color(hex: "DC2626") : practiceColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .buttonStyle(.plain)
+
+                    Button {
+                        voiceRecorder.deleteRecording(at: index)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppColors.tertiaryText)
+                            .frame(width: 34, height: 34)
+                            .background(AppColors.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .stroke(AppColors.border, lineWidth: 0.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+
+            // Record button
+            Button {
+                Task { await voiceRecorder.toggleRecording() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: voiceRecorder.state == .recording ? "stop.circle.fill" : "mic.circle.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text(voiceRecorder.state == .recording ? String(localized: "Stop Recording") : String(localized: "Start Recording"))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(voiceRecorder.state == .recording ? Color(hex: "DC2626") : practiceColor)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(.plain)
 
             // Recording indicator
             if voiceRecorder.state == .recording {
@@ -4923,7 +5005,7 @@ struct PracticePromptView: View {
                     Circle()
                         .fill(Color(hex: "DC2626"))
                         .frame(width: 6, height: 6)
-                        .opacity(voiceRecorder.state == .recording ? 1 : 0.3)
+                        .opacity(1)
                         .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: voiceRecorder.state)
                     Text(formatDuration(voiceRecorder.recordingDuration))
                         .font(.system(size: 13, weight: .bold, design: .monospaced))
@@ -4934,44 +5016,6 @@ struct PracticePromptView: View {
                 .padding(.vertical, 6)
                 .background(Color(hex: "DC2626").opacity(0.08))
                 .clipShape(Capsule())
-            }
-
-            // Playback controls (shown after recording)
-            if voiceRecorder.hasRecording && voiceRecorder.state != .recording {
-                HStack(spacing: 12) {
-                    Button {
-                        voiceRecorder.togglePlayback()
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: voiceRecorder.state == .playing ? "pause.fill" : "play.fill")
-                                .font(.system(size: 12, weight: .semibold))
-                            Text(voiceRecorder.state == .playing ? "暂停" : "回听录音")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                        }
-                        .foregroundStyle(practiceColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(practiceColor.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        voiceRecorder.deleteRecording()
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(AppColors.tertiaryText)
-                            .frame(width: 38, height: 38)
-                            .background(AppColors.surface)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(AppColors.border, lineWidth: 0.5)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
             }
 
             if let recError = voiceRecorder.lastError {
@@ -5002,13 +5046,13 @@ struct PracticePromptView: View {
                 Image(systemName: "sparkles")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(practiceColor)
-                Text("AI 帮你说")
+                Text("AI Speaks for You")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(practiceColor)
                 Spacer()
             }
 
-            Text("输入你想表达的内容（任何语言），AI帮你润色成地道口语英文")
+            Text("Enter what you want to say (any language), AI polishes it into natural spoken English")
                 .font(.system(size: 11))
                 .foregroundStyle(AppColors.tertiaryText)
 
@@ -5029,7 +5073,7 @@ struct PracticePromptView: View {
                 )
                 .overlay(alignment: .topLeading) {
                     if draftInput.isEmpty {
-                        Text("写你想说的话，任何语言都可以...")
+                        Text("Write what you want to say, any language...")
                             .font(.subheadline)
                             .foregroundStyle(AppColors.tertiaryText)
                             .padding(.horizontal, 16)
@@ -5050,7 +5094,7 @@ struct PracticePromptView: View {
                         Image(systemName: "sparkles")
                             .font(.system(size: 15, weight: .semibold))
                     }
-                    Text("AI 润色成英文")
+                    Text("AI Polish to English")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(.white)
@@ -5076,7 +5120,7 @@ struct PracticePromptView: View {
 
     private var actionArea: some View { EmptyView() }
 
-    private func resultCard(title: String, text: String, tint: Color) -> some View {
+    private func resultCard(title: String, text: String, tint: Color, index: Int) -> some View {
         let resultPlaybackId = EnglishSpeechPlayer.playbackID(for: text, category: "practice")
         return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
@@ -5094,6 +5138,18 @@ struct PracticePromptView: View {
                     accentColor: tint,
                     onPlay: { listenedResultAudio = true }
                 )
+                TranslateButton(englishText: text, accentColor: tint, showInline: false)
+                Button {
+                    translatedResults.remove(at: index)
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(AppColors.tertiaryText)
+                        .frame(width: 22, height: 22)
+                        .background(AppColors.surface)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
             }
 
             // Polished English text
@@ -5104,8 +5160,7 @@ struct PracticePromptView: View {
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // Native translation auto-shown below
-            TranslationOverlay(englishText: text, accentColor: tint, autoTranslate: true)
+            TranslationOverlay(englishText: text, accentColor: tint)
         }
         .padding(14)
         .overlay(
@@ -5129,12 +5184,13 @@ struct PracticePromptView: View {
                     text: source,
                     topic: task.prompt
                 )
-                translatedEnglish = polished
-                polishedEnglish = ""
+                translatedResults.append(polished)
+                draftInput = ""
                 isProcessing = false
             } catch {
                 isProcessing = false
                 errorMessage = error.localizedDescription
+                ToastManager.shared.show(String(localized: "AI processing failed, please check your network and try again"), style: .error)
             }
         }
     }

@@ -70,7 +70,7 @@ struct PracticeView: View {
     // MARK: - Input Section
     private var inputSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("用中文说出你的想法")
+            Text("Express your thoughts in Chinese")
                 .font(.subheadline.bold())
                 .foregroundStyle(AppColors.primaryText)
 
@@ -88,7 +88,7 @@ struct PracticeView: View {
                     )
 
                 if chineseInput.isEmpty {
-                    Text("在这里输入你的中文回答...")
+                    Text("Type your Chinese answer here...")
                         .font(.subheadline)
                         .foregroundStyle(AppColors.tertiaryText)
                         .padding(.horizontal, 16)

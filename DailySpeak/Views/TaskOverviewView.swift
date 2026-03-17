@@ -674,7 +674,7 @@ struct TaskOverviewView: View {
                         skipToReady()
                         markAnimationSeen()
                     } label: {
-                        Text("跳过")
+                        Text("Skip")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .foregroundStyle(AppColors.tertiaryText)
                     }

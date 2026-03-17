@@ -1,0 +1,2614 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "·" : {
+
+    },
+    "/month" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/月"
+          }
+        }
+      }
+    },
+    "/week" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/周"
+          }
+        }
+      }
+    },
+    "/year" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "/年"
+          }
+        }
+      }
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %lld words" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$lld words"
+          }
+        }
+      }
+    },
+    "%@ · Tasks" : {
+
+    },
+    "%@ / %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%@ is unlocked. Start practicing!" : {
+
+    },
+    "%@ Sample Complete!" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "%lld Key Points" : {
+
+    },
+    "%lld Phrases" : {
+
+    },
+    "%lld Review Items" : {
+
+    },
+    "%lld tasks" : {
+
+    },
+    "%lld unread messages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还有 %lld 条未读消息"
+          }
+        }
+      }
+    },
+    "%lld words" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "%lld/%lld completed" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld completed"
+          }
+        }
+      }
+    },
+    "%lld+ premium courses to systematically improve your speaking" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld+ 节精品课程，系统提升你的口语表达"
+          }
+        }
+      }
+    },
+    "🎉" : {
+
+    },
+    "9 stages · %lld tasks to fluency" : {
+
+    },
+    "About %@/month, save 55%%" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 ¥%@/月，节省 55%%"
+          }
+        }
+      }
+    },
+    "Abstract Topics & Values" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "抽象话题与价值判断"
+          }
+        }
+      }
+    },
+    "Account" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "账号"
+          }
+        }
+      }
+    },
+    "Add personal experiences to make your answer vivid" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入个人经历让回答更生动"
+          }
+        }
+      }
+    },
+    "After" : {
+
+    },
+    "AI large model translation, more natural" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 大模型翻译，更自然"
+          }
+        }
+      }
+    },
+    "AI Polish to English" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 润色成英文"
+          }
+        }
+      }
+    },
+    "AI processing failed, please check your network and try again" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 处理失败，请检查网络后重试"
+          }
+        }
+      }
+    },
+    "AI pronunciation guidance and personalized practice" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 发音指导与个性化练习"
+          }
+        }
+      }
+    },
+    "AI Speaks for You" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 帮你说"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部"
+          }
+        }
+      }
+    },
+    "All Done" : {
+
+    },
+    "All Key Points Learned!" : {
+
+    },
+    "All Phrases Learned!" : {
+
+    },
+    "All premium content is unlocked" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你已解锁所有高级内容"
+          }
+        }
+      }
+    },
+    "All premium content unlocked" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已解锁全部高级内容"
+          }
+        }
+      }
+    },
+    "All Tasks Completed!" : {
+
+    },
+    "An unknown error occurred." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发生未知错误。"
+          }
+        }
+      }
+    },
+    "and" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "和"
+          }
+        }
+      }
+    },
+    "Answer Strategy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "答题策略"
+          }
+        }
+      }
+    },
+    "Apple Sign In capability not configured properly." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 登录能力未正确配置。"
+          }
+        }
+      }
+    },
+    "Apple Sign In failed, please try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 登录失败，请稍后再试。"
+          }
+        }
+      }
+    },
+    "Apple Sign In returned invalid data, please try again." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple 登录返回无效，请重试。"
+          }
+        }
+      }
+    },
+    "As low as %@/week" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "低至 %@/周"
+          }
+        }
+      }
+    },
+    "Auto (DeepL)" : {
+
+    },
+    "Back" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一步"
+          }
+        }
+      }
+    },
+    "Back to Tasks" : {
+
+    },
+    "Band %lld Structure" : {
+
+    },
+    "Basic Description" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基础描述"
+          }
+        }
+      }
+    },
+    "Before" : {
+
+    },
+    "Better" : {
+
+    },
+    "BETTER" : {
+
+    },
+    "By continuing, you agree to DailySpeak's terms" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续即表示你同意 DailySpeak 的相关协议"
+          }
+        }
+      }
+    },
+    "By continuing, you agree to the terms" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续即表示你同意相关协议"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+
+    },
+    "Cancel anytime · Auto-renew" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可随时取消 · 自动续费"
+          }
+        }
+      }
+    },
+    "Choose how to get started" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择进入方式"
+          }
+        }
+      }
+    },
+    "Clear all completed tasks and steps" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除所有已完成的任务和步骤"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        }
+      }
+    },
+    "Collapse" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起"
+          }
+        }
+      }
+    },
+    "Complete Registration" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成注册"
+          }
+        }
+      }
+    },
+    "Complete Step %lld to unlock" : {
+
+    },
+    "Complete the Guide" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成 Guide 学习"
+          }
+        }
+      }
+    },
+    "Complete the Guide %lld/2" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成 Guide 学习 %lld/2"
+          }
+        }
+      }
+    },
+    "Complete today's speaking practice in 10 minutes." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 10 分钟完成今天的一次口语练习。"
+          }
+        }
+      }
+    },
+    "Completed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成"
+          }
+        }
+      }
+    },
+    "Completing registration" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提交中"
+          }
+        }
+      }
+    },
+    "Content Distribution" : {
+
+    },
+    "Content Pitfall" : {
+
+    },
+    "Content Pitfalls" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Continue as Guest" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续以游客身份使用"
+          }
+        }
+      }
+    },
+    "Continue to the next section" : {
+
+    },
+    "Continue to the next step" : {
+
+    },
+    "Continue today's practice and keep the streak going." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续今天的一次练习，把连续学习保持下去。"
+          }
+        }
+      }
+    },
+    "Cross-device learning progress sync" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跨设备同步学习进度"
+          }
+        }
+      }
+    },
+    "Current" : {
+
+    },
+    "Current Account" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前账号"
+          }
+        }
+      }
+    },
+    "Current Identity" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前身份"
+          }
+        }
+      }
+    },
+    "CURRENT VOICE" : {
+
+    },
+    "Daily reminder" : {
+
+    },
+    "DailySpeak" : {
+
+    },
+    "DailySpeak only requests notification permission when you turn reminders on." : {
+
+    },
+    "DailySpeak PRO" : {
+
+    },
+    "DailySpeak Reminder" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DailySpeak 提醒"
+          }
+        }
+      }
+    },
+    "DeepL" : {
+
+    },
+    "DeepSeek AI" : {
+
+    },
+    "Default: DeepL machine translation" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认使用 DeepL 机器翻译"
+          }
+        }
+      }
+    },
+    "Definition" : {
+
+    },
+    "Delivery Markers" : {
+
+    },
+    "Don't break the streak today" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "别让 streak 断在今天"
+          }
+        }
+      }
+    },
+    "Done" : {
+
+    },
+    "Edit" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改"
+          }
+        }
+      }
+    },
+    "Email" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "邮箱"
+          }
+        }
+      }
+    },
+    "Email Sign In / Register" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "邮箱登录 / 注册"
+          }
+        }
+      }
+    },
+    "Enable notification permission in Settings to receive DailySpeak reminders." : {
+
+    },
+    "English Translation" : {
+
+    },
+    "Enter email" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入邮箱"
+          }
+        }
+      }
+    },
+    "Enter password" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入密码"
+          }
+        }
+      }
+    },
+    "Enter verification code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入验证码"
+          }
+        }
+      }
+    },
+    "Enter what you want to say (any language), AI polishes it into natural spoken English" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入你想表达的内容（任何语言），AI帮你润色成地道口语英文"
+          }
+        }
+      }
+    },
+    "Enter your email to sign in or register" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入邮箱开始登录或注册"
+          }
+        }
+      }
+    },
+    "Events & Early Reflection" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "事件叙述与初级认知"
+          }
+        }
+      }
+    },
+    "Example" : {
+
+    },
+    "Express your thoughts in Chinese" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用中文说出你的想法"
+          }
+        }
+      }
+    },
+    "Expression Framework" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表达框架"
+          }
+        }
+      }
+    },
+    "Expression Upgrades" : {
+
+    },
+    "Failed to start recording: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动录音失败：%@"
+          }
+        }
+      }
+    },
+    "Feedback" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "意见反馈"
+          }
+        }
+      }
+    },
+    "Flip all cards %1$lld/%2$lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻完所有卡片 %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Flip all cards %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Flip all cards %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Focus on appearance, function, and usage scenarios" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "围绕外观、功能、使用场景展开"
+          }
+        }
+      }
+    },
+    "Framework Goal" : {
+
+    },
+    "Framework Mastered!" : {
+
+    },
+    "Get PRO" : {
+
+    },
+    "Getting Started" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新手引导"
+          }
+        }
+      }
+    },
+    "Give at least 1 specific story" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "至少给出1个具体小故事"
+          }
+        }
+      }
+    },
+    "Go to Step %lld" : {
+
+    },
+    "Got it" : {
+
+    },
+    "Great job!" : {
+
+    },
+    "Guest Mode" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "游客模式"
+          }
+        }
+      }
+    },
+    "Guided Practice" : {
+
+    },
+    "Help us improve DailySpeak" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帮助我们改进 DailySpeak"
+          }
+        }
+      }
+    },
+    "High Score Tip" : {
+
+    },
+    "High Score Tips" : {
+
+    },
+    "High-quality machine translation" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高质量机器翻译"
+          }
+        }
+      }
+    },
+    "Identify your subject — choose something you truly know" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先确定描述对象，选择你真正熟悉的"
+          }
+        }
+      }
+    },
+    "Improved" : {
+
+    },
+    "IMPROVED" : {
+
+    },
+    "Incomplete" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未完成"
+          }
+        }
+      }
+    },
+    "Invalid API endpoint." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接口地址无效。"
+          }
+        }
+      }
+    },
+    "Key Focus" : {
+
+    },
+    "Key Vocabulary" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "词汇与词组"
+          }
+        }
+      }
+    },
+    "Language Fix" : {
+
+    },
+    "Learning Flow" : {
+
+    },
+    "Learning Overview" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学习概览"
+          }
+        }
+      }
+    },
+    "lessons" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "节课程"
+          }
+        }
+      }
+    },
+    "Listened %1$lld/%2$lld items" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听完标记项 %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Listened %lld/%lld items" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Listened %1$lld/%2$lld items"
+          }
+        }
+      }
+    },
+    "Loading course data" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加载课程数据"
+          }
+        }
+      }
+    },
+    "Loading..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加载中…"
+          }
+        }
+      }
+    },
+    "Locked" : {
+
+    },
+    "Login" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录"
+          }
+        }
+      }
+    },
+    "Mark All Read" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全部已读"
+          }
+        }
+      }
+    },
+    "Mark as Complete" : {
+
+    },
+    "Messages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消息通知"
+          }
+        }
+      }
+    },
+    "Microphone permission not enabled. Please allow it in Settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦克风权限未开启，请在系统设置中允许。"
+          }
+        }
+      }
+    },
+    "Monthly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月订阅"
+          }
+        }
+      }
+    },
+    "Network error, unable to connect to Apple Sign In service." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络异常，暂时无法连接 Apple 登录服务。"
+          }
+        }
+      }
+    },
+    "Network request failed (%1$lld): %2$@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络请求失败（%1$lld）：%2$@"
+          }
+        }
+      }
+    },
+    "Network request failed (%lld): %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Network request failed (%1$lld): %2$@"
+          }
+        }
+      }
+    },
+    "Network request failed (%lld)." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络请求失败（%lld）。"
+          }
+        }
+      }
+    },
+    "Next" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一步"
+          }
+        }
+      }
+    },
+    "No content for current filter" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前筛选没有内容"
+          }
+        }
+      }
+    },
+    "No email app is available for feedback." : {
+
+    },
+    "No messages yet" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有消息"
+          }
+        }
+      }
+    },
+    "No more than 3 long pauses" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "长停顿不超过3次"
+          }
+        }
+      }
+    },
+    "No unread messages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前没有未读消息"
+          }
+        }
+      }
+    },
+    "No vocabulary items" : {
+
+    },
+    "Notification Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知设置"
+          }
+        }
+      }
+    },
+    "Notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "消息通知"
+          }
+        }
+      }
+    },
+    "Notifications Disabled" : {
+
+    },
+    "OK" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好的"
+          }
+        }
+      }
+    },
+    "One-time purchase, lifetime access" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次购买，永久使用"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+
+    },
+    "Operation Failed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作失败"
+          }
+        }
+      }
+    },
+    "Opinions & Comparisons" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "观点、比较与不确定性"
+          }
+        }
+      }
+    },
+    "Or use email" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "或者使用邮箱"
+          }
+        }
+      }
+    },
+    "Original" : {
+
+    },
+    "ORIGINAL" : {
+
+    },
+    "Other" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他"
+          }
+        }
+      }
+    },
+    "Permission" : {
+
+    },
+    "Personal Center" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "个人中心"
+          }
+        }
+      }
+    },
+    "Play" : {
+
+    },
+    "Playback failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放失败：%@"
+          }
+        }
+      }
+    },
+    "Please try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请稍后重试。"
+          }
+        }
+      }
+    },
+    "Practice consistently to improve your speaking skills" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持续练习，提升口语表达能力"
+          }
+        }
+      }
+    },
+    "Practice Topic" : {
+
+    },
+    "Preferences" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偏好设置"
+          }
+        }
+      }
+    },
+    "Preparation complete" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备完成"
+          }
+        }
+      }
+    },
+    "Prepare 1 min; Answer 1-2 min" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备1分钟；作答1-2分钟"
+          }
+        }
+      }
+    },
+    "Preparing content..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备学习内容..."
+          }
+        }
+      }
+    },
+    "Preparing learning voice" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备学习语音"
+          }
+        }
+      }
+    },
+    "Preparing voice %1$lld/%2$lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备语音 %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Preparing voice %lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Preparing voice %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "Preparing voice 0/%lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备语音 0/%lld"
+          }
+        }
+      }
+    },
+    "Preparing voice content" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "准备语音内容"
+          }
+        }
+      }
+    },
+    "Preparing..." : {
+
+    },
+    "Preview" : {
+
+    },
+    "Privacy Policy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
+          }
+        }
+      }
+    },
+    "PRO" : {
+
+    },
+    "PRO Activated" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PRO 已激活"
+          }
+        }
+      }
+    },
+    "Process, Problems & Judgment" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "过程、问题与判断"
+          }
+        }
+      }
+    },
+    "Pronunciation" : {
+
+    },
+    "Pull to refresh and resync messages." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下拉刷新后会重新同步消息。"
+          }
+        }
+      }
+    },
+    "Purchase failed, please try again later" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买失败，请稍后重试"
+          }
+        }
+      }
+    },
+    "Purchase failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买失败：%@"
+          }
+        }
+      }
+    },
+    "Purchase is pending approval" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买正在等待审批"
+          }
+        }
+      }
+    },
+    "Purpose: Build basic description skills\nGoal: Clearly describe people, objects, and places in 90 seconds." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：建立基础描述能力\n目标：90秒清晰说人、物、地。"
+          }
+        }
+      }
+    },
+    "Purpose: Cover real-life communication scenarios\nGoal: Make requests, refuse, and negotiate with tact." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：覆盖真实服务沟通场景\n目标：提出需求、拒绝和协商时保持分寸。"
+          }
+        }
+      }
+    },
+    "Purpose: Enter opinion and comparison topics\nGoal: Express views with flexibility, avoiding extremes." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：进入观点题与比较题\n目标：表达立场时保留弹性，不走极端。"
+          }
+        }
+      }
+    },
+    "Purpose: Enter workplace context and responsibility\nGoal: Report, explain, and handle disagreements steadily." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：进入工作语境和责任表达\n目标：汇报、解释和分歧沟通都更稳。"
+          }
+        }
+      }
+    },
+    "Purpose: Explain processes and decision-making\nGoal: Clearly describe steps, trade-offs, and judgment logic." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：解释做事过程与决策依据\n目标：说清步骤、取舍和判断逻辑。"
+          }
+        }
+      }
+    },
+    "Purpose: Integrate experience and values into coherent expression\nGoal: Reflect on change and discuss future uncertainty." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：把经验和价值整合成闭环表达\n目标：回顾变化，也能谈未来的不确定性。"
+          }
+        }
+      }
+    },
+    "Purpose: Practice authentic but measured interpersonal expression\nGoal: Support, refuse, apologize, and express concern naturally." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：练真实但克制的人际表达\n目标：支持、拒绝、道歉和担忧都说得自然。"
+          }
+        }
+      }
+    },
+    "Purpose: Train event narration and initial reflection\nGoal: Tell what happened and why it matters." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：训练事件讲述与初步反思\n目标：把发生了什么、为什么重要说完整。"
+          }
+        }
+      }
+    },
+    "Purpose: Transition to abstract value discussions\nGoal: Discuss ideas without being vague." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作用：过渡到抽象价值讨论\n目标：能谈理念，但不空泛。"
+          }
+        }
+      }
+    },
+    "Push notifications, inbox messages and local alerts will appear here." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API 推送、inbox 拉取和本地通知都会汇总在这里。"
+          }
+        }
+      }
+    },
+    "Rate on App Store" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 App Store 上评价"
+          }
+        }
+      }
+    },
+    "Rate Us" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "给个好评"
+          }
+        }
+      }
+    },
+    "Re-translate" : {
+
+    },
+    "Read" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已读"
+          }
+        }
+      }
+    },
+    "Read the translation aloud and compare with sample answers." : {
+
+    },
+    "Ready to speak!" : {
+
+    },
+    "Real-life Communication" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现实情境与沟通策略"
+          }
+        }
+      }
+    },
+    "Recent Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近更新"
+          }
+        }
+      }
+    },
+    "Recommended" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "推荐"
+          }
+        }
+      }
+    },
+    "Record at least one voice clip to complete" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录制至少一条语音即可完成"
+          }
+        }
+      }
+    },
+    "Recording %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录音 %lld"
+          }
+        }
+      }
+    },
+    "Recording Practice" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录音练习"
+          }
+        }
+      }
+    },
+    "Reflection & Self-Positioning" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "反思、整合与自我定位"
+          }
+        }
+      }
+    },
+    "Register" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注册"
+          }
+        }
+      }
+    },
+    "Relationships & Emotions" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "人际关系与情感沟通"
+          }
+        }
+      }
+    },
+    "Reminder time" : {
+
+    },
+    "Reminder tone" : {
+
+    },
+    "Reminders" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒"
+          }
+        }
+      }
+    },
+    "Reminders and notifications" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提醒和通知"
+          }
+        }
+      }
+    },
+    "Resend" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重发"
+          }
+        }
+      }
+    },
+    "Reset" : {
+
+    },
+    "Reset Learning Progress" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重置学习进度"
+          }
+        }
+      }
+    },
+    "Reset local progress?" : {
+
+    },
+    "Restore Purchases" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "Review Again" : {
+
+    },
+    "Review the usage tutorial" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新查看使用教程"
+          }
+        }
+      }
+    },
+    "Sample Answers" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "范文学习"
+          }
+        }
+      }
+    },
+    "Save 10 minutes for today's English" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留 10 分钟给今天的英语"
+          }
+        }
+      }
+    },
+    "Score Check" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高分检查"
+          }
+        }
+      }
+    },
+    "Score Check Complete!" : {
+
+    },
+    "Sending" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送中"
+          }
+        }
+      }
+    },
+    "Server error, please try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器处理失败，请稍后再试。"
+          }
+        }
+      }
+    },
+    "Set password" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置密码"
+          }
+        }
+      }
+    },
+    "Settings" : {
+
+    },
+    "Sign In" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录"
+          }
+        }
+      }
+    },
+    "Sign In Failed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录失败"
+          }
+        }
+      }
+    },
+    "Sign in to DailySpeak" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录 DailySpeak"
+          }
+        }
+      }
+    },
+    "Sign in to sync progress, receive notifications, and unlock more features." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录后可同步学习进度、接收消息通知和解锁更多功能。"
+          }
+        }
+      }
+    },
+    "Sign Out" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出登录"
+          }
+        }
+      }
+    },
+    "Sign Up" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注册"
+          }
+        }
+      }
+    },
+    "Signing in..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录中"
+          }
+        }
+      }
+    },
+    "Signing out will clear your login state" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出后将清除登录状态"
+          }
+        }
+      }
+    },
+    "Skip" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过"
+          }
+        }
+      }
+    },
+    "Skip for now" : {
+
+    },
+    "Skip, continue" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过，继续进入"
+          }
+        }
+      }
+    },
+    "Smart review to strengthen weak areas" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能复习，针对薄弱环节强化"
+          }
+        }
+      }
+    },
+    "Speak continuously for 90 seconds without notes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无稿连续说满90秒"
+          }
+        }
+      }
+    },
+    "Speak every day. Sound more natural." : {
+
+    },
+    "Speak out loud, then listen back" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大声说出来，录完回听"
+          }
+        }
+      }
+    },
+    "Speaking Guide" : {
+
+    },
+    "Speaking Order" : {
+
+    },
+    "Speaking Order mastered!" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speaking Order 已掌握！"
+          }
+        }
+      }
+    },
+    "Speaking Practice" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "口语练习"
+          }
+        }
+      }
+    },
+    "Speaking Structure" : {
+
+    },
+    "Speech recognition failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音识别失败：%@"
+          }
+        }
+      }
+    },
+    "Stage %1$lld · %2$lld lessons" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stage %1$lld · %2$lld 节课程"
+          }
+        }
+      }
+    },
+    "Stage %lld" : {
+
+    },
+    "STAGE %lld" : {
+
+    },
+    "Stage %lld · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stage %1$lld · %2$@"
+          }
+        }
+      }
+    },
+    "Stage %lld · %lld lessons" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stage %1$lld · %2$lld lessons"
+          }
+        }
+      }
+    },
+    "Stages Completed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成阶段"
+          }
+        }
+      }
+    },
+    "Start" : {
+
+    },
+    "Start a short practice now, tomorrow will be much easier." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现在开始一小段练习，明天会轻松很多。"
+          }
+        }
+      }
+    },
+    "Start as a guest, or sign in with Apple or email." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你可以先游客进入，也可以直接绑定 Apple 或邮箱账号。"
+          }
+        }
+      }
+    },
+    "Start DailySpeak" : {
+
+    },
+    "Start Recording" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始录音"
+          }
+        }
+      }
+    },
+    "Stop Recording" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止录音"
+          }
+        }
+      }
+    },
+    "Subscribe All" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅全部"
+          }
+        }
+      }
+    },
+    "Subscribe Now" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即订阅"
+          }
+        }
+      }
+    },
+    "Subscribe PRO to unlock all stages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订阅 PRO 解锁全部阶段"
+          }
+        }
+      }
+    },
+    "Suggested Order" : {
+
+    },
+    "Support" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持"
+          }
+        }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统"
+          }
+        }
+      }
+    },
+    "tap to flip" : {
+
+    },
+    "Tap to play with waveform and scrubbing" : {
+
+    },
+    "Tap to see example" : {
+
+    },
+    "Tap to unlock" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击解锁"
+          }
+        }
+      }
+    },
+    "Task %lld" : {
+
+    },
+    "Tasks Completed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成任务"
+          }
+        }
+      }
+    },
+    "Terms of Service" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用户协议"
+          }
+        }
+      }
+    },
+    "Terms of Use" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用条款"
+          }
+        }
+      }
+    },
+    "This clears completed task and step state stored on this device." : {
+
+    },
+    "This device cannot complete Apple Sign In at this time." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前设备暂时无法完成 Apple 登录。"
+          }
+        }
+      }
+    },
+    "This device does not support speech recognition" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前设备不支持语音识别"
+          }
+        }
+      }
+    },
+    "Tone" : {
+
+    },
+    "TOPIC" : {
+
+    },
+    "Total Stages" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总阶段"
+          }
+        }
+      }
+    },
+    "Translate" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译"
+          }
+        }
+      }
+    },
+    "Translate to English" : {
+
+    },
+    "Translation Engine" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译引擎"
+          }
+        }
+      }
+    },
+    "Translation failed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译失败"
+          }
+        }
+      }
+    },
+    "Translation failed, please check your network and try again" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译失败，请检查网络后重试"
+          }
+        }
+      }
+    },
+    "Try other bands or continue to the next step" : {
+
+    },
+    "Type your Chinese answer here..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在这里输入你的中文回答..."
+          }
+        }
+      }
+    },
+    "Unable to open mail" : {
+
+    },
+    "Unable to parse server response." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器返回无法解析。"
+          }
+        }
+      }
+    },
+    "Unlock %@" : {
+
+    },
+    "Unlock all %1$lld stages and %2$lld+ speaking courses" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁全部 %1$lld 个阶段和 %2$lld+ 口语课程"
+          }
+        }
+      }
+    },
+    "Unlock all %lld stages and %lld+ speaking courses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unlock all %1$lld stages and %2$lld+ speaking courses"
+          }
+        }
+      }
+    },
+    "Unlock all 9 stages of speaking courses" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁全部 9 个阶段的口语课程"
+          }
+        }
+      }
+    },
+    "Unlock Individually" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "单独解锁"
+          }
+        }
+      }
+    },
+    "Unlock Your Complete Speaking Journey" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁完整口语之旅"
+          }
+        }
+      }
+    },
+    "Unlocked!" : {
+
+    },
+    "Unread" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未读"
+          }
+        }
+      }
+    },
+    "Upgrade to DailySpeak PRO" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "升级到 DailySpeak PRO"
+          }
+        }
+      }
+    },
+    "Use at least 6 keywords" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "至少使用6个关键词"
+          }
+        }
+      }
+    },
+    "Use chronological or logical order to organize" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用时间顺序或逻辑顺序组织语言"
+          }
+        }
+      }
+    },
+    "Useful Phrases" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实用词组"
+          }
+        }
+      }
+    },
+    "Verification code" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证码"
+          }
+        }
+      }
+    },
+    "Verification code sending failed, please try again later." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证码发送失败，请稍后重试。"
+          }
+        }
+      }
+    },
+    "Verification code sent to %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "验证码已发送到 %@"
+          }
+        }
+      }
+    },
+    "View all" : {
+
+    },
+    "View all %lld tasks" : {
+
+    },
+    "Voice download failed (%lld items)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音下载失败（%lld个）"
+          }
+        }
+      }
+    },
+    "Voice permission not enabled. Please allow microphone and speech recognition in Settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音权限未开启，请在系统设置中允许麦克风和语音识别。"
+          }
+        }
+      }
+    },
+    "Voice ready" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音就绪"
+          }
+        }
+      }
+    },
+    "Voice Selection" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音选择"
+          }
+        }
+      }
+    },
+    "Weekly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "周订阅"
+          }
+        }
+      }
+    },
+    "Welcome back" : {
+
+    },
+    "Why it hurts" : {
+
+    },
+    "Why it hurts  " : {
+
+    },
+    "Word Details" : {
+
+    },
+    "Workplace Responsibility" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "职场表达与责任意识"
+          }
+        }
+      }
+    },
+    "Write what you want to say, any language..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写你想说的话，任何语言都可以..."
+          }
+        }
+      }
+    },
+    "Wrong" : {
+
+    },
+    "WRONG" : {
+
+    },
+    "Yearly" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年订阅"
+          }
+        }
+      }
+    },
+    "You cancelled Apple Sign In." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你已取消 Apple 登录。"
+          }
+        }
+      }
+    },
+    "You've completed this practice session." : {
+
+    },
+    "You've finished all %lld speaking tasks. Amazing work!" : {
+
+    },
+    "Your Journey" : {
+
+    }
+  },
+  "version" : "1.0"
+}

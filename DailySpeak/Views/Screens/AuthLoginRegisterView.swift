@@ -11,10 +11,8 @@ struct AuthLoginRegisterView: View {
 
         var title: String {
             switch self {
-            case .login:
-                return "登录"
-            case .register:
-                return "注册"
+            case .login: return String(localized: "Login")
+            case .register: return String(localized: "Register")
             }
         }
     }
@@ -87,15 +85,15 @@ struct AuthLoginRegisterView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
-        .alert("操作失败", isPresented: Binding(
+        .alert("Operation Failed", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
-            Button("好的", role: .cancel) {
+            Button("OK", role: .cancel) {
                 errorMessage = nil
             }
         } message: {
-            Text(errorMessage ?? "请稍后重试。")
+            Text(errorMessage ?? String(localized: "Please try again later."))
         }
         .onAppear {
             appState.resetAppleSignInProgress()
@@ -112,11 +110,11 @@ struct AuthLoginRegisterView: View {
                     .font(.system(size: 44, weight: .semibold))
                     .foregroundColor(.textPrimary)
 
-                Text("登录 DailySpeak")
+                Text("Sign in to DailySpeak")
                     .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.textPrimary)
 
-                Text("输入邮箱开始登录或注册")
+                Text("Enter your email to sign in or register")
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
@@ -134,7 +132,7 @@ struct AuthLoginRegisterView: View {
                     Rectangle()
                         .fill(Color.textMuted.opacity(0.35))
                         .frame(height: 1)
-                    Text("或者使用邮箱")
+                    Text("Or use email")
                         .font(.caption)
                         .foregroundColor(.textMuted)
                     Rectangle()
@@ -149,7 +147,7 @@ struct AuthLoginRegisterView: View {
                 }
                 .pickerStyle(.segmented)
 
-                TextField("输入邮箱", text: $email)
+                TextField("Enter email", text: $email)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
@@ -161,7 +159,7 @@ struct AuthLoginRegisterView: View {
                     )
 
                 Button(action: handleEmailContinue) {
-                    Text("下一步")
+                    Text("Next")
                         .font(.headline)
                         .foregroundColor(isEmailValid ? .textPrimary : .textMuted)
                         .frame(maxWidth: .infinity)
@@ -186,11 +184,11 @@ struct AuthLoginRegisterView: View {
                     .font(.system(size: 44, weight: .semibold))
                     .foregroundColor(.textPrimary)
 
-                Text("输入验证码")
+                Text("Enter verification code")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.textPrimary)
 
-                Text("验证码已发送到 \(trimmedEmail)")
+                Text("Verification code sent to \(trimmedEmail)")
                     .font(.subheadline)
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
@@ -199,7 +197,7 @@ struct AuthLoginRegisterView: View {
 
             VStack(spacing: 12) {
                 HStack(spacing: 10) {
-                    TextField("验证码", text: $verificationCode)
+                    TextField("Verification code", text: $verificationCode)
                         .keyboardType(.numberPad)
                         .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
@@ -211,7 +209,7 @@ struct AuthLoginRegisterView: View {
                         )
 
                     Button(action: sendRegisterCode) {
-                        Text(codeCooldownRemaining > 0 ? "\(codeCooldownRemaining)s" : (isSendingCode ? "发送中" : "重发"))
+                        Text(codeCooldownRemaining > 0 ? "\(codeCooldownRemaining)s" : (isSendingCode ? String(localized: "Sending") : String(localized: "Resend")))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.primaryCyan)
                             .frame(width: 86, height: 50)
@@ -222,7 +220,7 @@ struct AuthLoginRegisterView: View {
 
                 Button(action: handleVerifyContinue) {
                     let canVerify = !trimmedVerificationCode.isEmpty && !isSubmitting
-                    Text(isSubmitting ? "提交中" : "完成注册")
+                    Text(isSubmitting ? String(localized: "Completing registration") : String(localized: "Complete Registration"))
                         .font(.headline)
                         .foregroundColor(canVerify ? .textPrimary : .textMuted)
                         .frame(maxWidth: .infinity)
@@ -236,7 +234,7 @@ struct AuthLoginRegisterView: View {
                 .disabled(trimmedVerificationCode.isEmpty || isSubmitting)
 
                 Button(action: goBack) {
-                    Text("上一步")
+                    Text("Back")
                         .font(.subheadline)
                         .foregroundColor(.textSecondary)
                 }
@@ -259,7 +257,7 @@ struct AuthLoginRegisterView: View {
                     .font(.system(size: 44, weight: .semibold))
                     .foregroundColor(.textPrimary)
 
-                Text(mode == .login ? "输入密码" : "设置密码")
+                Text(mode == .login ? String(localized: "Enter password") : String(localized: "Set password"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.textPrimary)
             }
@@ -267,7 +265,7 @@ struct AuthLoginRegisterView: View {
 
             VStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("邮箱")
+                    Text("Email")
                         .font(.caption)
                         .foregroundColor(.textSecondary)
 
@@ -278,7 +276,7 @@ struct AuthLoginRegisterView: View {
 
                         Spacer()
 
-                        Button("修改") {
+                        Button("Edit") {
                             goBackToEmail()
                         }
                         .font(.subheadline.weight(.semibold))
@@ -293,7 +291,7 @@ struct AuthLoginRegisterView: View {
                     )
                 }
 
-                SecureField("输入密码", text: $password)
+                SecureField("Enter password", text: $password)
                     .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
                     .padding(.horizontal, 14)
@@ -319,7 +317,7 @@ struct AuthLoginRegisterView: View {
                 .disabled(trimmedPassword.isEmpty || isSubmitting)
 
                 Button(action: goBack) {
-                    Text("上一步")
+                    Text("Back")
                         .font(.subheadline)
                         .foregroundColor(.textSecondary)
                 }
@@ -394,7 +392,7 @@ struct AuthLoginRegisterView: View {
                 }
                 dismiss()
             } catch let APIError.api(_, message) {
-                errorMessage = message ?? "请稍后重试。"
+                errorMessage = message ?? String(localized: "Please try again later.")
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -414,9 +412,9 @@ struct AuthLoginRegisterView: View {
 
     private var passwordButtonTitle: String {
         if mode == .login && isSubmitting {
-            return "登录中"
+            return String(localized: "Signing in...")
         }
-        return "下一步"
+        return String(localized: "Next")
     }
 
     private func sendRegisterCode() {
@@ -436,7 +434,7 @@ struct AuthLoginRegisterView: View {
             } catch let APIError.api(_, message) {
                 isSendingCode = false
                 codeSendUntil = nil
-                errorMessage = message ?? "验证码发送失败，请稍后重试。"
+                errorMessage = message ?? String(localized: "Verification code sending failed, please try again later.")
             } catch {
                 isSendingCode = false
                 codeSendUntil = nil
@@ -449,18 +447,18 @@ struct AuthLoginRegisterView: View {
         Group {
             if let privacyURL = URL(string: Constants.privacyPolicyURL),
                let termsURL = URL(string: Constants.termsOfServiceURL) {
-                Text("继续即表示你同意 DailySpeak 的相关协议")
+                Text("By continuing, you agree to DailySpeak's terms")
                     .font(.caption)
                     .foregroundColor(.textMuted)
                 HStack(spacing: 6) {
-                    Link("隐私政策", destination: privacyURL)
-                    Text("和")
-                    Link("服务条款", destination: termsURL)
+                    Link("Privacy Policy", destination: privacyURL)
+                    Text("and")
+                    Link("Terms of Service", destination: termsURL)
                 }
                 .font(.caption.weight(.semibold))
                 .foregroundColor(.textMuted)
             } else {
-                Text("继续即表示你同意相关协议")
+                Text("By continuing, you agree to the terms")
                     .font(.caption)
                     .foregroundColor(.textMuted)
             }
