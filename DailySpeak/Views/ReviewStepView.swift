@@ -33,18 +33,15 @@ struct ReviewStepView: View {
             if lesson != nil {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "高分检查",
-                    subtitle: "骨架搭好后，再查内容力度和语言自然度。",
-                    englishTitle: "Score Check",
-                    englishSubtitle: "After structuring, check content depth and naturalness.",
+                    title: "Score Check",
+                    subtitle: "After structuring, check content depth and naturalness.",
                     accentColor: reviewColor
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "checklist",
-                    title: "高分检查",
-                    english: "Score Check",
+                    title: "Score Check",
                     subtitle: "Quick check on content and language accuracy",
                     accentColor: reviewColor,
                     secondaryColor: Color(hex: "FB923C")

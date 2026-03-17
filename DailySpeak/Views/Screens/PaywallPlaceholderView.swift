@@ -159,7 +159,7 @@ struct PaywallPlaceholderView: View {
 
             VStack(spacing: 10) {
                 if let stage = targetStage {
-                    Text("解锁「\(stage.chineseTitle)」")
+                    Text("Unlock \(stage.title)")
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(AppColors.primaryText)
                         .multilineTextAlignment(.center)
@@ -293,7 +293,7 @@ struct PaywallPlaceholderView: View {
                 // Stage purchase button
                 if let product = subscription.stageProduct(for: stageId) {
                     purchaseButton(
-                        title: "解锁 \(stage.chineseTitle)  \(product.displayPrice)",
+                        title: "Unlock \(stage.title)  \(product.displayPrice)",
                         product: product
                     )
                     .padding(.horizontal, 24)
@@ -564,11 +564,11 @@ struct PaywallPlaceholderView: View {
             .transition(.scale(scale: 0.3).combined(with: .opacity))
 
             VStack(spacing: 10) {
-                Text("解锁成功!")
+                Text("Unlocked!")
                     .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundStyle(AppColors.primaryText)
 
-                Text("「\(stage.chineseTitle)」已解锁，开始练习吧")
+                Text("\(stage.title) is unlocked. Start practicing!")
                     .font(.subheadline)
                     .foregroundStyle(AppColors.secondText)
                     .multilineTextAlignment(.center)

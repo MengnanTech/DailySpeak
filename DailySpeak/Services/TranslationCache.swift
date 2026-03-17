@@ -17,7 +17,7 @@ final class TranslationCache {
         if let cached = translations[key] { return cached }
         loadingKeys.insert(key)
         defer { loadingKeys.remove(key) }
-        let result = try await DailySpeakAPIService.shared.translateToChinese(englishText: key)
+        let result = try await DailySpeakAPIService.shared.translateToNative(englishText: key)
         translations[key] = result
         return result
     }

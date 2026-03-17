@@ -25,6 +25,7 @@ struct NotificationsView: View {
     @State private var filter: InboxFilter = .all
     @State private var selectedItem: NotificationItem?
     @State private var pendingRefreshTask: Task<Void, Never>?
+    @State private var isDetailSheetDismissing = false
 
     private var filteredItems: [NotificationItem] {
         switch filter {
@@ -142,8 +143,11 @@ struct NotificationsView: View {
                 } label: {
                     Image(systemName: "xmark")
                         .font(.subheadline.weight(.semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
                 .foregroundStyle(Color.textPrimary)
+                .disabled(isDetailSheetDismissing)
                 .accessibilityLabel(Text("关闭"))
             }
         }
@@ -158,7 +162,12 @@ struct NotificationsView: View {
             pendingRefreshTask?.cancel()
             pendingRefreshTask = nil
         }
-        .sheet(item: $selectedItem) { item in
+        .sheet(item: $selectedItem, onDismiss: {
+            isDetailSheetDismissing = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                isDetailSheetDismissing = false
+            }
+        }) { item in
             NotificationDetailSheet(item: item)
         }
     }

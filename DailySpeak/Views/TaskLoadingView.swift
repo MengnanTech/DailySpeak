@@ -149,16 +149,6 @@ struct TaskLoadingView: View {
         }
         .background(AppColors.background.ignoresSafeArea())
         .navigationBarBackButtonHidden(loadFailed ? false : true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button { } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(AppColors.tertiaryText)
-                }
-                .opacity(loadFailed ? 1 : 0)
-            }
-        }
         .task {
             await runLoading()
         }
@@ -218,10 +208,19 @@ struct TaskLoadingView: View {
         }
 
         // Step overviews
+        var stepTexts: [String] = []
         for step in task.steps {
             let text = step.title + ". " + step.subtitle
             let id = EnglishSpeechPlayer.playbackID(for: text, category: "step-overview")
             priorityItems.append((id: id, text: text))
+            stepTexts.append(text)
+        }
+
+        // Combined flow-all (play all steps together)
+        if !stepTexts.isEmpty {
+            let allText = stepTexts.joined(separator: ". ")
+            let allId = EnglishSpeechPlayer.playbackID(for: allText, category: "flow-all")
+            priorityItems.append((id: allId, text: allText))
         }
 
         if !priorityItems.isEmpty {

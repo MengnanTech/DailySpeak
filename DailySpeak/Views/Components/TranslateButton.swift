@@ -80,11 +80,14 @@ struct TranslateButton: View {
 }
 
 /// Shows translation text below original content. Pair with TranslateButton(showInline: false).
+/// Set `autoTranslate: true` to trigger translation immediately on appear.
 struct TranslationOverlay: View {
     let englishText: String
     var accentColor: Color = .blue
+    var autoTranslate: Bool = false
 
     @State private var cache = TranslationCache.shared
+    @State private var autoFailed = false
 
     private var key: String { englishText.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var isVisible: Bool { cache.visibleKeys.contains(key) }
@@ -102,6 +105,23 @@ struct TranslationOverlay: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .transition(.opacity.combined(with: .move(edge: .top)))
                 .animation(.spring(response: 0.3, dampingFraction: 0.85), value: isVisible)
+        } else if autoTranslate && !isVisible && !autoFailed {
+            ProgressView()
+                .controlSize(.small)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 6)
+                .task(id: key) {
+                    guard !key.isEmpty, cache.cached(key) == nil else {
+                        if cache.cached(key) != nil { cache.visibleKeys.insert(key) }
+                        return
+                    }
+                    do {
+                        _ = try await cache.translate(key)
+                        cache.visibleKeys.insert(key)
+                    } catch {
+                        autoFailed = true
+                    }
+                }
         }
     }
 }

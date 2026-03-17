@@ -10,6 +10,7 @@ struct AppSettingsView: View {
     @State private var showFeedbackFallbackAlert = false
     @State private var showOnboarding = false
     @State private var showPaywall = false
+    @AppStorage(DailySpeakAPIService.translationProviderKey) private var translationProvider = "auto"
 
     var body: some View {
         ZStack {
@@ -106,6 +107,10 @@ struct AppSettingsView: View {
                     )
                 }
                 .buttonStyle(.plain)
+
+                Divider().background(AppColors.border).padding(.leading, 64)
+
+                translationProviderRow
 
                 Divider().background(AppColors.border).padding(.leading, 64)
 
@@ -232,6 +237,63 @@ struct AppSettingsView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    // MARK: - Translation Provider
+    private var translationProviderRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "globe")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(Color(hex: "0EA5E9"))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Translation Engine")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppColors.primaryText)
+                Text(translationProviderLabel)
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+
+            Spacer()
+
+            Menu {
+                Button { translationProvider = "auto" } label: {
+                    Label("Auto (DeepL)", systemImage: translationProvider == "auto" ? "checkmark" : "")
+                }
+                Button { translationProvider = "deepl" } label: {
+                    Label("DeepL", systemImage: translationProvider == "deepl" ? "checkmark" : "")
+                }
+                Button { translationProvider = "deepseek" } label: {
+                    Label("DeepSeek AI", systemImage: translationProvider == "deepseek" ? "checkmark" : "")
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Text(translationProviderLabel)
+                        .font(.system(size: 13, weight: .medium))
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(Color(hex: "0EA5E9"))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(hex: "0EA5E9").opacity(0.1))
+                .clipShape(Capsule())
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    private var translationProviderLabel: String {
+        switch translationProvider {
+        case "deepl": "DeepL"
+        case "deepseek": "DeepSeek AI"
+        default: "Auto"
         }
     }
 

@@ -28,7 +28,7 @@ struct TaskGridView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(stage.chineseTitle)
+                Text(stage.title)
                     .font(.headline)
                     .foregroundStyle(AppColors.primaryText)
             }
@@ -68,7 +68,7 @@ struct TaskGridView: View {
                         .foregroundStyle(.white.opacity(0.7))
                         .tracking(1)
 
-                    Text(stage.chineseTitle)
+                    Text(stage.title)
                         .font(.title3.bold())
                         .foregroundStyle(.white)
 

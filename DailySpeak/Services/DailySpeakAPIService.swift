@@ -6,6 +6,10 @@ private struct TranslateTextResponseDTO: Decodable {
     let provider: String?
 }
 
+private struct PolishSpokenEnglishResponseDTO: Decodable {
+    let polishedText: String
+}
+
 private struct EnglishTTSResponseDTO: Decodable {
     let id: String?
     let audioUrl: String
@@ -30,15 +34,43 @@ final class DailySpeakAPIService {
 
     private init() {}
 
-    func translateToEnglish(nativeText: String, topic _: String) async throws -> String {
+    /// Device language as BCP-47 tag (e.g. "zh-Hans", "ja", "ko", "en-US").
+    /// Strips country code but keeps script subtag: "zh-Hans-CN" → "zh-Hans", "ja-JP" → "ja".
+    /// Backend is responsible for mapping this to provider-specific codes (DeepL/Google/etc).
+    static var deviceLanguage: String {
+        let tag = Locale.preferredLanguages.first ?? "zh-Hans"
+        let parts = tag.components(separatedBy: "-")
+        // Keep language + script (e.g. "zh-Hans"), drop country (e.g. "CN")
+        // Script subtags are exactly 4 chars (Hans, Hant, Latn, Cyrl...)
+        if parts.count >= 2, parts[1].count == 4 {
+            return "\(parts[0])-\(parts[1])"
+        }
+        return parts[0]
+    }
+
+    /// 用户选择的翻译渠道 key
+    static let translationProviderKey = "dailyspeak.translation.provider"
+
+    /// 读取用户选择的翻译渠道，nil 表示用后端默认
+    static var preferredProvider: String? {
+        let val = UserDefaults.standard.string(forKey: translationProviderKey)
+        return (val == nil || val == "auto") ? nil : val
+    }
+
+    /// 统一翻译接口。sourceLang 不传，后端自动检测。
+    /// - provider: 翻译渠道，nil 则读用户偏好，偏好也没有则由后端决定
+    func translate(text: String, targetLang: String, provider: String? = nil) async throws -> String {
+        let resolvedProvider = provider ?? Self.preferredProvider
+        var body: [String: Any] = [
+            "text": text,
+            "targetLang": targetLang,
+        ]
+        if let resolvedProvider { body["provider"] = resolvedProvider }
+
         let response: APIEnvelope<TranslateTextResponseDTO> = try await APIClient.shared.request(
             "translate/text",
             method: "POST",
-            body: [
-                "text": nativeText,
-                "sourceLang": "zh",
-                "targetLang": "en"
-            ],
+            body: body,
             requiresAuth: true
         )
         guard response.code == 200, let data = response.data else {
@@ -51,29 +83,37 @@ final class DailySpeakAPIService {
         return text
     }
 
-    func translateToChinese(englishText: String) async throws -> String {
-        let response: APIEnvelope<TranslateTextResponseDTO> = try await APIClient.shared.request(
-            "translate/text",
+    /// 任意语言 → 英文
+    func translateToEnglish(nativeText: String, topic _: String, provider: String? = nil) async throws -> String {
+        try await translate(text: nativeText, targetLang: "en-US", provider: provider)
+    }
+
+    /// 英文 → 用户设备母语
+    func translateToNative(englishText: String, provider: String? = nil) async throws -> String {
+        try await translate(text: englishText, targetLang: Self.deviceLanguage, provider: provider)
+    }
+
+    /// DeepSeek LLM 润色：任意语言输入 → 地道口语英文
+    /// 后端接口：POST polish/spoken-english (走 DeepSeek，不走翻译引擎)
+    func polishToSpokenEnglish(text: String, topic: String) async throws -> String {
+        let response: APIEnvelope<PolishSpokenEnglishResponseDTO> = try await APIClient.shared.request(
+            "polish/spoken-english",
             method: "POST",
             body: [
-                "text": englishText,
-                "sourceLang": "en",
-                "targetLang": "zh"
+                "text": text,
+                "topic": topic,
+                "deviceLang": Self.deviceLanguage,
             ],
             requiresAuth: true
         )
         guard response.code == 200, let data = response.data else {
             throw APIError.api(response.code, response.msg)
         }
-        let text = data.translatedText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else {
+        let result = data.polishedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !result.isEmpty else {
             throw APIError.decoding
         }
-        return text
-    }
-
-    func polishToSpokenEnglish(englishText _: String, topic _: String) async throws -> String {
-        throw APIError.transport("后端当前没有 DailySpeak polish 接口，客户端已停止调用该能力。")
+        return result
     }
 
     /// Batch resolve audio URLs for multiple items in one request.

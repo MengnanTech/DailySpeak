@@ -11,6 +11,7 @@ struct LearningFlowView: View {
     @State private var stepTransitionDirection: Edge = .trailing
     @State private var stepCanComplete = false
     @State private var stepProgressHint: String?
+    @State private var isKeyboardVisible = false
 
     private var theme: StageTheme { stage.theme }
     private var steps: [LearningStep] { task.steps }
@@ -33,9 +34,17 @@ struct LearningFlowView: View {
         VStack(spacing: 0) {
             stepIndicator
             stepContent
-            bottomBar
+            if !isKeyboardVisible {
+                bottomBar
+            }
         }
         .background(AppColors.background.ignoresSafeArea())
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.2)) { isKeyboardVisible = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.2)) { isKeyboardVisible = false }
+        }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
@@ -160,6 +169,7 @@ struct LearningFlowView: View {
                                 .padding(.top, 4)
                                 .padding(.bottom, 100)
                         }
+                        .scrollDismissesKeyboard(.interactively)
                     } else {
                         lockedStepOverlay(step: steps[index], index: index)
                     }
@@ -345,7 +355,6 @@ struct LearningFlowView: View {
 struct StepHeroHeader: View {
     let icon: String
     let title: String
-    let english: String
     let subtitle: String
     let accentColor: Color
     var secondaryColor: Color? = nil
@@ -395,10 +404,6 @@ struct StepHeroHeader: View {
             HStack {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(title)
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
-
-                    Text(english)
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 1)
@@ -425,7 +430,7 @@ struct StepHeroHeader: View {
                     CompactPlayButton(
                         text: subtitle,
                         playbackID: EnglishSpeechPlayer.playbackID(for: subtitle, category: "step-header"),
-                        sourceLabel: english,
+                        sourceLabel: title,
                         accentColor: .white,
                         onPlay: {}
                     )
@@ -454,8 +459,6 @@ struct LessonStepHeader: View {
     let label: String
     let title: String
     let subtitle: String
-    let englishTitle: String
-    let englishSubtitle: String
     let accentColor: Color
 
     var body: some View {
@@ -474,29 +477,25 @@ struct LessonStepHeader: View {
 
                 HStack(spacing: 6) {
                     CompactPlayButton(
-                        text: englishSubtitle,
-                        playbackID: EnglishSpeechPlayer.playbackID(for: englishSubtitle, category: "lesson-header"),
-                        sourceLabel: englishTitle,
+                        text: subtitle,
+                        playbackID: EnglishSpeechPlayer.playbackID(for: subtitle, category: "lesson-header"),
+                        sourceLabel: title,
                         accentColor: accentColor
                     )
-                    TranslateButton(englishText: englishSubtitle, accentColor: accentColor, showInline: false)
+                    TranslateButton(englishText: subtitle, accentColor: accentColor, showInline: false)
                 }
             }
 
-            Text(englishTitle)
+            Text(title)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(AppColors.primaryText)
 
-            Text(englishSubtitle)
+            Text(subtitle)
                 .font(.subheadline)
                 .foregroundStyle(AppColors.secondText)
                 .fixedSize(horizontal: false, vertical: true)
 
-            TranslationOverlay(englishText: englishSubtitle, accentColor: accentColor)
-
-            Text(title)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(AppColors.tertiaryText)
+            TranslationOverlay(englishText: subtitle, accentColor: accentColor)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
@@ -625,8 +624,7 @@ struct StrategyStepView: View {
             } else {
                 StepHeroHeader(
                     icon: "lightbulb.max.fill",
-                    title: "答题策略",
-                    english: "Strategy & Tips",
+                    title: "Strategy & Tips",
                     subtitle: "Learn to organize answers and master response flow",
                     accentColor: Color(hex: "F59E0B"),
                     secondaryColor: Color(hex: "F97316")
@@ -1713,18 +1711,15 @@ struct VocabularyStepView: View {
             if hasLessonContent {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "词汇与词组",
-                    subtitle: "先抓核心词汇，再学实用词组和升级表达。",
-                    englishTitle: "Key Vocabulary",
-                    englishSubtitle: "Master core words first, then learn phrases and upgrades.",
+                    title: "Key Vocabulary",
+                    subtitle: "Master core words first, then learn phrases and upgrades.",
                     accentColor: Color(hex: "4A90D9")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "character.book.closed.fill",
-                    title: "词汇与词组",
-                    english: "Vocabulary & Phrases",
+                    title: "Vocabulary & Phrases",
                     subtitle: "Master \(coreItems.count) core words · \(task.phrases.count) phrases",
                     accentColor: Color(hex: "4A90D9"),
                     secondaryColor: Color(hex: "7AB4E8")
@@ -2398,18 +2393,15 @@ struct PhrasesStepView: View {
             if hasLessonContent {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "实用词组",
-                    subtitle: "用短语拉开自然度，避免一句一句直译。",
-                    englishTitle: "Useful Phrases",
-                    englishSubtitle: "Use phrases for naturalness, avoid word-by-word translation.",
+                    title: "Useful Phrases",
+                    subtitle: "Use phrases for naturalness, avoid word-by-word translation.",
                     accentColor: phraseColor
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "quote.bubble.fill",
-                    title: "实用词组",
-                    english: "Useful Phrases",
+                    title: "Useful Phrases",
                     subtitle: "Master \(task.phrases.count) native phrases for natural speech",
                     accentColor: phraseColor,
                     secondaryColor: Color(hex: "34D399")
@@ -2961,18 +2953,15 @@ struct FrameworkStepView: View {
             if lesson != nil {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "表达框架",
-                    subtitle: "先看总结构，再补连接表达和升级表达。",
-                    englishTitle: "Expression Framework",
-                    englishSubtitle: "See the structure first, then add connectors and upgrades.",
+                    title: "Expression Framework",
+                    subtitle: "See the structure first, then add connectors and upgrades.",
                     accentColor: Color(hex: "8B5CF6")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "rectangle.3.group.fill",
-                    title: "表达框架",
-                    english: "Expression Framework",
+                    title: "Expression Framework",
                     subtitle: "Master templates for structured expression",
                     accentColor: Color(hex: "8B5CF6"),
                     secondaryColor: Color(hex: "A78BFA")
@@ -3896,18 +3885,15 @@ struct SamplesStepView: View {
             if hasLessonContent {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "范文学习",
-                    subtitle: "用 Band 6 / 7 / 8 对照看内容深度和表达差异。",
-                    englishTitle: "Sample Answers",
-                    englishSubtitle: "Compare Band 6/7/8 for depth and expression differences.",
+                    title: "Sample Answers",
+                    subtitle: "Compare Band 6/7/8 for depth and expression differences.",
                     accentColor: Color(hex: "EC4899")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "doc.richtext.fill",
-                    title: "范文学习",
-                    english: "Sample Answers",
+                    title: "Sample Answers",
                     subtitle: "Three-level model answers for comparison",
                     accentColor: Color(hex: "EC4899"),
                     secondaryColor: Color(hex: "F472B6")
@@ -4650,8 +4636,7 @@ struct PracticePromptView: View {
     private let labels = ["Opening", "Source", "Usage", "Example", "Closing"]
     private var lesson: LessonContent? { task.lessonContent }
 
-    @StateObject private var speechInput = SpeechInputManager()
-    @State private var languageMode: PracticeLanguageMode = .native
+    @StateObject private var voiceRecorder: VoiceRecorderManager
     @State private var draftInput: String
     @State private var translatedEnglish: String
     @State private var polishedEnglish: String
@@ -4668,11 +4653,12 @@ struct PracticePromptView: View {
         self._canComplete = canComplete
         self._progressHint = progressHint
 
-        let defaults = UserDefaults.standard
         let base = "practice_s\(stageId)_t\(task.id)"
+        let defaults = UserDefaults.standard
         _draftInput = State(initialValue: defaults.string(forKey: "\(base)_draft") ?? "")
         _translatedEnglish = State(initialValue: defaults.string(forKey: "\(base)_translated") ?? "")
         _polishedEnglish = State(initialValue: defaults.string(forKey: "\(base)_polished") ?? "")
+        _voiceRecorder = StateObject(wrappedValue: VoiceRecorderManager(storageKey: base))
     }
 
     private var baseKey: String {
@@ -4684,18 +4670,15 @@ struct PracticePromptView: View {
             if lesson != nil {
                 LessonStepHeader(
                     label: task.lessonContent?.topic.stageLabel ?? "Structured Lesson",
-                    title: "口语练习",
-                    subtitle: "按提示把内容真正说出来，不要只停留在阅读。",
-                    englishTitle: "Speaking Practice",
-                    englishSubtitle: "Speak the content out loud — don't just read.",
+                    title: "Speaking Practice",
+                    subtitle: "Speak the content out loud — don't just read.",
                     accentColor: Color(hex: "EF4444")
                 )
                 .staggerIn(index: 0, appeared: appeared)
             } else {
                 StepHeroHeader(
                     icon: "mic.fill",
-                    title: "口语练习",
-                    english: "Speaking Practice",
+                    title: "Speaking Practice",
                     subtitle: "Real practice — speak English out loud",
                     accentColor: Color(hex: "EF4444"),
                     secondaryColor: Color(hex: "F97316")
@@ -4772,8 +4755,13 @@ struct PracticePromptView: View {
                 .staggerIn(index: 3, appeared: appeared)
             }
 
-            inputCard
+            // ── Voice recorder card (self-practice) ──
+            voiceRecorderCard
                 .staggerIn(index: 4, appeared: appeared)
+
+            // ── Text input card (AI help) ──
+            inputCard
+                .staggerIn(index: 5, appeared: appeared)
 
             if !translatedEnglish.isEmpty {
                 resultCard(
@@ -4781,7 +4769,7 @@ struct PracticePromptView: View {
                     text: translatedEnglish,
                     tint: practiceColor
                 )
-                .staggerIn(index: 5, appeared: appeared)
+                .staggerIn(index: 6, appeared: appeared)
             }
 
             if let errorMessage {
@@ -4804,13 +4792,8 @@ struct PracticePromptView: View {
         .onChange(of: polishedEnglish) { _, newValue in
             save(newValue, key: "\(baseKey)_polished")
         }
-        .onChange(of: speechInput.transcript) { _, transcript in
-            guard !transcript.isEmpty else { return }
-            draftInput = transcript
-            save(transcript, key: "\(baseKey)_voice")
-        }
         .onDisappear {
-            speechInput.stopRecording()
+            voiceRecorder.stopAll()
         }
         .onAppear {
             appeared = true
@@ -4822,16 +4805,19 @@ struct PracticePromptView: View {
         .onChange(of: listenedResultAudio) { _, _ in
             updatePracticeProgress()
         }
+        .onChange(of: voiceRecorder.hasRecording) { _, _ in
+            updatePracticeProgress()
+        }
     }
 
     private func updatePracticeProgress() {
         let hasTranslation = !translatedEnglish.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        if hasTranslation {
+        if hasTranslation || voiceRecorder.hasRecording {
             canComplete = true
             progressHint = nil
         } else {
             canComplete = false
-            progressHint = "Submit your response to continue"
+            progressHint = "录音练习或输入文字获取AI帮助"
         }
     }
 
@@ -4894,80 +4880,142 @@ struct PracticePromptView: View {
         .shadow(color: practiceColor.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 
-    private var inputCard: some View {
+    // MARK: - Voice Recorder Card (self-practice, no AI)
+
+    private var voiceRecorderCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            // Header row: title + language toggle + mic button
             HStack(spacing: 8) {
-                Image(systemName: "pencil.line")
+                Image(systemName: "mic.fill")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(practiceColor)
-                Text("Your Response")
+                Text("录音练习")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(practiceColor)
                 Spacer()
+                Text("大声说出来，录完回听")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
 
-                // Compact language toggle
-                HStack(spacing: 0) {
-                    ForEach(PracticeLanguageMode.allCases) { mode in
-                        let isSelected = mode == languageMode
-                        Button {
-                            withAnimation(.spring(duration: 0.24)) { languageMode = mode }
-                        } label: {
-                            Text(mode == .native ? "中文" : "EN")
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .foregroundStyle(isSelected ? .white : AppColors.tertiaryText)
-                                .frame(width: 36, height: 24)
-                                .background(isSelected ? practiceColor : Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(2)
-                .background(AppColors.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .stroke(AppColors.border, lineWidth: 0.5)
-                )
-
-                // Mic button
+            // Record / Stop button
+            HStack(spacing: 12) {
                 Button {
-                    Task { await speechInput.toggleRecording() }
+                    Task { await voiceRecorder.toggleRecording() }
                 } label: {
-                    Image(systemName: speechInput.isRecording ? "stop.circle.fill" : "mic.fill")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(speechInput.isRecording ? Color(hex: "DC2626") : practiceColor)
-                        .frame(width: 28, height: 28)
-                        .background(
-                            speechInput.isRecording
-                                ? Color(hex: "DC2626").opacity(0.12)
-                                : practiceColor.opacity(0.1)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    HStack(spacing: 8) {
+                        Image(systemName: voiceRecorder.state == .recording ? "stop.circle.fill" : "mic.circle.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text(voiceRecorder.state == .recording ? "停止录音" : "开始录音")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(voiceRecorder.state == .recording ? Color(hex: "DC2626") : practiceColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
 
-            if speechInput.isRecording {
+            // Recording indicator
+            if voiceRecorder.state == .recording {
                 HStack(spacing: 6) {
                     Circle()
                         .fill(Color(hex: "DC2626"))
                         .frame(width: 6, height: 6)
-                    Text("Listening...")
-                        .font(.caption.bold())
+                        .opacity(voiceRecorder.state == .recording ? 1 : 0.3)
+                        .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: voiceRecorder.state)
+                    Text(formatDuration(voiceRecorder.recordingDuration))
+                        .font(.system(size: 13, weight: .bold, design: .monospaced))
                         .foregroundStyle(Color(hex: "DC2626"))
+                    Spacer()
                 }
                 .padding(.horizontal, 10)
-                .padding(.vertical, 5)
+                .padding(.vertical, 6)
                 .background(Color(hex: "DC2626").opacity(0.08))
                 .clipShape(Capsule())
             }
 
+            // Playback controls (shown after recording)
+            if voiceRecorder.hasRecording && voiceRecorder.state != .recording {
+                HStack(spacing: 12) {
+                    Button {
+                        voiceRecorder.togglePlayback()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: voiceRecorder.state == .playing ? "pause.fill" : "play.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                            Text(voiceRecorder.state == .playing ? "暂停" : "回听录音")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(practiceColor)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 38)
+                        .background(practiceColor.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        voiceRecorder.deleteRecording()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(AppColors.tertiaryText)
+                            .frame(width: 38, height: 38)
+                            .background(AppColors.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(AppColors.border, lineWidth: 0.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if let recError = voiceRecorder.lastError {
+                Text(recError)
+                    .font(.caption)
+                    .foregroundStyle(Color(hex: "DC2626"))
+            }
+        }
+        .padding(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(style: StrokeStyle(lineWidth: 1.2, dash: [8, 5]))
+                .foregroundStyle(practiceColor.opacity(0.3))
+        )
+    }
+
+    private func formatDuration(_ seconds: TimeInterval) -> String {
+        let mins = Int(seconds) / 60
+        let secs = Int(seconds) % 60
+        return String(format: "%d:%02d", mins, secs)
+    }
+
+    // MARK: - Text Input Card (AI help)
+
+    private var inputCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(practiceColor)
+                Text("AI 帮你说")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(practiceColor)
+                Spacer()
+            }
+
+            Text("输入你想表达的内容（任何语言），AI帮你润色成地道口语英文")
+                .font(.system(size: 11))
+                .foregroundStyle(AppColors.tertiaryText)
+
             // Text editor
             TextEditor(text: $draftInput)
                 .focused($isInputFocused)
-                .frame(minHeight: 110)
+                .frame(minHeight: 90)
                 .scrollContentBackground(.hidden)
                 .padding(12)
                 .background(AppColors.surface)
@@ -4981,9 +5029,7 @@ struct PracticePromptView: View {
                 )
                 .overlay(alignment: .topLeading) {
                     if draftInput.isEmpty {
-                        Text(languageMode == .native
-                             ? "用中文写你的回答，4-6句..."
-                             : "Write your English response here...")
+                        Text("写你想说的话，任何语言都可以...")
                             .font(.subheadline)
                             .foregroundStyle(AppColors.tertiaryText)
                             .padding(.horizontal, 16)
@@ -4992,13 +5038,7 @@ struct PracticePromptView: View {
                     }
                 }
 
-            if let speechError = speechInput.lastError {
-                Text(speechError)
-                    .font(.caption)
-                    .foregroundStyle(Color(hex: "DC2626"))
-            }
-
-            // Submit button inside the card
+            // Submit button
             Button {
                 runPipeline()
             } label: {
@@ -5007,10 +5047,10 @@ struct PracticePromptView: View {
                         ProgressView()
                             .tint(.white)
                     } else {
-                        Image(systemName: languageMode == .native ? "arrow.right.circle.fill" : "checkmark.circle.fill")
+                        Image(systemName: "sparkles")
                             .font(.system(size: 15, weight: .semibold))
                     }
-                    Text(languageMode == .native ? "Translate to English" : "Submit English Draft")
+                    Text("AI 润色成英文")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(.white)
@@ -5054,9 +5094,9 @@ struct PracticePromptView: View {
                     accentColor: tint,
                     onPlay: { listenedResultAudio = true }
                 )
-                TranslateButton(englishText: text, accentColor: tint, showInline: false)
             }
 
+            // Polished English text
             Text(text)
                 .font(.subheadline)
                 .foregroundStyle(AppColors.primaryText)
@@ -5064,7 +5104,8 @@ struct PracticePromptView: View {
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
 
-            TranslationOverlay(englishText: text, accentColor: tint)
+            // Native translation auto-shown below
+            TranslationOverlay(englishText: text, accentColor: tint, autoTranslate: true)
         }
         .padding(14)
         .overlay(
@@ -5084,17 +5125,11 @@ struct PracticePromptView: View {
 
         Task {
             do {
-                let translated: String
-                if languageMode == .native {
-                    translated = try await PracticeAIService.shared.translateToEnglish(
-                        nativeText: source,
-                        topic: task.prompt
-                    )
-                } else {
-                    translated = source
-                }
-
-                translatedEnglish = translated
+                let polished = try await PracticeAIService.shared.polishToSpokenEnglish(
+                    text: source,
+                    topic: task.prompt
+                )
+                translatedEnglish = polished
                 polishedEnglish = ""
                 isProcessing = false
             } catch {

@@ -14,6 +14,7 @@ struct PersonalCenterView: View {
     @State private var showFeedbackFallbackAlert = false
     @State private var showOnboarding = false
     @State private var showPaywall = false
+    @AppStorage(DailySpeakAPIService.translationProviderKey) private var translationProvider = "auto"
 
     private var totalCompleted: Int {
         CourseData.stages.reduce(0) { $0 + progress.completedTaskCount(for: $1) }
@@ -274,6 +275,28 @@ struct PersonalCenterView: View {
 
                 Divider().background(AppColors.border).padding(.leading, dividerInset)
 
+                // Translation engine picker
+                Menu {
+                    Button { translationProvider = "auto" } label: {
+                        Label("Auto (DeepL)", systemImage: translationProvider == "auto" ? "checkmark" : "")
+                    }
+                    Button { translationProvider = "deepl" } label: {
+                        Label("DeepL", systemImage: translationProvider == "deepl" ? "checkmark" : "")
+                    }
+                    Button { translationProvider = "deepseek" } label: {
+                        Label("DeepSeek AI", systemImage: translationProvider == "deepseek" ? "checkmark" : "")
+                    }
+                } label: {
+                    NavigationMenuRow(
+                        icon: "globe",
+                        title: "翻译引擎",
+                        subtitle: translationProviderLabel,
+                        iconColor: Color(hex: "0EA5E9")
+                    )
+                }
+
+                Divider().background(AppColors.border).padding(.leading, dividerInset)
+
                 NavigationLink {
                     NotificationSettingsView()
                 } label: {
@@ -286,6 +309,14 @@ struct PersonalCenterView: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
+
+    private var translationProviderLabel: String {
+        switch translationProvider {
+        case "deepl": "DeepL"
+        case "deepseek": "DeepSeek AI"
+        default: "Auto"
         }
     }
 

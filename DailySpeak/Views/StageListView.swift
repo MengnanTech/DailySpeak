@@ -323,7 +323,7 @@ struct StageListView: View {
         return VStack(alignment: .leading, spacing: 0) {
             // Header — slides from left
             HStack {
-                Text("\(stage.chineseTitle) · Tasks")
+                Text("\(stage.title) · Tasks")
                     .font(.subheadline.bold())
                     .foregroundStyle(AppColors.primaryText)
                 Spacer()
@@ -661,14 +661,10 @@ struct CarouselStageCard: View {
                     }
                     .padding(.bottom, 16)
 
-                    Text(stage.chineseTitle)
+                    Text(stage.title)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                        .padding(.bottom, 5)
-                    Text(stage.title)
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.78))
                         .padding(.bottom, 22)
 
                     HStack {
