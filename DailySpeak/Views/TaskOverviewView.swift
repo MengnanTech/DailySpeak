@@ -97,6 +97,16 @@ struct TaskOverviewView: View {
     private var theme: StageTheme { stage.theme }
     private var lessonContent: LessonContent? { task.lessonContent }
 
+    /// Band range from sample answers, e.g. "6–8"
+    private var sampleBandRange: String {
+        let bands = task.sampleAnswers.compactMap { answer -> Int? in
+            guard let first = answer.band.first(where: { $0.isNumber }) else { return nil }
+            return Int(String(first))
+        }
+        guard let minBand = bands.min(), let maxBand = bands.max() else { return "–" }
+        return minBand == maxBand ? "\(minBand)" : "\(minBand)–\(maxBand)"
+    }
+
     private var heroPromptText: String {
         let chars = Array(task.prompt)
         guard !chars.isEmpty, heroPromptChars > 0 else { return "" }
@@ -283,8 +293,8 @@ struct TaskOverviewView: View {
             }
             HStack(spacing: 10) {
                 lessonMetaPill(icon: "clock.fill", text: lesson.practice.targetLength)
-                lessonMetaPill(icon: "text.quote", text: "\(task.sampleAnswers.count) samples")
-                lessonMetaPill(icon: "books.vertical.fill", text: "\(task.vocabulary.count) vocab")
+                lessonMetaPill(icon: "character.book.closed.fill", text: "\(task.vocabulary.count + task.phrases.count) expressions")
+                lessonMetaPill(icon: "chart.bar.fill", text: "Band \(sampleBandRange)")
             }
             .opacity(isPopup ? heroMetaOpacity : 1)
         }
@@ -461,24 +471,7 @@ struct TaskOverviewView: View {
             }
             .opacity(isPopup ? focusChipsOpacity : 1)
 
-            // Stats row — card-style mini stats
-            HStack(spacing: 0) {
-                lessonMiniStat(title: "Strategy", value: "\(lesson.strategy.angles.count)", icon: "sparkles")
-                miniStatDivider
-                lessonMiniStat(title: "Vocab", value: "\(task.vocabulary.count)", icon: "textformat.abc")
-                miniStatDivider
-                lessonMiniStat(title: "Samples", value: "\(task.sampleAnswers.count)", icon: "doc.text")
-            }
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppColors.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(theme.startColor.opacity(0.1), lineWidth: 0.5)
-                    )
-            )
-            .opacity(isPopup ? focusStatsOpacity : 1)
+            // Stats row removed — data now shown in hero pills only
 
             // Suggestion section with typewriter — highlighted card
             VStack(alignment: .leading, spacing: 10) {
