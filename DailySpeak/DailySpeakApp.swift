@@ -45,6 +45,7 @@ struct DailySpeakApp: App {
                     .transition(.opacity)
                 }
             }
+            .toastOverlay()
             .onAppear {
                 checkFirstLaunch()
             }
@@ -66,6 +67,7 @@ struct DailySpeakApp: App {
             .onChange(of: scenePhase) { _, phase in
                 switch phase {
                 case .active:
+                    ReviewPromptService.shared.recordAppLaunch()
                     if !showOnboarding {
                         appState.startRuntimeServices()
                     }
