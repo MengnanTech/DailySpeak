@@ -15,6 +15,26 @@
   ],
   "products" : [
     {
+      "displayPrice" : "32",
+      "familyShareable" : false,
+      "internalID" : "STAGE_1",
+      "localizations" : [
+        {
+          "description" : "Unlock Stage 1: Basic Description",
+          "displayName" : "Stage 1",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "解锁阶段 1：基础描述",
+          "displayName" : "阶段 1",
+          "locale" : "zh_Hans"
+        }
+      ],
+      "productID" : "com.levi.dailyspeak.stage.1",
+      "referenceName" : "Stage 1 Unlock",
+      "type" : "NonConsumable"
+    },
+    {
       "displayPrice" : "6",
       "familyShareable" : false,
       "internalID" : "STAGE_2",

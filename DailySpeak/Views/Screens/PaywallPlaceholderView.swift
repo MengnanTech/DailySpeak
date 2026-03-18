@@ -33,7 +33,7 @@ struct PaywallPlaceholderView: View {
     private let accentLight = Color(hex: "7B8FF5")
 
     private var proTaskCount: Int {
-        CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
+        CourseData.stages.reduce(0) { $0 + $1.taskCount }
     }
 
     private var selectedSubProduct: Product? {

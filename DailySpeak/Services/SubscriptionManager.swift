@@ -37,7 +37,6 @@ final class SubscriptionManager {
 
     /// Whether a specific stage is accessible (subscription OR purchased)
     func isStageAccessible(_ stageId: Int) -> Bool {
-        if stageId == 1 { return true }
         return isPro || purchasedStageIDs.contains(stageId)
     }
 

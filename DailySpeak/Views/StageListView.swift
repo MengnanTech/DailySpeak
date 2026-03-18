@@ -359,11 +359,11 @@ struct StageListView: View {
 
                 VStack(spacing: 0) {
                     Button {
-                        if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
+                        let taskUnlocked = progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, subscription: subscription)
+                        if !taskUnlocked {
                             paywallTarget = PaywallTarget(stageId: stage.id)
                             return
                         }
-                        guard progress.isStageUnlocked(stageId: stage.id, subscription: subscription) else { return }
                         selectedTask = task
                     } label: {
                         HStack(spacing: 12) {
@@ -391,9 +391,9 @@ struct StageListView: View {
                                 Text(task.englishTitle)
                                     .font(.caption2).foregroundStyle(AppColors.tertiaryText)
                             }
-                            .blur(radius: progress.isStageLocked(stageId: stage.id, subscription: subscription) ? 4 : 0)
+                            .blur(radius: !progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, subscription: subscription) ? 4 : 0)
                             .overlay {
-                                if progress.isStageLocked(stageId: stage.id, subscription: subscription) {
+                                if !progress.isTaskUnlocked(stageId: stage.id, taskId: task.id, in: stage, subscription: subscription) {
                                     Image(systemName: "lock.fill")
                                         .font(.system(size: 12))
                                         .foregroundStyle(AppColors.tertiaryText)

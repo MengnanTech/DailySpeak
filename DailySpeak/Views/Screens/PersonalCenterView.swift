@@ -40,7 +40,7 @@ struct PersonalCenterView: View {
     }
 
     private var proTaskCount: Int {
-        CourseData.stages.dropFirst().reduce(0) { $0 + $1.taskCount }
+        CourseData.stages.reduce(0) { $0 + $1.taskCount }
     }
 
     var body: some View {

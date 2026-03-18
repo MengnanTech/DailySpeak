@@ -93,7 +93,9 @@ final class ProgressManager {
     }
 
     func isTaskUnlocked(stageId: Int, taskId: Int, in stage: Stage, subscription: SubscriptionManager) -> Bool {
-        return isStageUnlocked(stageId: stageId, subscription: subscription)
+        // Stage 1 task 1 and Stage 2 task 1 are always free
+        if (stageId == 1 || stageId == 2) && taskId == stage.tasks.first?.id { return true }
+        return subscription.isStageAccessible(stageId)
     }
 
     // MARK: - Stage Progress
@@ -102,15 +104,14 @@ final class ProgressManager {
         stage.tasks.allSatisfy { isTaskCompleted(stageId: stage.id, taskId: $0.id) }
     }
 
-    /// Stage is unlocked if: stage 1 (free), or subscription active, or stage individually purchased
+    /// Stage is unlocked if subscription active or stage individually purchased
     func isStageUnlocked(stageId: Int, subscription: SubscriptionManager) -> Bool {
-        if stageId == 1 { return true }
         return subscription.isStageAccessible(stageId)
     }
 
     /// Whether a stage needs payment (not accessible via subscription or purchase)
     func isStageLocked(stageId: Int, subscription: SubscriptionManager) -> Bool {
-        stageId > 1 && !subscription.isStageAccessible(stageId)
+        !subscription.isStageAccessible(stageId)
     }
 
     // MARK: - Guide Completion

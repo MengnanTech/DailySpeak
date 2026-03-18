@@ -24,7 +24,7 @@ struct Constants {
 
         // Per-stage unlock — non-consumable
         static func stage(_ id: Int) -> String { "com.levi.dailyspeak.stage.\(id)" }
-        static let stages: Set<String> = Set((2...9).map { stage($0) })
+        static let stages: Set<String> = Set((1...9).map { stage($0) })
 
         static let all: Set<String> = subscriptions.union(stages)
     }
