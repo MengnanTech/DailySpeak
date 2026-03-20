@@ -94,6 +94,16 @@
           "problem": "No resolution",
           "why_it_hurts": "The answer feels incomplete if the exchange has no ending or next step.",
           "fix": "Finish with what was agreed, what you decided, or what boundary you kept."
+        },
+        {
+          "problem": "Answering in a textbook way",
+          "why_it_hurts": "The response sounds memorised if it stays at the level of general ideas and never lands on one lived detail.",
+          "fix": "Add one concrete moment, reaction, or small consequence that actually happened to you."
+        },
+        {
+          "problem": "Reflection that only repeats the opening",
+          "why_it_hurts": "The ending feels flat if it only restates the topic instead of adding insight or change.",
+          "fix": "Use the final lines to show what changed, what you realised, or how you would respond now."
         }
       ],
       "language": [
@@ -108,6 +118,18 @@
           "wrong_example": "I discussed about the issue with the staff.",
           "better_example": "I discussed the issue with the staff.",
           "reason": "Discuss does not take about before the object."
+        },
+        {
+          "problem": "Overusing very or really with basic adjectives",
+          "wrong_example": "It was very good and really important for me.",
+          "better_example": "It turned out to be more meaningful than I expected.",
+          "reason": "A precise evaluation sounds more natural than stacking intensifiers on basic adjectives."
+        },
+        {
+          "problem": "Repeating I think in every sentence",
+          "wrong_example": "I think it is useful, and I think it matters because I think it affects daily life.",
+          "better_example": "What makes it useful to me is the way it affects daily life.",
+          "reason": "Removing repeated I think makes the answer sound more confident and more fluent."
         }
       ]
     }
@@ -319,7 +341,7 @@
       "upgrades": [
         {
           "original": "It was important to me.",
-          "improved": "It mattered because In travel situations, polite communication matters, but clarity matters even more.",
+          "improved": "In travel situations, polite communication matters, but clarity matters even more.",
           "why": "A specific reason sounds much more natural than a general claim.",
           "note": "Use the personal effect to close the answer."
         },
@@ -328,6 +350,18 @@
           "improved": "If timing mattered, I would also double-check whether there might be delays or a faster alternative nearby.",
           "why": "A clear turning point gives the answer shape and movement.",
           "note": "This is especially useful in spoken storytelling and reflective answers."
+        },
+        {
+          "original": "It was very important to me.",
+          "improved": "What made it important was the effect it had on the way I handled similar situations later.",
+          "why": "This explains importance through a concrete effect instead of a vague adjective.",
+          "note": "Useful when you want a simple but natural reflective sentence."
+        },
+        {
+          "original": "I learned a lot from it.",
+          "improved": "I came away from it with a clearer idea of what I would do next time.",
+          "why": "This sounds more spoken and more specific than a flat learned a lot.",
+          "note": "Good for endings that focus on takeaway and future behaviour."
         }
       ]
     },
@@ -356,7 +390,7 @@
       "upgrades": [
         {
           "original": "It was important to me.",
-          "improved": "It mattered because In travel situations, polite communication matters, but clarity matters even more.",
+          "improved": "In travel situations, polite communication matters, but clarity matters even more.",
           "why": "A specific reason sounds much more natural than a general claim.",
           "note": "Use the personal effect to close the answer."
         },
@@ -365,6 +399,18 @@
           "improved": "If timing mattered, I would also double-check whether there might be delays or a faster alternative nearby.",
           "why": "A clear turning point gives the answer shape and movement.",
           "note": "This is especially useful in spoken storytelling and reflective answers."
+        },
+        {
+          "original": "It helped me a lot.",
+          "improved": "What helped most was that it changed the way I judged the situation in practice.",
+          "why": "This sounds more mature and more natural than the vague phrase helped me a lot.",
+          "note": "Useful when you want to show growth without sounding dramatic."
+        },
+        {
+          "original": "I understood it better.",
+          "improved": "It gave me a more balanced way to look at similar situations afterwards.",
+          "why": "Balanced way to look at is a more idiomatic reflective phrase in spoken English.",
+          "note": "Works well in opinion, process, and experience answers."
         }
       ]
     },
@@ -393,7 +439,7 @@
       "upgrades": [
         {
           "original": "It was important to me.",
-          "improved": "It mattered because In travel situations, polite communication matters, but clarity matters even more.",
+          "improved": "In travel situations, polite communication matters, but clarity matters even more.",
           "why": "A specific reason sounds much more natural than a general claim.",
           "note": "Use the personal effect to close the answer."
         },
@@ -402,6 +448,18 @@
           "improved": "If timing mattered, I would also double-check whether there might be delays or a faster alternative nearby.",
           "why": "A clear turning point gives the answer shape and movement.",
           "note": "This is especially useful in spoken storytelling and reflective answers."
+        },
+        {
+          "original": "It changed me.",
+          "improved": "What stayed with me was not the event itself, but the shift it created in my judgment afterwards.",
+          "why": "This upgrade sounds more nuanced and more reflective than a broad claim like it changed me.",
+          "note": "Strong for higher-band closings that need subtlety rather than drama."
+        },
+        {
+          "original": "It was meaningful.",
+          "improved": "Its real value lay in the way it quietly reshaped my response patterns over time.",
+          "why": "Quietly reshaped and over time make the reflection sound more precise and more natural.",
+          "note": "Useful when you want a sophisticated closing without sounding academic."
         }
       ]
     }
